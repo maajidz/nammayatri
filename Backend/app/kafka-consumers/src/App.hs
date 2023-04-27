@@ -12,17 +12,28 @@
  the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -}
 
-module App (startKafkaConsumer) where
+module App (startKafkaConsumer, runDriverHealthcheck) where
 
 import qualified Consumer.Flow as CF
+import Control.Concurrent
 import Data.Function
+import DriverTrackingHealthCheck.API
+import qualified DriverTrackingHealthCheck.Service.Runner as Service
 import Environment
 import qualified EulerHS.Runtime as L
+import qualified EulerHS.Runtime as R
 import qualified Kafka.Consumer as Consumer
 import Kernel.Prelude
+import qualified Kernel.Tools.Metrics.Init as Metrics
+import qualified Kernel.Types.App as App
+import Kernel.Types.Flow
 import Kernel.Utils.Common hiding (id)
 import Kernel.Utils.Dhall (readDhallConfigDefault)
 import qualified Kernel.Utils.FlowLogging as L
+import qualified Kernel.Utils.Servant.Server as Server
+import Kernel.Utils.Shutdown
+import Network.Wai.Handler.Warp
+import Servant
 import System.Environment (lookupEnv)
 
 startKafkaConsumer :: IO ()
@@ -31,6 +42,11 @@ startKafkaConsumer = do
   configFile <- CF.getConfigNameFromConsumertype consumerType
   appCfg :: AppCfg <- readDhallConfigDefault configFile
   appEnv <- buildAppEnv appCfg consumerType
+  when (consumerType == LOCATION_UPDATE) (void $ forkIO $ runDriverHealthcheck appCfg appEnv)
+  runKafkaConsumer appCfg appEnv
+
+runKafkaConsumer :: AppCfg -> AppEnv -> IO ()
+runKafkaConsumer appCfg appEnv = do
   flowRt' <- L.createFlowRuntime' (Just $ L.getEulerLoggerRuntime appEnv.hostname appEnv.loggerConfig)
   managers <- managersFromManagersSettings appCfg.httpClientOptions.timeoutMs mempty -- default manager is created
   let flowRt = flowRt' {L._httpClientManagers = managers}
@@ -46,3 +62,24 @@ startConsumerWithEnv flowRt appEnv@AppEnv {..} = do
         <$> Consumer.newConsumer
           (kafkaConsumerCfg.consumerProperties)
           (Consumer.topics kafkaConsumerCfg.topicNames)
+
+runDriverHealthcheck :: AppCfg -> AppEnv -> IO ()
+runDriverHealthcheck appCfg appEnv = do
+  Metrics.serve appCfg.metricsPort
+  let heathCheckConfig = fromJust appCfg.healthCheckAppCfg
+  let loggerRt = L.getEulerLoggerRuntime appEnv.hostname heathCheckConfig.loggerConfig
+
+  R.withFlowRuntime (Just loggerRt) \flowRt -> do
+    flowRt' <- runFlowR flowRt appEnv do
+      managers <- createManagers mempty -- default manager is created
+      pure $ flowRt {R._httpClientManagers = managers}
+
+    let settings =
+          defaultSettings
+            & setGracefulShutdownTimeout (Just $ getSeconds heathCheckConfig.graceTerminationPeriod)
+            & setInstallShutdownHandler (handleShutdown appEnv.isShuttingDown (releaseAppEnv appEnv))
+            & setPort heathCheckConfig.healthcheckPort
+    void . forkIO . runSettings settings $ Server.run healthCheckAPI healthCheck EmptyContext (App.EnvR flowRt' appEnv)
+
+    runFlowR flowRt' appEnv $ Service.driverTrackingHealthcheckService heathCheckConfig
+    waitForShutdown appEnv.isShuttingDown

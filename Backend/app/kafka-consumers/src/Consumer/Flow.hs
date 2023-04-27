@@ -17,6 +17,7 @@ module Consumer.Flow where
 
 import qualified Consumer.AvailabilityTime.Processor as ATProcessor
 import qualified Consumer.BroadcastMessage.Processor as BMProcessor
+import qualified Consumer.LocationUpdate.Processor as LCProcessor
 import Control.Error.Util
 import qualified Data.Aeson as A
 import Data.ByteString (ByteString)
@@ -38,6 +39,7 @@ runConsumer flowRt appEnv consumerType kafkaConsumer = do
   case consumerType of
     AVAILABILITY_TIME -> availabilityConsumer flowRt appEnv kafkaConsumer
     BROADCAST_MESSAGE -> broadcastMessageConsumer flowRt appEnv kafkaConsumer
+    LOCATION_UPDATE -> locationUpdateConsumer flowRt appEnv kafkaConsumer
 
 broadcastMessageConsumer :: L.FlowRuntime -> AppEnv -> Consumer.KafkaConsumer -> IO ()
 broadcastMessageConsumer flowRt appEnv kafkaConsumer =
@@ -74,6 +76,17 @@ availabilityConsumer flowRt appEnv kafkaConsumer =
         start = pure ([], Nothing)
         extract = pure
 
+locationUpdateConsumer :: L.FlowRuntime -> AppEnv -> Consumer.KafkaConsumer -> IO ()
+locationUpdateConsumer flowRt appEnv kafkaConsumer =
+  readMessages kafkaConsumer
+    & S.mapM (\(message, messageKey, cr) -> processRealtimeLocationUpdates message messageKey $> (message, messageKey, cr))
+    & S.drain
+  where
+    processRealtimeLocationUpdates locationUpdate driverId =
+      runFlowR flowRt appEnv . withLogTag driverId $
+        generateGUID
+          >>= flip withLogTag (LCProcessor.processLocationData locationUpdate driverId)
+
 readMessages ::
   (FromJSON a, ConvertUtf8 aKey ByteString) =>
   Consumer.KafkaConsumer ->
@@ -99,3 +112,4 @@ getConfigNameFromConsumertype :: ConsumerType -> IO String
 getConfigNameFromConsumertype = \case
   AVAILABILITY_TIME -> pure "driver-availability-calculator"
   BROADCAST_MESSAGE -> pure "broadcast-message"
+  LOCATION_UPDATE -> pure "location-update"

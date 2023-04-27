@@ -73,6 +73,7 @@ dependencies:
   - hedis
   - esqueleto
   - template-haskell
+  - warp
 
 ghc-options:
   - -Wall

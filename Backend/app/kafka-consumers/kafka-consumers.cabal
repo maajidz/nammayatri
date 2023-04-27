@@ -28,6 +28,10 @@ library
       Consumer.AvailabilityTime.Types
       Consumer.BroadcastMessage.Processor
       Consumer.Flow
+      Consumer.LocationUpdate.Processor
+      Consumer.LocationUpdate.Types
+      DriverTrackingHealthCheck.API
+      DriverTrackingHealthCheck.Service.Runner
       Environment
   other-modules:
       Paths_kafka_consumers
@@ -91,6 +95,7 @@ library
     , template-haskell
     , text
     , time
+    , warp
   default-language: Haskell2010
 
 executable kafka-consumers-exe
@@ -157,4 +162,5 @@ executable kafka-consumers-exe
     , template-haskell
     , text
     , time
+    , warp
   default-language: Haskell2010

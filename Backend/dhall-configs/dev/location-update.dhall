@@ -2,8 +2,6 @@ let common = ./common.dhall
 
 let sec = ./secrets/dynamic-offer-driver-app.dhall
 
-let genericCommon = ../generic/common.dhall
-
 let appCfg = ./dynamic-offer-driver-app.dhall
 
 let esqDBCfg =
@@ -35,18 +33,33 @@ let hedisCfg =
       }
 
 let consumerProperties =
-      { groupId = "broadcast-messages-compute"
+      { groupId = "groupId"
       , brockers = [ "localhost:29092" ]
       , autoCommit = None Integer
       }
 
 let kafkaConsumerCfg =
-      { topicNames = [ "broadcast-messages" ], consumerProperties }
+      { topicNames = [ "location-updates" ], consumerProperties }
 
 let availabilityTimeWindowOption =
       { period = +7, periodType = common.periodType.Days }
 
 let cacheConfig = { configsExpTime = +86400 }
+
+let healthCheckAppCfg =
+      { graceTerminationPeriod = appCfg.graceTerminationPeriod
+      , healthcheckPort = +8115
+      , notificationMinDelay = +50000
+      , driverInactiveDelay = +86400
+      , smsCfg = appCfg.smsCfg
+      , driverInactiveSmsTemplate =
+          "Alert! You have been marked Busy on Namma Yatri Partner, as we have not received any location update from your phone in more than a day. Please open the app and update your location for the app to work properly."
+      , driverAllowedDelayForLocationUpdateInSec = +60
+      , driverLocationHealthCheckIntervalInSec = +120
+      , loggerConfig =
+              appCfg.loggerConfig
+          //  { logFilePath = "/tmp/driver-tracking-healthcheck.log" }
+      }
 
 in  { hedisCfg
     , esqDBCfg
@@ -62,8 +75,6 @@ in  { hedisCfg
     , encTools = appCfg.encTools
     , loggerConfig =
             common.loggerConfig
-        //  { logFilePath = "/tmp/kafka-consumers-broadcast-messages.log"
-            , logRawSql = False
-            }
-    , healthCheckAppCfg = None genericCommon.healthCheckAppCfgT
+        //  { logFilePath = "/tmp/kafka-consumers.log", logRawSql = False }
+    , healthCheckAppCfg = Some healthCheckAppCfg
     }

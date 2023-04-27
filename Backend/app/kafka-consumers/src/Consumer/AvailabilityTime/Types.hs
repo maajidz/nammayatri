@@ -16,6 +16,7 @@ module Consumer.AvailabilityTime.Types where
 
 import Data.Time
 import EulerHS.Prelude hiding (id)
+import qualified Kernel.External.FCM.Types as FCM
 import Kernel.External.Maps.Types (LatLong)
 import Kernel.Types.Id (Id)
 
@@ -36,7 +37,8 @@ data LocationUpdates = LocationUpdates
   { rId :: Maybe Text,
     ts :: UTCTime,
     pt :: LatLong,
-    mId :: Text
+    mId :: Text,
+    dt :: Maybe FCM.FCMRecipientToken
   }
   deriving (Generic, FromJSON, ToJSON, Show)
 

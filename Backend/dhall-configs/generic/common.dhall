@@ -30,7 +30,7 @@ let loggerConfig =
       , prettyPrinting = False
       }
 
-let ConsumerType = < AVAILABILITY_TIME | BROADCAST_MESSAGE >
+let ConsumerType = < AVAILABILITY_TIME | BROADCAST_MESSAGE | LOCATION_UPDATE >
 
 let httpClientOptions = { timeoutMs = +2000 }
 
@@ -39,6 +39,36 @@ let shortDurationRetryCfg = { maxRetries = +3, baseCoefficient = +2 }
 let longDurationRetryCfg = { maxRetries = +3, baseCoefficient = +4 }
 
 let ServerName = < APP_BACKEND | BECKN_TRANSPORT | DRIVER_OFFER_BPP >
+
+let loggerConfigT =
+      { level : LogLevel
+      , logToFile : Bool
+      , logToConsole : Bool
+      , logRawSql : Bool
+      , prettyPrinting : Bool
+      , logFilePath : Text
+      }
+
+let smsConfigT =
+      { sessionConfig :
+          { attempts : Integer, authExpiry : Integer, tokenExpiry : Integer }
+      , credConfig : { username : Text, password : Text, otpHash : Text }
+      , useFakeSms : Optional Natural
+      , url : Text
+      , sender : Text
+      }
+
+let healthCheckAppCfgT =
+      { graceTerminationPeriod : Integer
+      , healthcheckPort : Integer
+      , notificationMinDelay : Integer
+      , driverInactiveDelay : Integer
+      , smsCfg : smsConfigT
+      , driverInactiveSmsTemplate : Text
+      , driverAllowedDelayForLocationUpdateInSec : Integer
+      , driverLocationHealthCheckIntervalInSec : Integer
+      , loggerConfig : loggerConfigT
+      }
 
 in  { smsSessionConfig
     , autoMigrate = False
@@ -51,6 +81,7 @@ in  { smsSessionConfig
     , longDurationRetryCfg
     , ServerName
     , S3Config
+    , healthCheckAppCfgT
     , periodType = PeriodType
     , consumerType = ConsumerType
     }

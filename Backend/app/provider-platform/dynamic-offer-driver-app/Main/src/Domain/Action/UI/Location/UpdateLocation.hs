@@ -28,6 +28,7 @@ import qualified Domain.Types.Person as Person
 import qualified Domain.Types.Ride as DRide
 import Environment (Flow)
 import GHC.Records.Extra
+import qualified Kernel.External.FCM.Types as FCM
 import Kernel.External.Maps.Types
 import Kernel.Prelude
 import Kernel.Storage.Esqueleto.Transactionable (runInReplica)
@@ -74,7 +75,8 @@ data DriverLocationUpdateStreamData = DriverLocationUpdateStreamData
     mId :: Text, -- merchantId
     ts :: UTCTime, -- timestamp
     pt :: LatLong, -- lat log
-    da :: Bool -- driver avaiable
+    da :: Bool, -- driver avaiable
+    dt :: Maybe FCM.FCMRecipientToken --driver token
   }
   deriving (Generic, FromJSON, ToJSON)
 
@@ -108,12 +110,13 @@ streamLocationUpdates ::
   LatLong ->
   UTCTime ->
   Bool ->
+  Maybe FCM.FCMRecipientToken ->
   m ()
-streamLocationUpdates mbRideId merchantId driverId point timestamp isDriverActive = do
+streamLocationUpdates mbRideId merchantId driverId point timestamp isDriverActive driverToken = do
   topicName <- asks (.driverLocationUpdateTopic)
   produceMessage
     (topicName, Just (encodeUtf8 $ getId driverId))
-    (DriverLocationUpdateStreamData (getId <$> mbRideId) (getId merchantId) timestamp point isDriverActive)
+    (DriverLocationUpdateStreamData (getId <$> mbRideId) (getId merchantId) timestamp point isDriverActive driverToken)
 
 updateLocationHandler ::
   ( Redis.HedisFlow m r,
@@ -147,7 +150,7 @@ updateLocationHandler UpdateLocationHandle {..} waypoints = withLogTag "driverLo
           mapM_
             ( \point -> do
                 updateDriverSpeedInRedis driver.merchantId driver.id point.pt point.ts
-                streamLocationUpdates (fst <$> mbRideIdAndStatus) driver.merchantId driver.id point.pt point.ts driverInfo.active
+                streamLocationUpdates (fst <$> mbRideIdAndStatus) driver.merchantId driver.id point.pt point.ts driverInfo.active driver.deviceToken
             )
             (a : ax)
           maybe

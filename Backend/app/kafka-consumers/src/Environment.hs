@@ -17,9 +17,12 @@ module Environment where
 import qualified Data.Text as T
 import EulerHS.Prelude hiding (maybe, show)
 import Kafka.Consumer
+import Kernel.External.Encryption (EncTools)
+import Kernel.Sms.Config (SmsConfig)
 import Kernel.Storage.Esqueleto.Config (EsqDBConfig, EsqDBEnv, prepareEsqDBEnv)
 import Kernel.Storage.Hedis.Config
 import qualified Kernel.Tools.Metrics.CoreMetrics as Metrics
+import Kernel.Types.Common (Microseconds, Seconds)
 import Kernel.Types.Flow (FlowR)
 import Kernel.Types.SlidingWindowCounters
 import qualified Kernel.Types.SlidingWindowCounters as SWC
@@ -27,6 +30,7 @@ import Kernel.Utils.App (lookupDeploymentVersion)
 import Kernel.Utils.Dhall
 import Kernel.Utils.IOLogging
 import Kernel.Utils.Servant.Client
+import Kernel.Utils.Shutdown
 import Storage.CachedQueries.CacheConfig
 import System.Environment (lookupEnv)
 import Prelude (show)
@@ -59,15 +63,16 @@ instance FromDhall ConsumerConfig where
         Nothing -> noAutoCommit
         Just v -> autoCommit (Millis $ fromIntegral v)
 
-data ConsumerType = AVAILABILITY_TIME | BROADCAST_MESSAGE deriving (Generic, FromDhall, Read)
+data ConsumerType = LOCATION_UPDATE | AVAILABILITY_TIME | BROADCAST_MESSAGE deriving (Generic, FromDhall, Read, Eq)
 
 type ConsumerRecordD = ConsumerRecord (Maybe ByteString) (Maybe ByteString)
 
 instance Show ConsumerType where
   show AVAILABILITY_TIME = "availability-time"
   show BROADCAST_MESSAGE = "broadcast-message"
+  show LOCATION_UPDATE = "location-update"
 
-type Seconds = Integer
+type Seconds' = Integer
 
 type Flow = FlowR AppEnv
 
@@ -75,25 +80,28 @@ data AppCfg = AppCfg
   { esqDBCfg :: EsqDBConfig,
     esqDBReplicaCfg :: EsqDBConfig,
     hedisCfg :: HedisCfg,
-    dumpEvery :: Seconds,
+    dumpEvery :: Seconds',
     kafkaConsumerCfg :: ConsumerConfig,
-    timeBetweenUpdates :: Seconds,
+    timeBetweenUpdates :: Seconds',
     availabilityTimeWindowOption :: SWC.SlidingWindowOptions,
     granualityPeriodType :: PeriodType,
     loggerConfig :: LoggerConfig,
     cacheConfig :: CacheConfig,
-    httpClientOptions :: HttpClientOptions
+    httpClientOptions :: HttpClientOptions,
+    metricsPort :: Int,
+    healthCheckAppCfg :: Maybe HealthCheckAppCfg,
+    encTools :: EncTools
   }
   deriving (Generic, FromDhall)
 
 data AppEnv = AppEnv
   { hedisCfg :: HedisCfg,
     consumerType :: ConsumerType,
-    dumpEvery :: Seconds,
+    dumpEvery :: Seconds',
     hostname :: Maybe Text,
     hedisEnv :: HedisEnv,
     kafkaConsumerCfg :: ConsumerConfig,
-    timeBetweenUpdates :: Seconds,
+    timeBetweenUpdates :: Seconds',
     availabilityTimeWindowOption :: SWC.SlidingWindowOptions,
     granualityPeriodType :: PeriodType,
     loggerConfig :: LoggerConfig,
@@ -102,9 +110,26 @@ data AppEnv = AppEnv
     esqDBReplicaEnv :: EsqDBEnv,
     cacheConfig :: CacheConfig,
     coreMetrics :: Metrics.CoreMetricsContainer,
-    version :: Metrics.DeploymentVersion
+    version :: Metrics.DeploymentVersion,
+    isShuttingDown :: Shutdown,
+    httpClientOptions :: HttpClientOptions,
+    encTools :: EncTools,
+    healthCheckAppCfg :: Maybe HealthCheckAppCfg
   }
   deriving (Generic)
+
+data HealthCheckAppCfg = HealthCheckAppCfg
+  { healthcheckPort :: Int,
+    graceTerminationPeriod :: Seconds,
+    notificationMinDelay :: Microseconds,
+    driverInactiveDelay :: Seconds,
+    driverAllowedDelayForLocationUpdateInSec :: Seconds,
+    driverLocationHealthCheckIntervalInSec :: Seconds,
+    smsCfg :: SmsConfig,
+    driverInactiveSmsTemplate :: Text,
+    loggerConfig :: LoggerConfig
+  }
+  deriving (Generic, FromDhall)
 
 buildAppEnv :: AppCfg -> ConsumerType -> IO AppEnv
 buildAppEnv AppCfg {..} consumerType = do
@@ -115,4 +140,10 @@ buildAppEnv AppCfg {..} consumerType = do
   coreMetrics <- Metrics.registerCoreMetricsContainer
   esqDBEnv <- prepareEsqDBEnv esqDBCfg loggerEnv
   esqDBReplicaEnv <- prepareEsqDBEnv esqDBReplicaCfg loggerEnv
+  isShuttingDown <- mkShutdown
   pure $ AppEnv {..}
+
+releaseAppEnv :: AppEnv -> IO ()
+releaseAppEnv AppEnv {..} = do
+  releaseLoggerEnv loggerEnv
+  disconnectHedis hedisEnv
