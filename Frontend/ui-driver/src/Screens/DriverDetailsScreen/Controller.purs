@@ -98,7 +98,7 @@ data Action = NoAction
 eval :: Action -> DriverDetailsScreenState -> Eval Action ScreenOutput DriverDetailsScreenState
 
 eval BackPressed state = do
-    exit (GoBack state {data = state.data {driverEditAlternateMobile = Nothing} ,props = state.props { keyboardModalType = NONE,
+    exit (GoBack state {data = state.data {driverAlternateMobile = (if state.props.isEditAlternateMobile == false then Nothing else state.data.driverAlternateMobile), driverEditAlternateMobile = Nothing} ,props = state.props { keyboardModalType = NONE,
     otpAttemptsExceeded = false,
     enterOtpFocusIndex = 0,
     otpIncorrect = false,
