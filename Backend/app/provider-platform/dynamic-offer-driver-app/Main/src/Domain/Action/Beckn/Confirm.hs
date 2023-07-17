@@ -104,7 +104,8 @@ handler ::
     HasFlowEnv m r '["selfUIUrl" ::: BaseUrl],
     HasFlowEnv m r '["nwAddress" ::: BaseUrl],
     HasLongDurationRetryCfg r c,
-    EventStreamFlow m r
+    EventStreamFlow m r,
+    HasFlowEnv m r '["specialZoneOtpExpiryTimeSeconds" ::: NominalDiffTime]
   ) =>
   DM.Merchant ->
   DConfirmReq ->
@@ -176,10 +177,12 @@ handler transporter req quote = do
       case quote of
         Left _ -> throwError AccessDenied
         Right _ -> do
+          specialZoneOtpExpiryTimeSeconds <- asks (.specialZoneOtpExpiryTimeSeconds)
           otpCode <- generateOTPCode
+          let otpValidTill = specialZoneOtpExpiryTimeSeconds `addUTCTime` now
           when isNewRider $ void $ QRD.create riderDetails
           _ <- QRB.updateRiderId booking.id riderDetails.id
-          _ <- QRB.updateSpecialZoneOtpCode booking.id otpCode
+          _ <- QRB.updateSpecialZoneOtpCode booking.id otpCode otpValidTill
           _ <- QBL.updateAddress booking.fromLocation.id req.fromAddress
           _ <- QBL.updateAddress booking.toLocation.id req.toAddress
           whenJust req.mbRiderName $ QRB.updateRiderName booking.id

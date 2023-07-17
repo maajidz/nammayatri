@@ -23,6 +23,7 @@ library
   exposed-modules:
       API
       API.Beckn
+      API.Beckn.OnCancel
       API.Beckn.OnConfirm
       API.Beckn.OnInit
       API.Beckn.OnSearch
@@ -77,6 +78,7 @@ library
       API.UI.Serviceability
       API.UI.Sos
       API.UI.Support
+      API.UI.SyncBookingStatus
       API.UI.Webengage.InfoBIPWebhook
       API.UI.Webengage.Webengage
       API.UI.Whatsapp
@@ -88,6 +90,7 @@ library
       Beckn.ACL.Init
       Beckn.ACL.Metro.OnSearch
       Beckn.ACL.Metro.Search
+      Beckn.ACL.OnCancel
       Beckn.ACL.OnConfirm
       Beckn.ACL.OnInit
       Beckn.ACL.OnSearch
@@ -102,6 +105,7 @@ library
       Beckn.ACL.Track
       Beckn.ACL.Update
       Beckn.Core
+      Domain.Action.Beckn.OnCancel
       Domain.Action.Beckn.OnConfirm
       Domain.Action.Beckn.OnInit
       Domain.Action.Beckn.OnSearch
@@ -143,6 +147,7 @@ library
       Domain.Action.UI.Serviceability
       Domain.Action.UI.Sos
       Domain.Action.UI.Support
+      Domain.Action.UI.SyncBookingStatus
       Domain.Action.UI.Webengage.InfoBIPWebhook
       Domain.Action.UI.Webengage.Webengage
       Domain.Action.UI.Whatsapp

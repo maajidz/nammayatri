@@ -15,6 +15,7 @@
 module Domain.Action.Beckn.Cancel
   ( cancel,
     CancelReq (..),
+    CancelRes (..),
     CancelSearchReq (..),
     validateCancelRequest,
     validateCancelSearchRequest,
@@ -35,7 +36,6 @@ import Kernel.Types.Id
 import Kernel.Utils.Common
 import Kernel.Utils.Servant.SignatureAuth (SignatureAuthResult (..))
 import Lib.SessionizerMetrics.Types.Event
-import qualified SharedLogic.CallBAP as BP
 import qualified SharedLogic.DriverLocation as DLoc
 import qualified SharedLogic.DriverMode as DMode
 import qualified SharedLogic.Ride as SRide
@@ -64,6 +64,15 @@ newtype CancelSearchReq = CancelSearchReq
   { transactionId :: Text
   }
 
+data CancelRes = CancelRes
+  { transporter :: DM.Merchant,
+    bookingId :: Id SRB.Booking,
+    bookingStatus :: SRB.BookingStatus,
+    cancellationSource :: DBCR.CancellationSource,
+    mbRide :: Maybe SRide.Ride
+  }
+  deriving (Generic, Show)
+
 cancel ::
   ( EsqDBFlow m r,
     Esq.EsqDBReplicaFlow m r,
@@ -81,7 +90,7 @@ cancel ::
   CancelReq ->
   DM.Merchant ->
   SRB.Booking ->
-  m ()
+  m CancelRes
 cancel req merchant booking = do
   -- merchant <-
   --   QM.findById merchantId
@@ -110,12 +119,15 @@ cancel req merchant booking = do
     void (DLoc.updateOnRideCacheForCancelledOrEndRide (cast ride.driverId) booking.providerId)
 
   logTagInfo ("bookingId-" <> getId req.bookingId) ("Cancellation reason " <> show bookingCR.source)
-  fork "cancelBooking - Notify BAP" $ do
-    BP.sendBookingCancelledUpdateToBAP booking merchant bookingCR.source
+  -- fork "cancelBooking - Notify BAP" $ do
+  --   BP.sendBookingCancelledUpdateToBAP booking merchant bookingCR.source
   whenJust mbRide $ \ride ->
     fork "cancelRide - Notify driver" $ do
       driver <- QPers.findById ride.driverId >>= fromMaybeM (PersonNotFound ride.driverId.getId)
       Notify.notifyOnCancel merchant.id booking driver.id driver.deviceToken bookingCR.source
+  mbRideu <- QRide.findActiveByRBId req.bookingId
+  bookingu <- QRB.findById req.bookingId >>= fromMaybeM (BookingDoesNotExist req.bookingId.getId)
+  buildCancelRes mbRideu bookingCR.source bookingu
   where
     buildBookingCancellationReason = do
       return $
@@ -130,6 +142,15 @@ cancel req merchant booking = do
             driverCancellationLocation = Nothing,
             driverDistToPickup = Nothing,
             ..
+          }
+    buildCancelRes mbRideu cancellationSource bookingu = do
+      return $
+        CancelRes
+          { transporter = merchant,
+            bookingId = booking.id,
+            bookingStatus = bookingu.status,
+            cancellationSource = cancellationSource,
+            mbRide = mbRideu
           }
 
 cancelSearch ::

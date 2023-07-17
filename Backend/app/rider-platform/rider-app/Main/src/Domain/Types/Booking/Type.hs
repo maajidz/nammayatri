@@ -104,6 +104,7 @@ data OneWayBookingDetails = OneWayBookingDetails
 data OneWaySpecialZoneBookingDetails = OneWaySpecialZoneBookingDetails
   { toLocation :: DLoc.BookingLocation,
     distance :: HighPrecMeters,
-    otpCode :: Maybe Text
+    otpCode :: Maybe Text,
+    otpValidTill :: Maybe UTCTime
   }
   deriving (Show)

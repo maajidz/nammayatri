@@ -18,6 +18,7 @@ module Domain.Action.UI.Cancel
     CancelSearch (..),
     mkDomainCancelSearch,
     cancelSearch,
+    driverDistanceToPickup,
   )
 where
 
@@ -93,8 +94,8 @@ cancel bookingId _ req = do
         res <- try @_ @SomeException (CallBPP.callGetDriverLocation ride.trackingUrl)
         case res of
           Right res' -> do
-            disToPickup <- driverDistanceToPickup booking.merchantId (getCoordinates res'.currPoint) (getCoordinates booking.fromLocation)
-            buildBookingCancelationReason (Just res'.currPoint) (Just disToPickup) (Just booking.merchantId)
+            -- disToPickup <- driverDistanceToPickup booking.merchantId (getCoordinates res'.currPoint) (getCoordinates booking.fromLocation)
+            buildBookingCancelationReason (Just res'.currPoint) Nothing (Just booking.merchantId)
           Left err -> do
             logTagInfo "DriverLocationFetchFailed" $ show err
             buildBookingCancelationReason Nothing Nothing (Just booking.merchantId)

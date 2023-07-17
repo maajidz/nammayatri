@@ -44,6 +44,7 @@ import qualified API.UI.Select as Select
 import qualified API.UI.Serviceability as Serviceability
 import qualified API.UI.Sos as Sos
 import qualified API.UI.Support as Support
+import qualified API.UI.SyncBookingStatus as SyncBookingStatus
 import qualified API.UI.Webengage.InfoBIPWebhook as InfoBIPWebhook
 import qualified API.UI.Webengage.Webengage as Webengage
 import qualified API.UI.Whatsapp as Whatsapp
@@ -75,6 +76,7 @@ type API =
            :<|> GoogleTranslateProxy.API
            :<|> CancellationReason.API
            :<|> SavedReqLocation.API
+           :<|> SyncBookingStatus.API
            :<|> Webengage.API
            :<|> InfoBIPWebhook.API
            :<|> Frontend.API
@@ -109,6 +111,7 @@ handler =
     :<|> GoogleTranslateProxy.handler
     :<|> CancellationReason.handler
     :<|> SavedReqLocation.handler
+    :<|> SyncBookingStatus.handler
     :<|> Webengage.handler
     :<|> InfoBIPWebhook.handler
     :<|> Frontend.handler
