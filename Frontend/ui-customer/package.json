@@ -25,7 +25,8 @@
     "start:android:master": "npm-run-all -p dev webpack-dev-master",
     "start:android:prod": "npm-run-all -p dev webpack-dev-prod",
     "repl": "spago repl",
-    "clean": "sh cleanSpago.sh"
+    "clean": "sh cleanSpago.sh",
+    "android": "sh init-seed.sh"
   },
   "author": "juspay",
   "license": "ISC",
@@ -48,18 +49,20 @@
     "husky": "^8.0.1",
     "node-notifier": "^10.0.1",
     "npm-run-all": "^4.1.5",
+    "purty": "^7.0.0",
     "semantic-release": "^19.0.5",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1",
     "webpack-merge": "^5.8.0",
-    "purty": "^7.0.0"
+    "purs-tidy": "^0.10.0"
   },
   "dependencies": {
     "axios": "^0.27.1",
     "core-js": "^2.6.11",
     "moment": "^2.27.0",
     "presto-ui": "git+https://github.com/juspay/presto-ui.git#feature/Added-font-weight-prop",
+    "purs-tidy": "^0.10.0",
     "purty": "^7.0.0",
     "ramda": "^0.26.1",
     "regenerator-runtime": "^0.13.5"
