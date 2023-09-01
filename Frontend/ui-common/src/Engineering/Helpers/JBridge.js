@@ -1909,3 +1909,34 @@ export const scrollViewFocus = function (parentID) {
     return false;
   }
 }
+
+  export const requestVideoPermission = function(){
+    if(window.JBridge.askVideoRelatedPermissions)
+      return window.JBridge.askVideoRelatedPermissions();
+  }
+
+  export const setupCamera = function(id){
+    if(window.JBridge.setupCamera)
+      return window.JBridge.setupCamera(id);
+  }
+
+  export const startRecord = function (cb){
+    return function (action){
+      return function () {
+        console.log("zxc startrecord")
+        var callback = callbackMapper.map(function (status, videoUri) {
+          cb(action(status)(videoUri))();
+        });
+        if(window.JBridge.recordVideo){
+          return window.JBridge.recordVideo(callback);
+        }
+    }
+   }
+  }
+  
+
+  export const stopRecord = function(){
+    if(window.JBridge.stopRecord){
+      return window.JBridge.stopRecord();
+    }
+  }

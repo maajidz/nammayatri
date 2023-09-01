@@ -41,7 +41,6 @@ import PrestoDOM.Types.DomAttributes (Corners(..))
 import Screens.Types (HomeScreenStage(..), TimerStatus(..), DisabilityType(..))
 import Storage (KeyStore(..), getValueToLocalStore, setValueToLocalStore)
 import Styles.Colors as Color
-import Engineering.Helpers.Utils (showAndHideLoader)
 import Types.App (defaultGlobalState)
 import Helpers.Utils(getRideTypeColor, getCategorizedVariant)
 

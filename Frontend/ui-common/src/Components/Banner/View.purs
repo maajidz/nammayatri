@@ -23,7 +23,9 @@ import PrestoDOM.Types.DomAttributes (Gravity(..), Corners(..))
 import Font.Style as FontStyle
 import Font.Size as FontSize
 import Components.Banner.Controller
+import Styles.Colors as Color
 import Common.Types.App (LazyCheck(..))
+import Engineering.Helpers.Commons (os, screenWidth)
 
 
 view :: forall w. (Action  -> Effect Unit) -> Config -> PrestoDOM (Effect Unit) w
@@ -32,7 +34,6 @@ view push config =
     [ height WRAP_CONTENT
     , width MATCH_PARENT
     , cornerRadius 12.0
-    , margin $ MarginTop 12
     , background config.backgroundColor
     , visibility if config.isBanner then VISIBLE else GONE
     , gravity CENTER_VERTICAL
@@ -40,7 +41,7 @@ view push config =
     , stroke config.stroke
     ]
     [  linearLayout
-        [ height WRAP_CONTENT
+        [ height MATCH_PARENT
         , weight 1.0
         , padding $ Padding 20 0 0 0
         , orientation VERTICAL
@@ -58,13 +59,14 @@ view push config =
           [ height WRAP_CONTENT
           , width WRAP_CONTENT
           , gravity CENTER_VERTICAL
+          , if (os == "IOS") then margin (MarginTop 4) else margin (MarginTop 0)
           ]
           [
             textView $
             [ height WRAP_CONTENT
             , width WRAP_CONTENT
             , gravity LEFT
-            , text config.actionText
+            , text $ config.actionText <> " →" 
             , color config.actionTextColor
             , padding $ PaddingBottom 2
             ] <> (FontStyle.getFontStyle config.actionTextStyle LanguageStyle)

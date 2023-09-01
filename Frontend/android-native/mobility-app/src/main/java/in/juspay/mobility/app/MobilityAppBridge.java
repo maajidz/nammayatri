@@ -1,29 +1,52 @@
 package in.juspay.mobility.app;
 
 import static android.app.Activity.RESULT_OK;
+import static androidx.core.app.ActivityCompat.requestPermissions;
 import static androidx.core.app.ActivityCompat.startIntentSenderForResult;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Size;
 import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.Preview;
+import androidx.camera.core.VideoCapture;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.clevertap.android.sdk.CleverTapAPI;
@@ -35,6 +58,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -46,6 +70,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 import in.juspay.hyper.bridge.HyperBridge;
 import in.juspay.hyper.core.BridgeComponents;
@@ -54,6 +80,32 @@ import in.juspay.hypersdk.data.KeyValueStore;
 import in.juspay.mobility.app.callbacks.CallBack;
 import in.juspay.mobility.app.carousel.VPAdapter;
 import in.juspay.mobility.app.carousel.ViewPagerItem;
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.ContentValues;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.Preview;
+import androidx.camera.core.VideoCapture;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.common.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 public class MobilityAppBridge extends HyperBridge {
 
@@ -62,13 +114,18 @@ public class MobilityAppBridge extends HyperBridge {
     private static final String META_LOG = "META_LOG";
     private static final String CALLBACK = "CALLBACK";
     private static final String UTILS = "UTILS";
+    private static final int MY_CAMERA_REQUEST_CODE = 100;
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+    PreviewView previewView;
+
+    Button bTakePicture, bRecording;
+    private VideoCapture videoCapture;
 
     private static FirebaseAnalytics mFirebaseAnalytics;
     CleverTapAPI clevertapDefaultInstance;
     protected static String storeChatMessageCallBack = null;
     public static String storeCallBackOpenChatScreen = null;
     public static String storeDetectPhoneNumbersCallBack = null;
-
 
     // Permission request Code
     private static final int CREDENTIAL_PICKER_REQUEST = 74;
@@ -500,6 +557,165 @@ public class MobilityAppBridge extends HyperBridge {
         bridgeComponents.getContext().startActivity(intent);
     }
 
+    @JavascriptInterface
+    public void askVideoRelatedPermissions() {
+        if (ActivityCompat.checkSelfPermission(bridgeComponents.getContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(bridgeComponents.getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            requestPermissions( bridgeComponents.getActivity(), new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, MY_CAMERA_REQUEST_CODE);
+        }
+    }
+
+    @JavascriptInterface
+    public void setupCamera(String previewViewId){
+        ExecutorManager.runOnMainThread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("camera view setup 1 "+ Integer.parseInt(previewViewId));
+                Activity activity =  bridgeComponents.getActivity();
+                Context context = bridgeComponents.getContext();
+                if(activity != null) {
+                    int viewId = Integer.parseInt(previewViewId);
+                    LinearLayout parentView = activity.findViewById(viewId);
+                    if(parentView == null) return;
+                    parentView.removeAllViews();
+                    previewView = null;
+                    System.out.println("camera view setup 2" + parentView);
+
+                    if (previewView == null){
+                        previewView = new PreviewView(context.getApplicationContext());
+                        previewView.setImplementationMode(PreviewView.ImplementationMode.COMPATIBLE);
+                        previewView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+                        parentView.addView(previewView);
+                        parentView.bringChildToFront(previewView);
+                    }
+                    System.out.println("camera view setup 3" + previewView);
+                    if (previewView == null) return;
+
+                    ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(context);
+                    cameraProviderFuture.addListener(() -> {
+                        try {
+                            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                            startCameraX(cameraProvider);
+                        } catch (ExecutionException | InterruptedException e) {
+                            e.printStackTrace();
+                            return ;
+                        }
+                    }, ContextCompat.getMainExecutor(activity));
+                }
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(bridgeComponents.getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    requestPermissions(bridgeComponents.getActivity(), new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, MY_CAMERA_REQUEST_CODE);
+                    return;
+                }
+
+            }
+        });
+    }
+
+    private Executor getExecutor() {
+        return ContextCompat.getMainExecutor(bridgeComponents.getActivity());
+    }
+
+    @SuppressLint("RestrictedApi")
+    private void startCameraX(ProcessCameraProvider cameraProvider) {
+        Activity activity = bridgeComponents.getActivity();
+        cameraProvider.unbindAll();
+
+//        CameraSelector cameraSelector = new CameraSelector.Builder()
+//                .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
+//                .build();
+
+        CameraSelector cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
+
+        Preview preview = new Preview.Builder().build();
+
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+        videoCapture = new VideoCapture.Builder()
+                .setMaxResolution(new Size(480, 640))
+                .setVideoFrameRate(30)
+                .build();
+
+        if(activity != null)
+            cameraProvider.bindToLifecycle((LifecycleOwner) activity, cameraSelector, preview, videoCapture);
+
+    }
+
+    @SuppressLint("RestrictedApi")
+    @JavascriptInterface
+    public void recordVideo(final String callback) {
+        System.out.println("logging start record1");
+        if (videoCapture != null) {
+            System.out.println("logging start record");
+            long timeStamp = System.currentTimeMillis();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timeStamp);
+            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+
+
+            if (ActivityCompat.checkSelfPermission(bridgeComponents.getContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(bridgeComponents.getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                requestPermissions(bridgeComponents.getActivity(), new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, MY_CAMERA_REQUEST_CODE);
+                return;
+            }
+            videoCapture.startRecording(
+                    new VideoCapture.OutputFileOptions.Builder(
+                            bridgeComponents.getActivity().getContentResolver(),
+                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                            contentValues
+                    ).build(),
+                    getExecutor(),
+                    new VideoCapture.OnVideoSavedCallback() {
+                        @Override
+                        public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
+                            Uri videoUri = outputFileResults.getSavedUri();
+                            System.out.println("videoUri -> "+videoUri);
+//                            videoUri.getPath()
+                            if (videoUri != null){
+                                Cursor cursor = bridgeComponents.getContext().getContentResolver().query(videoUri, new String[] { MediaStore.Video.VideoColumns.DATA}, null, null, null);
+                                cursor.moveToFirst();
+                                String filePath = cursor.getString(0);
+                                cursor.close();
+                                String javascript = String.format(Locale.ENGLISH, "window.callUICallback('%s','%s','%s');", callback, "VIDEO_RECORDED", filePath);
+                                bridgeComponents.getJsCallback().addJsToWebView(javascript);
+                            }
+                        }
+
+                        @Override
+                        public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
+                            Toast.makeText(bridgeComponents.getActivity(),"Error: "+ message ,Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
+        }
+    }
+
+    @JavascriptInterface
+    @SuppressLint("RestrictedApi")
+    public void stopRecord() {
+        System.out.println("logging stop record");
+        if(videoCapture!=null)
+            videoCapture.stopRecording();
+    }
 
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -519,4 +735,5 @@ public class MobilityAppBridge extends HyperBridge {
     public boolean onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
         return super.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
+
 }

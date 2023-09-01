@@ -27,6 +27,7 @@ import Screens.HomeScreen.View as HomeScreen
 import Types.App (FlowBT, GlobalState(..), ScreenType(..), HOME_SCREEN_OUTPUT(..))
 import Screens.HomeScreen.Transformer(getTripDetailsState)
 import Presto.Core.Types.Language.Flow (getLogFields)
+import Debug
 
 homeScreen ::FlowBT String HOME_SCREEN_OUTPUT
 homeScreen = do
@@ -55,6 +56,10 @@ homeScreen = do
     GoToAbout updatedState -> do
       modifyScreenState $ HomeScreenStateType (\homeScreenState -> updatedState)
       App.BackT $ App.BackPoint <$> (pure GO_TO_ABOUT)
+    GoToNammaSafety updatedState -> do
+      _ <- pure $ spy "zxc" updatedState
+      modifyScreenState $ HomeScreenStateType (\homeScreenState -> updatedState)
+      App.BackT $ App.BackPoint <$> (pure $ GO_TO_NAMMASAFETY updatedState)
     GoToMyProfile updatedState updateProfile -> do
       modifyScreenState $ HomeScreenStateType (\homeScreenState -> updatedState)
       App.BackT $ App.BackPoint <$> (pure $ GO_TO_MY_PROFILE updateProfile)

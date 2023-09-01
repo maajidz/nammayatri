@@ -127,7 +127,8 @@ type SplashScreenData =  {
 type CarouselModel = {
   image :: String,
   title :: String,
-  description :: String
+  description :: String,
+  viewId :: String
 }
 
 type WelcomeScreenState = {
@@ -529,6 +530,8 @@ data Stage = HomeScreen
 derive instance genericStage :: Generic Stage _
 instance eqStage :: Eq Stage where eq = genericEq
 instance showStage :: Show Stage where show = genericShow
+instance encodeStage :: Encode Stage where encode = defaultEncode
+instance decodeStage :: Decode Stage where decode = defaultDecode
 
 data SearchLocationModelType = SearchLocation | LocateOnMap | NoView
 
@@ -694,6 +697,7 @@ type HomeScreenStateProps =
   , canSendSuggestion :: Boolean
   , sheetState :: BottomSheetState
   , showDisabilityPopUp :: Boolean
+  , sosActive :: Boolean
   }
 
 type RouteEndPoints = {
@@ -1239,3 +1243,78 @@ derive instance genericTipViewData :: Generic TipViewData _
 instance showTipViewData :: Show TipViewData where show = genericShow
 instance encodeTipViewData :: Encode TipViewData where encode = defaultEncode
 instance decodeTipViewData :: Decode TipViewData where decode = defaultDecode
+
+
+-- ############################################## NammaSafetyScreenState #############################
+
+data NammaSafetyStage =  NammaSafetyDashboard
+                        | AboutNammaSafety
+                        | SetTriggerCustomerSupport
+                        | SetNightTimeSafetyAlert
+                        | SetDefaultEmergencyContacts
+                        | SetPersonalSafetySettings
+                        | EduNammaSafetyMeasures
+                        | EduNammaSafetyGuidelines
+                        | EduNammaSafetyAboutSOS
+                        | ActivateNammaSafety
+                        | TriggeredNammaSafety
+                        | NammaSafetyVideoRecord
+                        | EmergencyContactsStage
+
+derive instance genericNammaSafetyStage :: Generic NammaSafetyStage _
+instance eqNammaSafetyStage :: Eq NammaSafetyStage where eq = genericEq
+instance showNammaSafetyStage :: Show NammaSafetyStage where show = genericShow
+instance encodeNammaSafetyStage :: Encode NammaSafetyStage where encode = defaultEncode
+instance decodeNammaSafetyStage :: Decode NammaSafetyStage where decode = defaultDecode
+
+type NammaSafetyScreenState = {
+  data :: NammaSafetyScreenData,
+  props :: NammaSafetyScreenProps
+}
+
+type NammaSafetyScreenData =  {
+  shareToEmergencyContacts :: Boolean,
+  nightTimeSafety :: Boolean,
+  triggerNYSupport :: Boolean,
+  hasCompletedSafetySetup :: Boolean,
+  emergencyContactsData :: EmergencyContactsData,
+  sosId :: String,
+  rideId :: String,
+  videoPath :: String,
+  updateActionType :: String
+ }
+
+type NammaSafetyScreenProps =  {
+  onRide :: Boolean,
+  currentStage :: NammaSafetyStage,
+  recordingState :: RecordingState,
+  confirmPopup :: Boolean,
+  timerId :: String,
+  timerValue :: Int,
+  emergencyContactsProps :: EmergencyContactsProps
+}
+
+type EmergencyContactsData = {
+  contactInfoState :: Array Contacts,
+  contactsCount :: Int,
+  contactsList :: Array NewContacts,
+  contactsNewList :: Array NewContacts,
+  contactsUpdatedNewList :: Array NewContacts,
+  prestoListArrayItems :: Array NewContactsProp,
+  loadMoreDisabled :: Boolean,
+  removedContactDetail :: NewContacts,
+  offsetForEmergencyContacts :: Int,
+  limitForEmergencyContacts :: Int,
+  editedText :: String
+}
+
+type EmergencyContactsProps = {
+  showContactList :: Boolean,
+  showInfoPopUp :: Boolean
+}
+
+data RecordingState = RECORDING | NOT_RECORDING | SHARING | SHARED
+
+derive instance genericRecordingState :: Generic RecordingState _
+instance eqRecordingState :: Eq RecordingState where eq = genericEq
+instance showRecordingState :: Show RecordingState where show = genericShow

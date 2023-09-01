@@ -13,12 +13,12 @@
   the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -}
 
-module Services.Backend where
+module Services.Backend
+  where
 
 import Services.API
 
 import Accessor (_deviceToken)
-import Common.Types.App (Version(..), SignatureAuthData(..), LazyCheck(..))
 import Control.Monad.Except.Trans (lift)
 import Control.Transformers.Back.Trans (BackT(..), FailBack(..))
 import Data.Array ((!!), take, any)
@@ -882,9 +882,10 @@ createUserSosFlow tag content = UserSosFlow {
     "contents" : content
 }
 
-makeSosStatus :: String -> SosStatus
-makeSosStatus sosStatus = SosStatus {
-     "status" : sosStatus
+makeSosStatus :: String -> String -> SosStatus
+makeSosStatus sosStatus comment= SosStatus {
+     "status" : sosStatus,
+     "comment" : comment
 }
 
 
@@ -910,3 +911,32 @@ disabilityList = do
   lift $ lift $ withAPIResult (EP.disabilityList "") unwrapResponse $ callAPI headers GetDisabilityListReq
   where
     unwrapResponse x = x
+ 
+
+getEmergencySettingsBT :: String -> FlowBT String GetEmergencySettingsRes
+getEmergencySettingsBT _  = do
+        headers <- getHeaders' "" true
+        withAPIResultBT (EP.getEmergencySettings "") (\x → x) errorHandler (lift $ lift $ callAPI headers (GetEmergencySettingsReq))
+    where
+    errorHandler (errorPayload) =  do
+        BackT $ pure GoBack
+
+updateEmergencySettings (UpdateEmergencySettingsReq payload) = do
+        headers <- getHeaders "" false
+        withAPIResult (EP.updateEmergencySettings "") unwrapResponse $ callAPI headers (UpdateEmergencySettingsReq payload)
+    where
+        unwrapResponse (x) = x
+
+markRideAsSafe sosId= do
+        headers <- getHeaders "" false
+        withAPIResult (EP.updateSafeRide sosId) unwrapResponse $ callAPI headers (UpdateAsSafeReq sosId)
+    where
+        unwrapResponse (x) = x
+
+getSosDetails :: String -> FlowBT String GetSosDetailsRes
+getSosDetails rideId = do
+        headers <- getHeaders' "" true
+        withAPIResultBT (EP.getSosDetails rideId) (\x → x) errorHandler (lift $ lift $ callAPI headers (GetSosDetailsReq rideId))
+    where
+    errorHandler (errorPayload) =  do
+        BackT $ pure GoBack

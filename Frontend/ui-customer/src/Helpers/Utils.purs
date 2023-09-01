@@ -456,7 +456,7 @@ getScreenFromStage stage = case stage of
   DistanceOutsideLimits -> "finding_driver_loader"
   ShortDistance -> "finding_driver_loader"
   TryAgain -> "finding_rides_screen"
-
+  
 getGlobalPayload :: Unit -> Effect (Maybe GlobalPayload)
 getGlobalPayload _ = do
   payload  ::  Either MultipleErrors GlobalPayload  <- runExcept <<< decode <<< fromMaybe (unsafeToForeign {}) <$> (getWindowVariable "__payload" Just Nothing)

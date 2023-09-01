@@ -20,29 +20,29 @@ import Prelude
 import Control.Monad.Except.Trans (ExceptT)
 import Control.Monad.Free (Free)
 import Control.Transformers.Back.Trans (BackT)
+import Foreign (Foreign)
+import Foreign.Object (Object(..), empty)
+import LoaderOverlay.ScreenData as LoaderScreenScreenData
 import Presto.Core.Types.Language.Flow (FlowWrapper)
 import Screens.AccountSetUpScreen.ScreenData as AccountSetUpScreenData
 import Screens.AddNewAddressScreen.ScreenData as AddNewAddressScreenData
 import Screens.ChooseLanguageScreen.ScreenData as ChooseLanguageScreenData
 import Screens.ContactUsScreen.ScreenData as ContactUsScreenData
+import Screens.CustomerUtils.AboutUsScreen.ScreenData as AboutUsScreenData
 import Screens.EnterMobileNumberScreen.ScreenData as EnterMobileNumberScreenData
 import Screens.HelpAndSupportScreen.ScreenData as HelpAndSupportScreenData
 import Screens.HomeScreen.ScreenData as HomeScreenData
 import Screens.InvoiceScreen.ScreenData as InvoiceScreenData
-import LoaderOverlay.ScreenData as LoaderScreenScreenData
 import Screens.MyProfileScreen.ScreenData as MyProfileScreenData
 import Screens.MyRidesScreen.ScreenData as MyRideScreenData
+import Screens.NammaSafetyScreen.ScreenData as NammaSafetyScreenData
+import Screens.OnBoardingFlow.PermissionScreen.ScreenData as PermissionScreenData
+import Screens.OnBoardingFlow.WelcomeScreen.ScreenData as WelcomeScreenData
 import Screens.ReferralScreen.ScreenData as ReferralScreenData
 import Screens.SavedLocationScreen.ScreenData as SavedLocationScreenData
 import Screens.SelectLanguageScreen.ScreenData as SelectLanguageScreenData
 import Screens.TripDetailsScreen.ScreenData as TripDetailsScreenData
-import Screens.EmergencyContactsScreen.ScreenData as EmergencyContactsScreenData
-import Screens.OnBoardingFlow.PermissionScreen.ScreenData as PermissionScreenData
-import Screens.CustomerUtils.AboutUsScreen.ScreenData as AboutUsScreenData
-import Screens.OnBoardingFlow.WelcomeScreen.ScreenData as WelcomeScreenData
-import Screens.Types (AboutUsScreenState, AccountSetUpScreenState, AddNewAddressScreenState, AppUpdatePopUpState, ChooseLanguageScreenState, ContactUsScreenState, EnterMobileNumberScreenState, HelpAndSupportScreenState, HomeScreenState, InvoiceScreenState, LocItemType, LocationListItemState, MyProfileScreenState, MyRidesScreenState, PermissionScreenState, SavedLocationScreenState, SelectLanguageScreenState, SplashScreenState, TripDetailsScreenState, ReferralScreenState, EmergencyContactsScreenState, CallType, WelcomeScreenState)
-import Foreign.Object ( Object(..), empty)
-import Foreign (Foreign)
+import Screens.Types (AboutUsScreenState, AccountSetUpScreenState, AddNewAddressScreenState, AppUpdatePopUpState, CallType, ChooseLanguageScreenState, ContactUsScreenState, EnterMobileNumberScreenState, HelpAndSupportScreenState, HomeScreenState, InvoiceScreenState, LocItemType, LocationListItemState, MyProfileScreenState, MyRidesScreenState, PermissionScreenState, ReferralScreenState, SavedLocationScreenState, SelectLanguageScreenState, SplashScreenState, TripDetailsScreenState, WelcomeScreenState, NammaSafetyScreenState)
 
 type FlowBT e a = BackT (ExceptT e (Free (FlowWrapper GlobalState))) a
 
@@ -65,9 +65,9 @@ newtype GlobalState = GlobalState {
   , addNewAddressScreen :: AddNewAddressScreenState
   , appUpdatePopUpScreen :: AppUpdatePopUpState
   , referralScreen :: ReferralScreenState
-  , emergencyContactsScreen :: EmergencyContactsScreenState
   , welcomeScreen :: WelcomeScreenState
   , loaderOverlay :: LoaderScreenScreenData.LoaderOverlayState
+  , nammaSafetyScreen :: NammaSafetyScreenState
   }
 
 defaultGlobalState :: GlobalState
@@ -90,9 +90,9 @@ defaultGlobalState = GlobalState {
   , addNewAddressScreen : AddNewAddressScreenData.initData
   , appUpdatePopUpScreen : {version : 1 , logField : empty}
   , referralScreen : ReferralScreenData.initData
-  , emergencyContactsScreen : EmergencyContactsScreenData.initData
   , welcomeScreen : WelcomeScreenData.initData
   , loaderOverlay : LoaderScreenScreenData.initData
+  , nammaSafetyScreen : NammaSafetyScreenData.initData
   }
 data ACCOUNT_SET_UP_SCREEN_OUTPUT = GO_HOME AccountSetUpScreenState | GO_BACK
 
@@ -106,10 +106,14 @@ data HELP_AND_SUPPORT_SCREEN_OUTPUT = GO_TO_SUPPORT_SCREEN String | GO_TO_TRIP_D
 
 data ABOUT_US_SCREEN_OUTPUT = GO_TO_HOME_FROM_ABOUT
 
-data EMERGECY_CONTACTS_SCREEN_OUTPUT = GO_TO_HOME_FROM_EMERGENCY_CONTACTS
-                                      | POST_CONTACTS EmergencyContactsScreenState
-                                      | GET_CONTACTS EmergencyContactsScreenState
-                                      | REFRESH_EMERGECY_CONTACTS_SCREEN EmergencyContactsScreenState
+data NAMMA_SAFETY_SCREEN_OUTPUT = NS_GO_BACK
+                                  | POST_CONTACTS NammaSafetyScreenState
+                                  | GET_CONTACTS NammaSafetyScreenState
+                                  | POST_EMERGENCY_SETTINGS NammaSafetyScreenState
+                                  | CREATE_SOS NammaSafetyScreenState
+                                  | UPDATE_ACTION NammaSafetyScreenState
+                                  | UPDATE_AS_SAFE NammaSafetyScreenState
+                                  | NS_REFRESH NammaSafetyScreenState
 
 data HOME_SCREEN_OUTPUT = LOGOUT
                         | RELOAD Boolean
@@ -117,6 +121,7 @@ data HOME_SCREEN_OUTPUT = LOGOUT
                         | RETRY
                         | NO_OUTPUT
                         | GO_TO_HELP
+                        | GO_TO_NAMMASAFETY HomeScreenState
                         | GO_TO_ABOUT
                         | GO_TO_MY_RIDES
                         | CHANGE_LANGUAGE
@@ -194,6 +199,6 @@ data ScreenType =
   | ContactUsScreenStateType (ContactUsScreenState -> ContactUsScreenState)
   | SavedLocationScreenStateType (SavedLocationScreenState -> SavedLocationScreenState)
   | ReferralScreenStateType (ReferralScreenState -> ReferralScreenState)
-  | EmergencyContactsScreenStateType (EmergencyContactsScreenState -> EmergencyContactsScreenState)
   | PermissionScreenStateType (PermissionScreenState -> PermissionScreenState)
   | AboutUsScreenStateType (AboutUsScreenState -> AboutUsScreenState)
+  | NammaSafetyScreenStateType (NammaSafetyScreenState -> NammaSafetyScreenState)

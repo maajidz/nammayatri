@@ -13,3 +13,16 @@ export const getFromWindow = function (key) {
     return window[key];
   }
 }
+
+export const uploadMultiPartData = function (path) {
+  return function (url) {
+      return function(fileType) {
+        return function(fileField) {
+          return function() {
+              if (window.JBridge.uploadMultiPartData)
+              return window.JBridge.uploadMultiPartData(path, url, fileType, fileField);
+          }
+        }
+      }
+  }
+}
