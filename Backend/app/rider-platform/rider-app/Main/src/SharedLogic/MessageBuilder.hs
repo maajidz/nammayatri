@@ -14,9 +14,13 @@
 
 module SharedLogic.MessageBuilder
   ( BuildSendOTPMessageReq (..),
+    BuildSOSAlertMessageReq (..),
     buildSendOTPMessage,
     BuildSendBookingOTPMessageReq (..),
     buildSendBookingOTPMessage,
+    buildSOSAlertMessage,
+    BuildMarkRideAsSafeMessageReq (..),
+    buildMarkRideAsSafeMessage,
   )
 where
 
@@ -63,3 +67,33 @@ buildSendBookingOTPMessage merchantId req = do
     merchantMessage.message
       & T.replace (templateText "otp") req.otp
       & T.replace (templateText "amount") req.amount
+
+data BuildSOSAlertMessageReq = BuildSOSAlertMessageReq
+  { userName :: Text,
+    rideLink :: Text
+  }
+  deriving (Generic)
+
+buildSOSAlertMessage :: (EsqDBFlow m r, CacheFlow m r) => Id DM.Merchant -> BuildSOSAlertMessageReq -> m Text
+buildSOSAlertMessage merchantId req = do
+  merchantMessage <-
+    QMM.findByMerchantIdAndMessageKey merchantId DMM.SEND_SOS_ALERT
+      >>= fromMaybeM (MerchantMessageNotFound merchantId.getId (show DMM.SEND_SOS_ALERT))
+  return $
+    merchantMessage.message
+      & T.replace (templateText "userName") req.userName
+      & T.replace (templateText "rideLink") req.rideLink
+
+newtype BuildMarkRideAsSafeMessageReq = BuildMarkRideAsSafeMessageReq
+  { userName :: Text
+  }
+  deriving (Generic)
+
+buildMarkRideAsSafeMessage :: (EsqDBFlow m r, CacheFlow m r) => Id DM.Merchant -> BuildMarkRideAsSafeMessageReq -> m Text
+buildMarkRideAsSafeMessage merchantId req = do
+  merchantMessage <-
+    QMM.findByMerchantIdAndMessageKey merchantId DMM.MARK_RIDE_AS_SAFE
+      >>= fromMaybeM (MerchantMessageNotFound merchantId.getId (show DMM.MARK_RIDE_AS_SAFE))
+  return $
+    merchantMessage.message
+      & T.replace (templateText "userName") req.userName

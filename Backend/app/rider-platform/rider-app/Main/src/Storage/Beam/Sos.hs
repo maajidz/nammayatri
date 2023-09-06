@@ -37,7 +37,8 @@ data SosT f = SosT
     flow :: B.C f Domain.SosType,
     status :: B.C f Domain.SosStatus,
     createdAt :: B.C f Time.UTCTime,
-    updatedAt :: B.C f Time.UTCTime
+    updatedAt :: B.C f Time.UTCTime,
+    ticketId :: B.C f Text
   }
   deriving (Generic, B.Beamable)
 
@@ -58,7 +59,8 @@ sosTMod =
       flow = B.fieldNamed "flow",
       status = B.fieldNamed "status",
       createdAt = B.fieldNamed "created_at",
-      updatedAt = B.fieldNamed "updated_at"
+      updatedAt = B.fieldNamed "updated_at",
+      ticketId = B.fieldNamed "ticket_id"
     }
 
 $(enableKVPG ''SosT ['id] [])
