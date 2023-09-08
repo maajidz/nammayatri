@@ -29,6 +29,7 @@ import Data.Time as DT
 import Domain.Types.Maps.DirectionsCache as DC
 import Domain.Types.Merchant (Slot)
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import Kernel.External.Types (ServiceFlow)
 import Kernel.Prelude
 import Kernel.Storage.Esqueleto (EsqDBReplicaFlow)
@@ -42,8 +43,8 @@ import qualified Storage.CachedQueries.Merchant as QMerchant
 import Tools.Error (GenericError (..))
 import qualified Tools.Maps as Maps
 
-getRoutes :: (ServiceFlow m r, EsqDBReplicaFlow m r) => Id Merchant.Merchant -> Maps.GetRoutesReq -> m Maps.GetRoutesResp
-getRoutes merchantId req = do
+getRoutes :: (ServiceFlow m r, EsqDBReplicaFlow m r) => Id Merchant.Merchant -> Id DMOC.MerchantOperatingCity -> Maps.GetRoutesReq -> m Maps.GetRoutesResp
+getRoutes merchantId merchantOperatingCityId req = do
   merchant <- QMerchant.findById merchantId >>= fromMaybeM (MerchantNotFound merchantId.getId)
   let origin = NE.head req.waypoints
   let dest = NE.last req.waypoints
@@ -56,13 +57,13 @@ getRoutes merchantId req = do
         cachedResp <- DQ.findRoute originGeoHash destGeoHash tmeSlt
         case cachedResp of
           Just resp -> return [resp.response]
-          Nothing -> callDirectionsApi merchantId req originGeoHash destGeoHash tmeSlt
+          Nothing -> callDirectionsApi merchantOperatingCityId req originGeoHash destGeoHash tmeSlt
     Nothing ->
-      Maps.getRoutes merchantId req
+      Maps.getRoutes merchantOperatingCityId req
 
-callDirectionsApi :: ServiceFlow m r => Id Merchant.Merchant -> Maps.GetRoutesReq -> Text -> Text -> Int -> m Maps.GetRoutesResp
-callDirectionsApi merchantId req originGeoHash destGeoHash timeSlot = do
-  resp <- Maps.getRoutes merchantId req
+callDirectionsApi :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Maps.GetRoutesReq -> Text -> Text -> Int -> m Maps.GetRoutesResp
+callDirectionsApi merchantOperatingCityId req originGeoHash destGeoHash timeSlot = do
+  resp <- Maps.getRoutes merchantOperatingCityId req
   if null resp
     then throwError $ InternalError "Null response from Directions API" -- This case will never occure unless Google's Direction API Fails.
     else do

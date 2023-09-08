@@ -26,6 +26,8 @@ import Kernel.Types.Common
 import Kernel.Types.Error
 import Kernel.Types.Id
 import Kernel.Utils.Common
+import qualified Storage.CachedQueries.Merchant as QMerchant
+import qualified Storage.CachedQueries.Merchant.MerchantOperatingCity as SMOC
 import qualified Storage.CachedQueries.Merchant.MerchantServiceConfig as QMSC
 import qualified Storage.CachedQueries.Merchant.MerchantServiceUsageConfig as QMSUC
 
@@ -39,9 +41,11 @@ runWithServiceConfig ::
   req ->
   m resp
 runWithServiceConfig func merchantId req = do
-  merchantConfig <- QMSUC.findByMerchantId merchantId >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantId.getId)
+  m <- QMerchant.findById merchantId >>= fromMaybeM (MerchantNotFound merchantId.getId)
+  merchantOperatingCity <- SMOC.findByMerchantIdAndCity m.id m.city >>= fromMaybeM (MerchantOperatingCityNotFound ("merchId: " <> m.id.getId <> " ,city: " <> show m.city))
+  merchantConfig <- QMSUC.findByMerchantOperatingCityId merchantOperatingCity.id >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantOperatingCity.id.getId)
   merchantIssueTicketServiceConfig <-
-    QMSC.findByMerchantIdAndService merchantId (DMSC.IssueTicketService merchantConfig.issueTicketService)
+    QMSC.findByMerchantOperatingCityIdAndService merchantOperatingCity.id (DMSC.IssueTicketService merchantConfig.issueTicketService)
       >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantId.getId)
   case merchantIssueTicketServiceConfig.serviceConfig of
     DMSC.IssueTicketServiceConfig msc -> func msc req

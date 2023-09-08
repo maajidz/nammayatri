@@ -22,6 +22,7 @@ module Domain.Action.UI.Route
 where
 
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as DP
 import Kernel.External.Types (ServiceFlow)
 import Kernel.Storage.Esqueleto.Config (EsqDBReplicaFlow)
@@ -29,13 +30,13 @@ import Kernel.Types.Id
 import qualified SharedLogic.DirectionsCache as SDC
 import qualified Tools.Maps as Maps
 
-getRoutes :: (ServiceFlow m r, EsqDBReplicaFlow m r) => (Id DP.Person, Id Merchant.Merchant) -> SDC.GetRoutesReq -> m SDC.GetRoutesResp
-getRoutes (_, merchantId) = SDC.getRoutes merchantId
+getRoutes :: (ServiceFlow m r, EsqDBReplicaFlow m r) => (Id DP.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> SDC.GetRoutesReq -> m SDC.GetRoutesResp
+getRoutes (_, merchantId, merchantOperatingCityId) = SDC.getRoutes merchantId merchantOperatingCityId
 
-getPickupRoutes :: ServiceFlow m r => (Id DP.Person, Id Merchant.Merchant) -> Maps.GetRoutesReq -> m Maps.GetRoutesResp
-getPickupRoutes (_, merchantId) req = do
-  Maps.getPickupRoutes merchantId req
+getPickupRoutes :: ServiceFlow m r => (Id DP.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> Maps.GetRoutesReq -> m Maps.GetRoutesResp
+getPickupRoutes (_, _, merchantOperatingCityId) req = do
+  Maps.getPickupRoutes merchantOperatingCityId req
 
-getTripRoutes :: ServiceFlow m r => (Id DP.Person, Id Merchant.Merchant) -> Maps.GetRoutesReq -> m Maps.GetRoutesResp
-getTripRoutes (_, merchantId) req = do
-  Maps.getTripRoutes merchantId req
+getTripRoutes :: ServiceFlow m r => (Id DP.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> Maps.GetRoutesReq -> m Maps.GetRoutesResp
+getTripRoutes (_, _, merchantOperatingCityId) req = do
+  Maps.getTripRoutes merchantOperatingCityId req

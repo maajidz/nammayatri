@@ -19,7 +19,7 @@ module Tools.Payment
   )
 where
 
-import qualified Domain.Types.Merchant as DM
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Merchant.MerchantServiceConfig as DMSC
 import Kernel.External.Payment.Interface as Reexport hiding
   ( createOrder,
@@ -33,22 +33,22 @@ import Kernel.Types.Id
 import Kernel.Utils.Common
 import qualified Storage.CachedQueries.Merchant.MerchantServiceConfig as CQMSC
 
-createOrder :: ServiceFlow m r => Id DM.Merchant -> Payment.CreateOrderReq -> m Payment.CreateOrderResp
+createOrder :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.CreateOrderReq -> m Payment.CreateOrderResp
 createOrder = runWithServiceConfig Payment.createOrder
 
-orderStatus :: ServiceFlow m r => Id DM.Merchant -> Payment.OrderStatusReq -> m Payment.OrderStatusResp
+orderStatus :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.OrderStatusReq -> m Payment.OrderStatusResp
 orderStatus = runWithServiceConfig Payment.orderStatus
 
 runWithServiceConfig ::
   ServiceFlow m r =>
   (Payment.PaymentServiceConfig -> req -> m resp) ->
-  Id DM.Merchant ->
+  Id DMOC.MerchantOperatingCity ->
   req ->
   m resp
-runWithServiceConfig func merchantId req = do
+runWithServiceConfig func merchantOperatingCityId req = do
   merchantServiceConfig <-
-    CQMSC.findByMerchantIdAndService merchantId (DMSC.PaymentService Payment.Juspay)
-      >>= fromMaybeM (MerchantServiceConfigNotFound merchantId.getId "Payment" (show Payment.Juspay))
+    CQMSC.findByMerchantOperatingCityIdAndService merchantOperatingCityId (DMSC.PaymentService Payment.Juspay)
+      >>= fromMaybeM (MerchantServiceConfigNotFound merchantOperatingCityId.getId "Payment" (show Payment.Juspay))
   case merchantServiceConfig.serviceConfig of
     DMSC.PaymentServiceConfig vsc -> func vsc req
     _ -> throwError $ InternalError "Unknown Service Config"

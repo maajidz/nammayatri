@@ -17,6 +17,7 @@ module API.UI.FeedbackForm where
 import qualified Domain.Action.UI.FeedbackForm as DF
 import Domain.Types.FeedbackForm (FeedbackFormList, FeedbackFormReq)
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as Person
 import Environment
 import Kernel.Prelude
@@ -43,8 +44,8 @@ handler =
   getFeedbackForm
     :<|> submitFeedbackForm
 
-getFeedbackForm :: (Id Person.Person, Id Merchant.Merchant) -> Maybe Int -> FlowHandler FeedbackFormList
+getFeedbackForm :: (Id Person.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> Maybe Int -> FlowHandler FeedbackFormList
 getFeedbackForm _ rating = withFlowHandlerAPI $ DF.feedbackForm rating
 
-submitFeedbackForm :: (Id Person.Person, Id Merchant.Merchant) -> FeedbackFormReq -> FlowHandler APISuccess
+submitFeedbackForm :: (Id Person.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> FeedbackFormReq -> FlowHandler APISuccess
 submitFeedbackForm _ feedbackFormReq = withFlowHandlerAPI $ DF.submitFeedback feedbackFormReq

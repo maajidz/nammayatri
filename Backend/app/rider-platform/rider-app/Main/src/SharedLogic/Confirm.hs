@@ -204,6 +204,7 @@ buildBooking searchRequest mbFulfillmentId quote fromLoc mbToLoc exophone now ot
         bookingDetails,
         tripTerms = quote.tripTerms,
         merchantId = searchRequest.merchantId,
+        merchantOperatingCityId = searchRequest.merchantOperatingCityId,
         specialLocationTag = quote.specialLocationTag,
         createdAt = now,
         updatedAt = now

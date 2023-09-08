@@ -23,6 +23,8 @@ import Kernel.Types.APISuccess (APISuccess (Success))
 import Kernel.Types.Error
 import Kernel.Types.Id
 import Kernel.Utils.Common
+import qualified Storage.CachedQueries.Merchant as QMerchant
+import qualified Storage.CachedQueries.Merchant.MerchantOperatingCity as SMOC
 import qualified Storage.Queries.Person as QP
 import Tools.Whatsapp as Whatsapp
 
@@ -35,7 +37,9 @@ whatsAppOptAPI :: ServiceFlow m r => Id DP.Person -> OptAPIRequest -> m APISucce
 whatsAppOptAPI personId OptAPIRequest {..} = do
   DP.Person {..} <- QP.findById personId >>= fromMaybeM (PersonNotFound personId.getId)
   mobileNo <- mapM decrypt mobileNumber >>= fromMaybeM (InvalidRequest "Person is not linked with any mobile number")
+  m <- QMerchant.findById merchantId >>= fromMaybeM (MerchantNotFound merchantId.getId)
+  merchantOperatingCity <- SMOC.findByMerchantIdAndCity m.id m.city >>= fromMaybeM (MerchantOperatingCityNotFound ("merchId: " <> m.id.getId <> " ,city: " <> show m.city))
   unless (whatsappNotificationEnrollStatus == Just status) $
-    void $ Whatsapp.whatsAppOptAPI merchantId $ OptApiReq {phoneNumber = mobileNo, method = status}
+    void $ Whatsapp.whatsAppOptAPI merchantOperatingCity.id $ OptApiReq {phoneNumber = mobileNo, method = status}
   void $ QP.updateWhatsappNotificationEnrollStatus personId $ Just status
   return Success

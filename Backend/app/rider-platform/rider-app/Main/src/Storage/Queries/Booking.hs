@@ -251,6 +251,7 @@ instance FromTType' BeamB.Booking Booking where
             bookingDetails = bookingDetails,
             tripTerms = tt,
             merchantId = Id merchantId,
+            merchantOperatingCityId = Id <$> merchantOperatingCityId,
             specialLocationTag = specialLocationTag,
             createdAt = createdAt,
             updatedAt = updatedAt
@@ -316,6 +317,7 @@ instance ToTType' BeamB.Booking Booking where
             BeamB.tripTermsId = getId <$> (tripTerms <&> (.id)),
             BeamB.rentalSlabId = rentalSlabId,
             BeamB.merchantId = getId merchantId,
+            BeamB.merchantOperatingCityId = getId <$> merchantOperatingCityId,
             BeamB.specialLocationTag = specialLocationTag,
             BeamB.createdAt = createdAt,
             BeamB.updatedAt = updatedAt

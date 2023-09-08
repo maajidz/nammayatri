@@ -34,6 +34,7 @@ import EulerHS.Prelude
 import Kernel.External.Whatsapp.Interface.Types (OptApiMethods (..))
 import Kernel.Types.APISuccess
 import Kernel.Types.App
+import qualified Kernel.Types.Beckn.Context as Context
 import Kernel.Types.Id
 import Kernel.Types.Version
 import Mobility.AppBackend.Fixtures
@@ -101,6 +102,7 @@ mkAuthReq =
     { mobileNumber = "9000090000",
       mobileCountryCode = "+91",
       merchantId = "FIXME",
+      city = Context.Bangalore,
       deviceToken = Nothing,
       notificationToken = Nothing,
       whatsappNotificationEnroll = Nothing,

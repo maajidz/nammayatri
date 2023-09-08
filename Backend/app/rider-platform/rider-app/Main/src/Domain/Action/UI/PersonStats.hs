@@ -16,6 +16,7 @@ module Domain.Action.UI.PersonStats where
 
 import Data.Time hiding (getCurrentTime)
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as DP
 import Kernel.Beam.Functions
 import Kernel.External.Encryption
@@ -71,8 +72,8 @@ data FrequencyCategory = HIGH | MID | LOW | ZERO
 data UserCategory = POWER | REGULAR | IRREGULAR | RARE
   deriving (Generic, ToJSON, FromJSON, ToSchema)
 
-getPersonStats :: (EsqDBReplicaFlow m r, EncFlow m r, CacheFlow m r, EsqDBFlow m r, CoreMetrics m) => (Id DP.Person, Id Merchant.Merchant) -> m PersonStatsRes
-getPersonStats (personId, merchantId) = do
+getPersonStats :: (EsqDBReplicaFlow m r, EncFlow m r, CacheFlow m r, EsqDBFlow m r, CoreMetrics m) => (Id DP.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> m PersonStatsRes
+getPersonStats (personId, merchantId, _) = do
   person <- runInReplica $ QPerson.findById personId >>= fromMaybeM (PersonNotFound personId.getId)
   personStats_ <- runInReplica $ QPS.findByPersonId personId >>= fromMaybeM (PersonStatsNotFound personId.getId)
   now <- getCurrentTime

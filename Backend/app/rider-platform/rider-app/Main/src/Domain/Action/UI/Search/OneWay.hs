@@ -28,6 +28,7 @@ import Domain.Types.HotSpot
 import Domain.Types.HotSpotConfig
 import Domain.Types.Merchant
 import qualified Domain.Types.Merchant as DM
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as Person
 import qualified Domain.Types.Person.PersonFlowStatus as DPFS
 import Domain.Types.SavedReqLocation
@@ -127,12 +128,13 @@ oneWaySearch ::
     EventStreamFlow m r
   ) =>
   Id Person.Person ->
+  Id DMOC.MerchantOperatingCity ->
   OneWaySearchReq ->
   Maybe Version ->
   Maybe Version ->
   Maybe Text ->
   m OneWaySearchRes
-oneWaySearch personId req bundleVersion clientVersion device = do
+oneWaySearch personId merchantOperatingCityId req bundleVersion clientVersion device = do
   person <- QP.findById personId >>= fromMaybeM (PersonDoesNotExist personId.getId)
   tag <- case person.hasDisability of
     Just True -> B.runInReplica $ fmap (.tag) <$> PD.findByPersonId personId
@@ -154,7 +156,7 @@ oneWaySearch personId req bundleVersion clientVersion device = do
             calcPoints = True,
             mode = Just Maps.CAR
           }
-  routeResponse <- SDC.getRoutes person.merchantId request
+  routeResponse <- SDC.getRoutes person.merchantId merchantOperatingCityId request
   let durationWeightage = 100 - merchant.distanceWeightage
   let shortestRouteInfo = getEfficientRouteInfo routeResponse merchant.distanceWeightage durationWeightage
   let longestRouteDistance = (.distance) =<< getLongestRouteDistance routeResponse
@@ -201,7 +203,7 @@ oneWaySearch personId req bundleVersion clientVersion device = do
   fork "updating search counters" $ do
     merchantConfigs <- QMC.findAllByMerchantId person.merchantId
     SMC.updateSearchFraudCounters personId merchantConfigs
-    mFraudDetected <- SMC.anyFraudDetected personId person.merchantId merchantConfigs
+    mFraudDetected <- SMC.anyFraudDetected personId merchantOperatingCityId merchantConfigs
     whenJust mFraudDetected $ \mc -> SMC.blockCustomer personId (Just mc.id)
   return dSearchRes
   where

@@ -28,6 +28,7 @@ where
 import qualified Domain.Types.Booking as DRB
 import qualified Domain.Types.Booking.BookingLocation as DBLoc
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import Domain.Types.Person as SP
 import qualified Domain.Types.RegistrationToken as SR
 import qualified EulerHS.Language as L
@@ -38,6 +39,8 @@ import Kernel.Storage.Esqueleto
 import Kernel.Types.Common hiding (id)
 import Kernel.Types.Id
 import Kernel.Utils.Common
+import qualified Storage.CachedQueries.Merchant as QMerchant
+import qualified Storage.CachedQueries.Merchant.MerchantOperatingCity as SMOC
 import qualified Storage.Queries.Booking as QRB
 import Storage.Queries.Person as Person
 import qualified Storage.Queries.RegistrationToken as RegistrationToken
@@ -81,34 +84,37 @@ data LoginRes = LoginRes
 newtype LogoutRes = LogoutRes {message :: Text}
   deriving (Show, Generic, FromJSON, ToJSON, ToSchema)
 
-login :: (EsqDBFlow m r, EncFlow m r) => LoginReq -> m LoginRes
+login :: (EsqDBFlow m r, EncFlow m r, CacheFlow m r) => LoginReq -> m LoginRes
 login LoginReq {..} = do
   person <- Person.findByEmailAndPassword email password >>= fromMaybeM (PersonNotFound email)
   unless (person.role == SP.CUSTOMER_SUPPORT) $ throwError Unauthorized
   token <- generateToken person
   pure $ LoginRes token "Logged in successfully"
 
-generateToken :: EsqDBFlow m r => SP.Person -> m Text
+generateToken :: (CacheFlow m r, EsqDBFlow m r) => SP.Person -> m Text
 generateToken SP.Person {..} = do
   let personId = getId id
   let mkId = getId merchantId
-  regToken <- createSupportRegToken personId mkId
+  m <- QMerchant.findById merchantId >>= fromMaybeM (MerchantNotFound personId)
+  merchantOperatingCity <- SMOC.findByMerchantIdAndCity merchantId m.city >>= fromMaybeM (MerchantOperatingCityNotFound ("merchId: " <> merchantId.getId <> " ,city: " <> show m.city))
+  let merchantOperatingCityId = getId merchantOperatingCity.id
+  regToken <- createSupportRegToken personId mkId merchantOperatingCityId
   -- Clean Old Login Session
   -- FIXME We should also cleanup old token from Redis
   _ <- RegistrationToken.deleteByPersonId id
   _ <- RegistrationToken.create regToken
   pure $ regToken.token
 
-logout :: (EsqDBFlow m r) => (Id SP.Person, Id Merchant.Merchant) -> m LogoutRes
-logout (personId, _) = do
+logout :: (EsqDBFlow m r) => (Id SP.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> m LogoutRes
+logout (personId, _, _) = do
   person <- Person.findById personId >>= fromMaybeM (PersonNotFound personId.getId)
   unless (person.role == SP.CUSTOMER_SUPPORT) $ throwError Unauthorized
   -- FIXME We should also cleanup old token from Redis
   _ <- RegistrationToken.deleteByPersonId person.id
   pure $ LogoutRes "Logged out successfully"
 
-createSupportRegToken :: MonadFlow m => Text -> Text -> m SR.RegistrationToken
-createSupportRegToken entityId merchantId = do
+createSupportRegToken :: MonadFlow m => Text -> Text -> Text -> m SR.RegistrationToken
+createSupportRegToken entityId merchantId merchantOperatingCityId = do
   rtid <- L.generateGUID
   token <- L.generateGUID
   now <- getCurrentTime
@@ -125,6 +131,7 @@ createSupportRegToken entityId merchantId = do
         tokenExpiry = 30, -- Need to Make this Configuable
         entityId = entityId,
         merchantId = merchantId,
+        merchantOperatingCityId = merchantOperatingCityId,
         entityType = SR.CUSTOMER,
         createdAt = now,
         updatedAt = now,

@@ -22,6 +22,7 @@ import qualified Data.Text as Dt
 import Domain.Types.HotSpot as HotSpot
 import Domain.Types.HotSpotConfig
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as Person
 import Environment
 import Kernel.Prelude
@@ -40,8 +41,8 @@ type API = "getHotSpot" :> TokenAuth :> ReqBody '[JSON] Maps.LatLong :> Get '[JS
 handler :: FlowServer API
 handler = getHotSpot
 
-getHotSpot :: (Id Person.Person, Id Merchant.Merchant) -> Maps.LatLong -> FlowHandler HotSpotResponse
-getHotSpot (_, merchantId) latlong = withFlowHandlerAPI (getHotspot latlong merchantId)
+getHotSpot :: (Id Person.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> Maps.LatLong -> FlowHandler HotSpotResponse
+getHotSpot (_, merchantId, _) latlong = withFlowHandlerAPI (getHotspot latlong merchantId)
 
 -- hotspot
 allPreciseHotSpot :: Int -> [String]

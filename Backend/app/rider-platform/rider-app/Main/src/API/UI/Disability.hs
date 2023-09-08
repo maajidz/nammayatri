@@ -6,6 +6,7 @@ where
 
 import qualified Domain.Action.UI.Disability as DDisability
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as Person
 import qualified Domain.Types.Person.PersonDisability as PersonDisability
 import Environment
@@ -25,5 +26,5 @@ type API =
 handler :: FlowServer API
 handler = listDisabilities
 
-listDisabilities :: (Id Person.Person, Id Merchant.Merchant) -> FlowHandler [PersonDisability.DisabilityItem]
+listDisabilities :: (Id Person.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> FlowHandler [PersonDisability.DisabilityItem]
 listDisabilities = withFlowHandlerAPI . DDisability.listDisabilities

@@ -30,6 +30,7 @@ where
 import Control.Applicative ((<|>))
 import Data.List (nubBy)
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as Person
 import qualified Domain.Types.Person.PersonDefaultEmergencyNumber as DPDEN
 import qualified Domain.Types.Person.PersonDisability as PersonDisability
@@ -116,8 +117,8 @@ newtype GetProfileDefaultEmergencyNumbersResp = GetProfileDefaultEmergencyNumber
   }
   deriving (Generic, ToJSON, FromJSON, ToSchema)
 
-getPersonDetails :: (EsqDBReplicaFlow m r, EncFlow m r) => (Id Person.Person, Id Merchant.Merchant) -> m ProfileRes
-getPersonDetails (personId, _) = do
+getPersonDetails :: (EsqDBReplicaFlow m r, EncFlow m r) => (Id Person.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> m ProfileRes
+getPersonDetails (personId, _, _) = do
   person <- runInReplica $ QPerson.findById personId >>= fromMaybeM (PersonNotFound personId.getId)
   customerDisability <- B.runInReplica $ PDisability.findByPersonId personId
   let tag = customerDisability <&> (.tag)
@@ -227,8 +228,8 @@ updateDefaultEmergencyNumbers personId req = do
             ..
           }
 
-getDefaultEmergencyNumbers :: (EsqDBReplicaFlow m r, EncFlow m r) => (Id Person.Person, Id Merchant.Merchant) -> m GetProfileDefaultEmergencyNumbersResp
-getDefaultEmergencyNumbers (personId, _) = do
+getDefaultEmergencyNumbers :: (EsqDBReplicaFlow m r, EncFlow m r) => (Id Person.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> m GetProfileDefaultEmergencyNumbersResp
+getDefaultEmergencyNumbers (personId, _, _) = do
   personENList <- runInReplica $ QPersonDEN.findAllByPersonId personId
   decPersonENList <- decrypt `mapM` personENList
   return . GetProfileDefaultEmergencyNumbersResp $ DPDEN.makePersonDefaultEmergencyNumberAPIEntity <$> decPersonENList

@@ -26,6 +26,7 @@ import Environment
 import Kernel.Prelude
 import Kernel.Storage.Esqueleto
 import Kernel.Types.APISuccess
+import qualified Kernel.Types.Beckn.Context as Context
 import Kernel.Types.Id
 import Kernel.Utils.Common
 import Servant hiding (throwError)
@@ -96,6 +97,7 @@ buildAuthReq merchantShortId req =
   DRegistration.AuthReq
     { mobileNumber = req.mobileNumber,
       mobileCountryCode = req.mobileCountryCode,
+      city = req.city,
       merchantId = merchantShortId,
       deviceToken = Nothing,
       notificationToken = Nothing,
@@ -112,6 +114,7 @@ buildAuthReq merchantShortId req =
 data CustomerAuthReq = CutomerAuthReq
   { mobileNumber :: Text,
     mobileCountryCode :: Text,
+    city :: Context.City,
     otpChannel :: Maybe DRegistration.OTPChannel
   }
   deriving (Generic, FromJSON, ToJSON, Show, ToSchema)

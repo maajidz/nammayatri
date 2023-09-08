@@ -20,6 +20,7 @@ where
 
 import qualified Domain.Action.UI.PersonStats as DPersonStats
 import qualified Domain.Types.Merchant as Merchant
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Person as Person
 import Environment
 import EulerHS.Prelude
@@ -38,5 +39,5 @@ handler :: FlowServer API
 handler =
   getPersonStats
 
-getPersonStats :: (Id Person.Person, Id Merchant.Merchant) -> FlowHandler DPersonStats.PersonStatsRes
+getPersonStats :: (Id Person.Person, Id Merchant.Merchant, Id DMOC.MerchantOperatingCity) -> FlowHandler DPersonStats.PersonStatsRes
 getPersonStats = withFlowHandlerAPI . DPersonStats.getPersonStats

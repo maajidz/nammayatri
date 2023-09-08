@@ -27,7 +27,7 @@ module Tools.Maps
   )
 where
 
-import Domain.Types.Merchant
+import Domain.Types.Merchant.MerchantOperatingCity (MerchantOperatingCity)
 import qualified Domain.Types.Merchant.MerchantServiceConfig as DMSC
 import Domain.Types.Merchant.MerchantServiceUsageConfig (MerchantServiceUsageConfig)
 import Kernel.External.Maps as Reexport hiding
@@ -53,7 +53,7 @@ getDistance ::
     HasCoordinates a,
     HasCoordinates b
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   GetDistanceReq a b ->
   m (GetDistanceResp a b)
 getDistance = runWithServiceConfig Maps.getDistance (.getDistances)
@@ -63,7 +63,7 @@ getDistanceForCancelRide ::
     HasCoordinates a,
     HasCoordinates b
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   GetDistanceReq a b ->
   m (GetDistanceResp a b)
 getDistanceForCancelRide = runWithServiceConfig Maps.getDistance (.getDistancesForCancelRide)
@@ -73,50 +73,50 @@ getDistances ::
     HasCoordinates a,
     HasCoordinates b
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   GetDistancesReq a b ->
   m (GetDistancesResp a b)
 getDistances = runWithServiceConfig Maps.getDistances (.getDistances)
 
-getRoutes :: ServiceFlow m r => Id Merchant -> GetRoutesReq -> m GetRoutesResp
+getRoutes :: ServiceFlow m r => Id MerchantOperatingCity -> GetRoutesReq -> m GetRoutesResp
 getRoutes = runWithServiceConfig Maps.getRoutes (.getRoutes)
 
-getPickupRoutes :: ServiceFlow m r => Id Merchant -> GetRoutesReq -> m GetRoutesResp
+getPickupRoutes :: ServiceFlow m r => Id MerchantOperatingCity -> GetRoutesReq -> m GetRoutesResp
 getPickupRoutes = runWithServiceConfig Maps.getRoutes (.getPickupRoutes)
 
-getTripRoutes :: ServiceFlow m r => Id Merchant -> GetRoutesReq -> m GetRoutesResp
+getTripRoutes :: ServiceFlow m r => Id MerchantOperatingCity -> GetRoutesReq -> m GetRoutesResp
 getTripRoutes = runWithServiceConfig Maps.getRoutes (.getTripRoutes)
 
 snapToRoad ::
   ( ServiceFlow m r,
     HasFlowEnv m r '["snapToRoadSnippetThreshold" ::: HighPrecMeters]
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   SnapToRoadReq ->
   m SnapToRoadResp
 snapToRoad = runWithServiceConfig Maps.snapToRoad (.snapToRoad)
 
-autoComplete :: ServiceFlow m r => Id Merchant -> AutoCompleteReq -> m AutoCompleteResp
+autoComplete :: ServiceFlow m r => Id MerchantOperatingCity -> AutoCompleteReq -> m AutoCompleteResp
 autoComplete = runWithServiceConfig Maps.autoComplete (.autoComplete)
 
-getPlaceName :: ServiceFlow m r => Id Merchant -> GetPlaceNameReq -> m GetPlaceNameResp
+getPlaceName :: ServiceFlow m r => Id MerchantOperatingCity -> GetPlaceNameReq -> m GetPlaceNameResp
 getPlaceName = runWithServiceConfig Maps.getPlaceName (.getPlaceName)
 
-getPlaceDetails :: ServiceFlow m r => Id Merchant -> GetPlaceDetailsReq -> m GetPlaceDetailsResp
+getPlaceDetails :: ServiceFlow m r => Id MerchantOperatingCity -> GetPlaceDetailsReq -> m GetPlaceDetailsResp
 getPlaceDetails = runWithServiceConfig Maps.getPlaceDetails (.getPlaceDetails)
 
 runWithServiceConfig ::
   ServiceFlow m r =>
   (MapsServiceConfig -> req -> m resp) ->
   (MerchantServiceUsageConfig -> MapsService) ->
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   req ->
   m resp
-runWithServiceConfig func getCfg merchantId req = do
-  merchantConfig <- QMSUC.findByMerchantId merchantId >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantId.getId)
+runWithServiceConfig func getCfg merchantOperatingCityId req = do
+  merchantConfig <- QMSUC.findByMerchantOperatingCityId merchantOperatingCityId >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantOperatingCityId.getId)
   merchantMapsServiceConfig <-
-    QMSC.findByMerchantIdAndService merchantId (DMSC.MapsService $ getCfg merchantConfig)
-      >>= fromMaybeM (MerchantServiceConfigNotFound merchantId.getId "Maps" (show $ getCfg merchantConfig))
+    QMSC.findByMerchantOperatingCityIdAndService merchantOperatingCityId (DMSC.MapsService $ getCfg merchantConfig)
+      >>= fromMaybeM (MerchantServiceConfigNotFound merchantOperatingCityId.getId "Maps" (show $ getCfg merchantConfig))
   case merchantMapsServiceConfig.serviceConfig of
     DMSC.MapsServiceConfig msc -> func msc req
     _ -> throwError $ InternalError "Unknown Service Config"

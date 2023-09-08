@@ -15,7 +15,7 @@
 {-# OPTIONS_GHC -Wno-deprecations #-}
 
 module Storage.CachedQueries.Merchant.MerchantServiceConfig
-  ( findByMerchantIdAndService,
+  ( findByMerchantOperatingCityIdAndService,
     clearCache,
     cacheMerchantServiceConfig,
     upsertMerchantServiceConfig,
@@ -24,7 +24,7 @@ where
 
 import Data.Coerce (coerce)
 import Domain.Types.Common
-import Domain.Types.Merchant (Merchant)
+import Domain.Types.Merchant.MerchantOperatingCity (MerchantOperatingCity)
 import Domain.Types.Merchant.MerchantServiceConfig
 import Kernel.Prelude
 import qualified Kernel.Storage.Hedis as Hedis
@@ -32,25 +32,25 @@ import Kernel.Types.Id
 import Kernel.Utils.Common
 import qualified Storage.Queries.Merchant.MerchantServiceConfig as Queries
 
-findByMerchantIdAndService :: (CacheFlow m r, EsqDBFlow m r) => Id Merchant -> ServiceName -> m (Maybe MerchantServiceConfig)
-findByMerchantIdAndService id serviceName =
-  Hedis.safeGet (makeMerchantIdAndServiceKey id serviceName) >>= \case
+findByMerchantOperatingCityIdAndService :: (CacheFlow m r, EsqDBFlow m r) => Id MerchantOperatingCity -> ServiceName -> m (Maybe MerchantServiceConfig)
+findByMerchantOperatingCityIdAndService id serviceName =
+  Hedis.safeGet (makeMerchantOperatingCityIdAndServiceKey id serviceName) >>= \case
     Just a -> return . Just $ coerce @(MerchantServiceConfigD 'Unsafe) @MerchantServiceConfig a
-    Nothing -> flip whenJust cacheMerchantServiceConfig /=<< Queries.findByMerchantIdAndService id serviceName
+    Nothing -> flip whenJust cacheMerchantServiceConfig /=<< Queries.findByMerchantOperatingCityIdAndService id serviceName
 
 cacheMerchantServiceConfig :: CacheFlow m r => MerchantServiceConfig -> m ()
 cacheMerchantServiceConfig merchantServiceConfig = do
   expTime <- fromIntegral <$> asks (.cacheConfig.configsExpTime)
-  let idKey = makeMerchantIdAndServiceKey merchantServiceConfig.merchantId (getServiceName merchantServiceConfig)
+  let idKey = makeMerchantOperatingCityIdAndServiceKey merchantServiceConfig.merchantOperatingCityId (getServiceName merchantServiceConfig)
   Hedis.setExp idKey (coerce @MerchantServiceConfig @(MerchantServiceConfigD 'Unsafe) merchantServiceConfig) expTime
 
-makeMerchantIdAndServiceKey :: Id Merchant -> ServiceName -> Text
-makeMerchantIdAndServiceKey id serviceName = "CachedQueries:MerchantServiceConfig:MerchantId-" <> id.getId <> ":ServiceName-" <> show serviceName
+makeMerchantOperatingCityIdAndServiceKey :: Id MerchantOperatingCity -> ServiceName -> Text
+makeMerchantOperatingCityIdAndServiceKey id serviceName = "CachedQueries:MerchantServiceConfig:MerchantId-" <> id.getId <> ":ServiceName-" <> show serviceName
 
 -- Call it after any update
-clearCache :: Hedis.HedisFlow m r => Id Merchant -> ServiceName -> m ()
-clearCache merchantId serviceName = do
-  Hedis.del (makeMerchantIdAndServiceKey merchantId serviceName)
+clearCache :: Hedis.HedisFlow m r => Id MerchantOperatingCity -> ServiceName -> m ()
+clearCache merchanOperatingCityId serviceName = do
+  Hedis.del (makeMerchantOperatingCityIdAndServiceKey merchanOperatingCityId serviceName)
 
 upsertMerchantServiceConfig :: MonadFlow m => MerchantServiceConfig -> m ()
 upsertMerchantServiceConfig = Queries.upsertMerchantServiceConfig

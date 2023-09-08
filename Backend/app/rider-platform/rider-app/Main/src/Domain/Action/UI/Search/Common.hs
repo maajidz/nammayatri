@@ -27,12 +27,16 @@ import qualified Domain.Types.SearchRequest as SearchRequest
 import qualified Domain.Types.SearchRequest.SearchReqLocation as Location
 import Kernel.External.Maps.Types
 import Kernel.Prelude
+import Kernel.Types.Error
 import Kernel.Types.Version
 import Kernel.Utils.Common
+import qualified Storage.CachedQueries.Merchant as QMerchant
+import qualified Storage.CachedQueries.Merchant.MerchantOperatingCity as SMOC
 import Tools.Metrics (CoreMetrics)
 
 buildSearchRequest ::
   ( (HasFlowEnv m r '["searchRequestExpiry" ::: Maybe Seconds]),
+    CacheFlow m r,
     EsqDBFlow m r,
     CoreMetrics m,
     MonadFlow m
@@ -50,6 +54,8 @@ buildSearchRequest ::
   Maybe Seconds ->
   m SearchRequest.SearchRequest
 buildSearchRequest person pickup mbDrop mbMaxDistance mbDistance now bundleVersion clientVersion device disabilityTag duration = do
+  m <- QMerchant.findById person.merchantId >>= fromMaybeM (MerchantNotFound person.merchantId.getId)
+  merchantOperatingCity <- SMOC.findByMerchantIdAndCity m.id m.city >>= fromMaybeM (MerchantOperatingCityNotFound ("merchId: " <> m.id.getId <> " ,city: " <> show m.city))
   searchRequestId <- generateGUID
   validTill <- getSearchRequestExpiry now
   return
@@ -63,6 +69,7 @@ buildSearchRequest person pickup mbDrop mbMaxDistance mbDistance now bundleVersi
         distance = mbDistance,
         maxDistance = mbMaxDistance,
         merchantId = person.merchantId,
+        merchantOperatingCityId = Just merchantOperatingCity.id,
         createdAt = now,
         estimatedRideDuration = duration,
         device = device,

@@ -14,47 +14,35 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
 
-module Storage.Beam.DriverOffer where
+module Storage.Beam.Merchant.MerchantOperatingCity where
 
 import Data.Serialize
-import qualified Data.Time as Time
 import qualified Database.Beam as B
 import Database.Beam.MySQL ()
-import qualified Domain.Types.DriverOffer as Domain
 import EulerHS.KVConnector.Types (KVConnector (..), MeshMeta (..), primaryKey, secondaryKeys, tableName)
 import GHC.Generics (Generic)
 import Kernel.Prelude hiding (Generic)
-import Kernel.Types.Common hiding (id)
-import Lib.Utils ()
+import Kernel.Types.Beckn.Context as Context
 import Sequelize
 import Tools.Beam.UtilsTH
 
-data DriverOfferT f = DriverOfferT
+data MerchantOperatingCityT f = MerchantOperatingCityT
   { id :: B.C f Text,
-    estimateId :: B.C f Text,
-    merchantId :: B.C f (Maybe Text),
-    merchantOperatingCityId :: B.C f (Maybe Text),
-    driverId :: B.C f (Maybe Text),
-    driverName :: B.C f Text,
-    durationToPickup :: B.C f Int,
-    distanceToPickup :: B.C f HighPrecMeters,
-    validTill :: B.C f Time.UTCTime,
-    bppQuoteId :: B.C f Text,
-    rating :: B.C f (Maybe Centesimal),
-    status :: B.C f Domain.DriverOfferStatus,
-    updatedAt :: B.C f Time.UTCTime
+    merchantId :: B.C f Text,
+    city :: B.C f Context.City
   }
   deriving (Generic, B.Beamable)
 
-instance B.Table DriverOfferT where
-  data PrimaryKey DriverOfferT f
+instance B.Table MerchantOperatingCityT where
+  data PrimaryKey MerchantOperatingCityT f
     = Id (B.C f Text)
     deriving (Generic, B.Beamable)
   primaryKey = Id . id
 
-type DriverOffer = DriverOfferT Identity
+type MerchantOperatingCity = MerchantOperatingCityT Identity
 
-$(enableKVPG ''DriverOfferT ['id] [['bppQuoteId], ['estimateId]])
+$(enableKVPG ''MerchantOperatingCityT ['id] [])
 
-$(mkTableInstances ''DriverOfferT "driver_offer")
+$(mkTableInstances ''MerchantOperatingCityT "merchant_operating_city")

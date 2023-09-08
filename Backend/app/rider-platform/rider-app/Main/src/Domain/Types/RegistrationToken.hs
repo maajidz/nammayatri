@@ -54,6 +54,7 @@ data RegistrationToken = RegistrationToken
     tokenExpiry :: Int,
     entityId :: Text,
     merchantId :: Text,
+    merchantOperatingCityId :: Text,
     entityType :: RTEntityType,
     createdAt :: UTCTime,
     updatedAt :: UTCTime,

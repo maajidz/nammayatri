@@ -15,6 +15,7 @@
 module Mobility.AppBackend.Fixtures where
 
 import "rider-app" Domain.Types.Merchant as DM
+import "rider-app" Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import Kernel.Prelude
 import Kernel.Types.Id
 import Kernel.Types.Version
@@ -30,3 +31,6 @@ defaultVersion = Version 0 0 0
 
 yatriMerchantId :: Id DM.Merchant
 yatriMerchantId = "da4e23a5-3ce6-4c37-8b9b-41377c3c1a51"
+
+yatriMerchantOperatingCityId :: Id DMOC.MerchantOperatingCity
+yatriMerchantOperatingCityId = "ea4e23a5-3ce6-4c37-8b9b-41377c3c1a52"

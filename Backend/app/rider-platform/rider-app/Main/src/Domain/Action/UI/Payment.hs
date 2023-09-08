@@ -22,6 +22,7 @@ module Domain.Action.UI.Payment
 where
 
 import qualified Domain.Types.Merchant as DM
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Merchant.MerchantServiceConfig as DMSC
 import qualified Domain.Types.Person as DP
 import qualified Domain.Types.Ride as DRide
@@ -41,7 +42,6 @@ import qualified Lib.Payment.Domain.Types.Common as DPayment
 import qualified Lib.Payment.Domain.Types.PaymentOrder as DOrder
 import qualified Lib.Payment.Storage.Queries.PaymentOrder as QOrder
 import Servant (BasicAuthData)
-import SharedLogic.Merchant
 import qualified Storage.CachedQueries.Merchant.MerchantServiceConfig as CQMSC
 import qualified Storage.Queries.Person as QP
 import qualified Storage.Queries.Ride as QRide
@@ -51,10 +51,10 @@ import qualified Tools.Payment as Payment
 -- create order -----------------------------------------------------
 
 createOrder ::
-  (Id DP.Person, Id DM.Merchant) ->
+  (Id DP.Person, Id DM.Merchant, Id DMOC.MerchantOperatingCity) ->
   Id DRide.Ride ->
   Flow Payment.CreateOrderResp
-createOrder (personId, merchantId) rideId = do
+createOrder (personId, merchantId, merchantOperatingCityId) rideId = do
   ride <- B.runInReplica $ QRide.findById rideId >>= fromMaybeM (RideDoesNotExist rideId.getId)
   unless (ride.status == DRide.COMPLETED) $ throwError (RideInvalidStatus $ show ride.status)
   totalFare <- ride.totalFare & fromMaybeM (RideFieldNotPresent "totalFare")
@@ -82,7 +82,7 @@ createOrder (personId, merchantId) rideId = do
 
   let commonMerchantId = cast @DM.Merchant @DPayment.Merchant merchantId
       commonPersonId = cast @DP.Person @DPayment.Person personId
-      createOrderCall = Payment.createOrder merchantId -- api call
+      createOrderCall = Payment.createOrder merchantOperatingCityId -- api call
   DPayment.createOrderService commonMerchantId commonPersonId createOrderReq createOrderCall >>= fromMaybeM (InternalError "Order expired please try again")
 
 -- order status -----------------------------------------------------
@@ -94,12 +94,12 @@ getStatus ::
     EsqDBFlow m r,
     EncFlow m r
   ) =>
-  (Id DP.Person, Id DM.Merchant) ->
+  (Id DP.Person, Id DM.Merchant, Id DMOC.MerchantOperatingCity) ->
   Id DOrder.PaymentOrder ->
   m DPayment.PaymentStatusResp
-getStatus (personId, merchantId) orderId = do
+getStatus (personId, _, merchantOperatingCityId) orderId = do
   let commonPersonId = cast @DP.Person @DPayment.Person personId
-      orderStatusCall = Payment.orderStatus merchantId -- api call
+      orderStatusCall = Payment.orderStatus merchantOperatingCityId -- api call
   DPayment.orderStatusService commonPersonId orderId orderStatusCall
 
 getOrder ::
@@ -108,10 +108,10 @@ getOrder ::
     EsqDBFlow m r,
     EncFlow m r
   ) =>
-  (Id DP.Person, Id DM.Merchant) ->
+  (Id DP.Person, Id DM.Merchant, Id DMOC.MerchantOperatingCity) ->
   Id DOrder.PaymentOrder ->
   m DOrder.PaymentOrderAPIEntity
-getOrder (personId, _) orderId = do
+getOrder (personId, _, _) orderId = do
   order <- B.runInReplica $ QOrder.findById orderId >>= fromMaybeM (PaymentOrderNotFound orderId.getId)
   unless (order.personId == cast personId) $ throwError NotAnExecutor
   mkOrderAPIEntity order
@@ -124,16 +124,14 @@ mkOrderAPIEntity DOrder.PaymentOrder {..} = do
 -- webhook ----------------------------------------------------------
 
 juspayWebhookHandler ::
-  ShortId DM.Merchant ->
+  Id DMOC.MerchantOperatingCity ->
   BasicAuthData ->
   Value ->
   Flow AckResponse
-juspayWebhookHandler merchantShortId authData value = do
-  merchant <- findMerchantByShortId merchantShortId
-  let merchantId = merchant.id
+juspayWebhookHandler merchantOperatingCityId authData value = do
   merchantServiceConfig <-
-    CQMSC.findByMerchantIdAndService merchantId (DMSC.PaymentService Payment.Juspay)
-      >>= fromMaybeM (MerchantServiceConfigNotFound merchantId.getId "Payment" (show Payment.Juspay))
+    CQMSC.findByMerchantOperatingCityIdAndService merchantOperatingCityId (DMSC.PaymentService Payment.Juspay)
+      >>= fromMaybeM (MerchantServiceConfigNotFound merchantOperatingCityId.getId "Payment" (show Payment.Juspay))
   case merchantServiceConfig.serviceConfig of
     DMSC.PaymentServiceConfig psc -> do
       _ <- Juspay.orderStatusWebhook psc DPayment.juspayWebhookService authData value

@@ -118,6 +118,7 @@ instance FromTType' BeamQ.Quote Quote where
             discount = roundToIntegral <$> discount,
             estimatedTotalFare = roundToIntegral estimatedTotalFare,
             merchantId = Id merchantId,
+            merchantOperatingCityId = Id <$> merchantOperatingCityId,
             quoteDetails = quoteDetails,
             providerId = providerId,
             itemId = itemId,
@@ -169,6 +170,7 @@ instance ToTType' BeamQ.Quote Quote where
             BeamQ.rentalSlabId = rentalSlabId,
             BeamQ.driverOfferId = driverOfferId,
             BeamQ.merchantId = getId merchantId,
+            BeamQ.merchantOperatingCityId = getId <$> merchantOperatingCityId,
             BeamQ.specialZoneQuoteId = specialZoneQuoteId,
             BeamQ.specialLocationTag = specialLocationTag,
             BeamQ.createdAt = createdAt
