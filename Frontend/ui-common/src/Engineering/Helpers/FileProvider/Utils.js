@@ -1,3 +1,5 @@
+import { callbackMapper } from 'presto-ui';
+
 function isObject(item) {
   return (item && typeof item === 'object' && !Array.isArray(item));
 }
@@ -7,7 +9,7 @@ export const appendConfigToDocument = function (data) {
   console.log(headID)
   const newScript = document.createElement("script");
   newScript.type = "text/javascript";
-  newScript.id = "ny-customer-configuration";
+  newScript.id = "ny-configuration";
   newScript.innerHTML = data;
   headID.appendChild(newScript);
   return window.getMerchantConfig();
@@ -56,6 +58,43 @@ export const loadFileInDUI = function (fileName) {
     return JBridge.loadFileInDUI(fileName);
   } else {
     return "";
+  }
+}
+
+
+export const getFromTopWindow = function (key) {
+  return top[key];
+}
+
+export const getCUGUser = function () {
+  let JOSFlags = JOS.getJOSflags();
+  if (JOSFlags && JOSFlags.isCUGUser) {
+    return JOSFlags.isCUGUser;
+  } else {
+    return false;
+  }
+}
+
+export const isUseLocalAssets = function () {
+  if (window.__payload ) {
+    return window.__payload.use_local_assets;
+  } else {
+    return false;
+  }
+}
+
+export const renewFile = function(filePath,location,cb) {
+  JBridge.renewFile(location,filePath,callbackMapper.map(function(result) {
+    cb(result)();
+  }));
+}
+
+// JSON UTILS
+export function parseJSON(param) {
+  try {
+    return JSON.parse(param);
+  } catch (e) {
+    return param;
   }
 }
 

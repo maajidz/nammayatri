@@ -1847,3 +1847,9 @@ type UpiApps
     , appName :: String
     }
 
+type LogStreamPayload = {
+  category :: String,
+  subcategory :: String,
+  label :: String,
+  value :: Object String
+}

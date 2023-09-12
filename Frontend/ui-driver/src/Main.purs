@@ -20,6 +20,7 @@ import Data.Either (Either(..))
 import Effect (Effect)
 import Effect.Aff (killFiber, launchAff, launchAff_)
 import Engineering.Helpers.Commons (flowRunner, liftFlow, getWindowVariable)
+import Helpers.FileProvider.Utils (fetchAssets)
 import Flow as Flow
 import Control.Monad.Except.Trans (runExceptT)
 import Control.Transformers.Back.Trans (runBackT)
@@ -33,7 +34,7 @@ import Types.App (defaultGlobalState)
 import Effect.Class (liftEffect)
 import Control.Monad.Except (runExcept)
 import Data.Maybe (fromMaybe, Maybe(..))
-import Screens.Types (AllocationData)
+import Screens.Types (AllocationData, LogStreamPayload)
 import Types.ModifyScreenState (modifyScreenState)
 import Types.App (FlowBT, ScreenType(..))
 import JBridge as JBridge
@@ -41,8 +42,10 @@ import Helpers.Utils as Utils
 import Effect.Exception (error)
 import Data.Function.Uncurried (runFn2)
 import Screens (ScreenName(..)) as ScreenNames
-import Data.Array as DA
-import Effect.Uncurried (runEffectFn1)
+import Data.Maybe as Maybe
+import Effect.Uncurried (EffectFn1,mkEffectFn1)
+import Foreign.Object (lookup)
+import Engineering.Helpers.LogEvent (logEventParamsWithCD, logEventTwoParamsWithCD, getPPLogDestinations)
 
 main :: Event -> Effect Unit
 main event = do
@@ -52,7 +55,7 @@ main event = do
     case resp of
       Right _ -> pure $ printLog "printLog " "Success in main"
       Left error -> liftFlow $ main event
-  _ <- launchAff $ flowRunner defaultGlobalState $ do liftFlow $ Utils.fetchFiles
+  _ <- launchAff $ flowRunner defaultGlobalState $ do liftFlow $ fetchAssets
   pure unit
 
 mainAllocationPop :: String -> AllocationData -> Effect Unit
@@ -119,7 +122,7 @@ onNewIntent event = do
       "DEEP_VIEW" -> Flow.baseAppFlow true (Just event)
       _ -> Flow.baseAppFlow false Nothing
     pure unit
-  _ <- launchAff $ flowRunner defaultGlobalState $ do liftFlow $ Utils.fetchFiles
+  _ <- launchAff $ flowRunner defaultGlobalState $ do liftFlow fetchAssets
   JBridge.storeMainFiberOb mainFiber
   pure unit
 
@@ -129,3 +132,26 @@ updateEventData event = do
       "NEW_MESSAGE" -> modifyScreenState $ NotificationsScreenStateType (\notificationScreen -> notificationScreen{ selectedNotification = Just event.data, deepLinkActivated = true })
       "PAYMENT_MODE_MANUAL" -> modifyScreenState $ GlobalPropsType (\globalProps -> globalProps {callScreen = ScreenNames.SUBSCRIPTION_SCREEN})
       _ -> pure unit
+
+handleLogStream :: EffectFn1 LogStreamPayload Unit
+handleLogStream = mkEffectFn1 \payload -> do
+  case payload.label of
+    "current_screen" -> do
+      let screenName = lookup "screen_name" payload.value
+      case screenName of
+        Maybe.Nothing -> pure unit
+        Maybe.Just value ->  logEventParamsWithCD getPPLogDestinations "ny_driver_payment_current_screen" "screen_name" value
+    "button_clicked" -> do
+      let buttonName = lookup "button_name" payload.value
+      case buttonName of
+        Maybe.Nothing -> pure unit
+        Maybe.Just value ->  logEventParamsWithCD getPPLogDestinations "ny_driver_payment_button_clicked" "buttonName" value
+    "upi_apps" -> do
+      let appName = lookup "appName" payload.value
+      let packageName = lookup "packageName" payload.value
+      case appName , packageName  of
+        Maybe.Just value1, Maybe.Just value2 ->  logEventTwoParamsWithCD getPPLogDestinations "ny_driver_payment_upi_app_selected" "app_name" value1 "package_name" value2
+        Maybe.Just value1, Maybe.Nothing ->  logEventParamsWithCD getPPLogDestinations "ny_driver_payment_upi_app_selected" "app_name" value1
+        Maybe.Nothing, Maybe.Just value1 ->  logEventParamsWithCD getPPLogDestinations "ny_driver_payment_upi_app_selected" "package_name" value1
+        _,_ -> pure unit
+    _ -> pure unit

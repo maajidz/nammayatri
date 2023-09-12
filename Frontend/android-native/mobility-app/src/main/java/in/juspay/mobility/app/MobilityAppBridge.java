@@ -15,15 +15,20 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.clevertap.android.sdk.CleverTapAPI;
@@ -50,10 +55,14 @@ import java.util.Map;
 import in.juspay.hyper.bridge.HyperBridge;
 import in.juspay.hyper.core.BridgeComponents;
 import in.juspay.hyper.core.ExecutorManager;
+import in.juspay.hypersdk.core.MerchantViewType;
+import in.juspay.hypersdk.data.JuspayResponseHandler;
 import in.juspay.hypersdk.data.KeyValueStore;
+import in.juspay.hypersdk.ui.HyperPaymentsCallback;
 import in.juspay.mobility.app.callbacks.CallBack;
 import in.juspay.mobility.app.carousel.VPAdapter;
 import in.juspay.mobility.app.carousel.ViewPagerItem;
+import in.juspay.services.HyperServices;
 
 public class MobilityAppBridge extends HyperBridge {
 
@@ -62,12 +71,14 @@ public class MobilityAppBridge extends HyperBridge {
     private static final String META_LOG = "META_LOG";
     private static final String CALLBACK = "CALLBACK";
     private static final String UTILS = "UTILS";
+    private static final String PPUTILS = "PPUTILS";
 
     private static FirebaseAnalytics mFirebaseAnalytics;
     CleverTapAPI clevertapDefaultInstance;
     protected static String storeChatMessageCallBack = null;
     public static String storeCallBackOpenChatScreen = null;
     public static String storeDetectPhoneNumbersCallBack = null;
+    @Nullable private HyperServices paymentPageHS;
 
 
     // Permission request Code
@@ -131,6 +142,7 @@ public class MobilityAppBridge extends HyperBridge {
         ChatService.deRegisterCallback(callBack);
         InAppNotification.deRegisterCallBack(callBack);
         RemoteAssetsDownloader.deRegisterCallback(callBack);
+        terminatePP();
     }
 
     // region Store And Trigger CallBack
@@ -530,7 +542,90 @@ public class MobilityAppBridge extends HyperBridge {
         bridgeComponents.getContext().startActivity(intent);
     }
 
+    // region PP - Utils
 
+    @JavascriptInterface
+    public void initiatePP (String bootData) {
+        ExecutorManager.runOnMainThread(() -> {
+            if (bridgeComponents.getActivity() != null) {
+                if (paymentPageHS != null && paymentPageHS.isInitialised()) {
+                    return;
+                } // Checking whether it is already initiated.
+                JSONObject initiatePayload = new JSONObject();
+                try {
+                    initiatePayload = new JSONObject(bootData);
+                } catch (Exception e) {
+                    try {
+                        initiatePayload = Utils.getInitiatePayload(bridgeComponents.getContext());
+                    } catch (JSONException ex) {
+                        Log.e(PPUTILS, "Unable to get initiate payload");
+                    }
+                }
+                paymentPageHS = new HyperServices((FragmentActivity) bridgeComponents.getActivity());
+                paymentPageHS.initiate(initiatePayload, new HyperPaymentsCallback() {
+
+                    @Override
+                    public void onStartWaitingDialogCreated(@Nullable View view) {
+
+                    }
+
+                    @Override
+                    public void onEvent(JSONObject jsonObject, JuspayResponseHandler juspayResponseHandler) {
+                        String encoded = Base64.encodeToString(jsonObject.toString().getBytes(), Base64.NO_WRAP);
+                        String command = String.format("window[\"onEvent\"](atob('%s'))", encoded);
+                        bridgeComponents.getJsCallback().addJsToWebView(command);
+                    }
+
+                    @Nullable
+                    @Override
+                    public View getMerchantView(ViewGroup viewGroup, MerchantViewType merchantViewType) {
+                        return null;
+                    }
+
+                    @Nullable
+                    @Override
+                    public WebViewClient createJuspaySafeWebViewClient() {
+                        return null;
+                    }
+                });
+            }
+        });
+    }
+
+    @JavascriptInterface
+    public void processPP (String payload) {
+        if (paymentPageHS != null) {
+            try {
+                paymentPageHS.process(new JSONObject(payload));
+            } catch (Exception e) {
+                Log.e(PPUTILS,e.toString());
+            }
+        }
+    }
+    @JavascriptInterface
+    public boolean onBackpressedPP () {
+        return paymentPageHS != null && paymentPageHS.onBackPressed();
+    }
+
+    @JavascriptInterface
+    public void terminatePP () {
+        if (paymentPageHS != null) {
+            paymentPageHS.terminate();
+            paymentPageHS = null;
+        }
+    }
+
+    @JavascriptInterface
+    public boolean ppInitiateStatus() {
+        if (paymentPageHS != null) {
+            return paymentPageHS.isInitialised();
+        }
+        return false;
+    }
+
+    // endregion
+
+    // region Override functions
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CREDENTIAL_PICKER_REQUEST) {
@@ -549,4 +644,6 @@ public class MobilityAppBridge extends HyperBridge {
     public boolean onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
         return super.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
+
+    // endregion
 }

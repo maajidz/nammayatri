@@ -20,6 +20,9 @@ import com.clevertap.android.sdk.CleverTapAPI;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -30,12 +33,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import com.facebook.appevents.AppEventsLogger;
+import java.util.UUID;
+
+import in.juspay.hypersdk.core.PaymentConstants;
 import in.juspay.mobility.app.callbacks.CallBack;
 
 public class Utils {
 
     private static final String UTILS = "UTILS";
-    private static FirebaseAnalytics mFirebaseAnalytics;
 
     private static final ArrayList<CallBack> callBack = new ArrayList<>();
 
@@ -135,7 +140,7 @@ public class Utils {
     public static void logEvent(String event, Context context) {
         CleverTapAPI clevertapDefaultInstance = CleverTapAPI.getDefaultInstance(context);
         Bundle params = new Bundle();
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
+        FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
         mFirebaseAnalytics.logEvent(event, params);
         if (clevertapDefaultInstance != null){
             clevertapDefaultInstance.pushEvent(event);
@@ -145,7 +150,7 @@ public class Utils {
         try {
             CleverTapAPI clevertapDefaultInstance = CleverTapAPI.getDefaultInstance(context);
             AppEventsLogger logger = AppEventsLogger.newLogger(context);
-            mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
+            FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
             Bundle bundleParams = new Bundle();
             for(Map.Entry<String, String> entry : params.entrySet()) {
                 bundleParams.putString(entry.getKey(),entry.getValue());
@@ -173,4 +178,19 @@ public class Utils {
             Log.e(UTILS, "Error sending user data: " + e);
         }
     }
+    
+    public static JSONObject getInitiatePayload(Context context) throws JSONException {
+        JSONObject payload = new JSONObject();
+        JSONObject innerPayload = new JSONObject();
+        payload.put("requestId", UUID.randomUUID());
+        payload.put("service", "in.juspay.hyperpay");
+        payload.put("betaAssets", false);
+        innerPayload.put("clientId", context.getResources().getString(context.getResources().getIdentifier("client_id","string",context.getPackageName())));
+        innerPayload.put("merchantId", context.getResources().getString(context.getResources().getIdentifier("merchant_id","string",context.getPackageName())));
+        innerPayload.put("action", "initiate");
+        innerPayload.put(PaymentConstants.ENV, "prod");
+        payload.put(PaymentConstants.PAYLOAD,innerPayload);
+        return payload;
+    }
+
 }

@@ -42,11 +42,6 @@ import Presto.Core.Types.Language.Flow (Flow, doAff, getState, modifyState, dela
 import PrestoDOM.Core (terminateUI)
 import Types.App (FlowBT, GlobalState(..))
 
-
-foreign import toggleLoaderIOS :: EffectFn1 Boolean Unit
-
-foreign import loaderTextIOS :: EffectFn2 String String Unit
-
 foreign import getFromWindow :: EffectFn1 String Foreign
 
 foreign import saveToLocalStoreImpl :: String -> String -> EffectFnAff Unit

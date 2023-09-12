@@ -60,7 +60,7 @@ import Engineering.Helpers.Utils (loaderText, toggleLoader, getAppConfig, reboot
 import Foreign (unsafeToForeign)
 import Foreign.Class (class Encode, encode, decode)
 import Helpers.FileProvider.Utils (stringifyJSON)
-import Helpers.Utils (LatLon(..), checkPPInitiateStatus, consumeBP, decodeErrorCode, decodeErrorMessage, getAvailableUpiApps, getCurrentLocation, getDatebyCount, getDowngradeOptions, getGenderIndex, getNegotiationUnit, getPastDays, getPastWeeks, getTime, getcurrentdate, hideSplash, initiatePP, isDateGreaterThan, isYesterday, onBoardingSubscriptionScreenCheck, parseFloat, paymentPageUI, secondsLeft, toString, translateString, getDistanceBwCordinates)
+import Helpers.Utils (LatLon(..), checkPPInitiateStatus, consumeBP, decodeErrorCode, decodeErrorMessage, getAvailableUpiApps, getCurrentLocation, getDatebyCount, getDowngradeOptions, getGenderIndex, getNegotiationUnit, getPastDays, getPastWeeks, getTime, getcurrentdate, hideSplash, initiatePP, isDateGreaterThan, isYesterday, onBoardingSubscriptionScreenCheck, parseFloat, paymentPageUI, secondsLeft, toString, translateString, getDistanceBwCordinates, initiatePPSingleInstance)
 import JBridge (cleverTapCustomEvent, cleverTapCustomEventWithParams, cleverTapEvent, cleverTapSetLocation, drawRoute, factoryResetApp, firebaseLogEvent, firebaseLogEventWithTwoParams, firebaseUserID, generateSessionId, getCurrentLatLong, getCurrentPosition, getVersionCode, getVersionName, hideKeyboardOnNavigation, initiateLocationServiceClient, isBatteryPermissionEnabled, isInternetAvailable, isLocationEnabled, isLocationPermissionEnabled, isOverlayPermissionEnabled, metaLogEvent, metaLogEventWithTwoParams, openNavigation, removeAllPolylines, removeMarker, saveSuggestionDefs, saveSuggestions, setCleverTapUserData, setCleverTapUserProp, showMarker, startLocationPollingAPI, stopChatListenerService, stopLocationPollingAPI, toast, toggleBtnLoader, unregisterDateAndTime, withinTimeRange)
 import JBridge as JB
 import Language.Strings (getString)
@@ -1976,7 +1976,7 @@ clearPendingDuesFlow = do
 
 nyPaymentFlow :: PlanCardConfig -> Boolean -> FlowBT String Unit
 nyPaymentFlow planCardConfig fromJoinPlan = do
-  liftFlowBT $ runEffectFn1 initiatePP unit
+  liftFlowBT $ runEffectFn1 initiatePPSingleInstance unit
   response <- lift $ lift $ Remote.subscribePlan planCardConfig.id
   case response of
     Right (SubscribePlanResp listResp) -> do
@@ -2056,6 +2056,7 @@ paymentHistoryFlow = do
 ysPaymentFlow :: FlowBT String Unit
 ysPaymentFlow = do
   liftFlowBT $ runEffectFn1 initiatePP unit
+  liftFlowBT $ runEffectFn1 initiatePPSingleInstance unit
   (GlobalState state) <- getState
   let homeScreenState = state.homeScreen
   response <- lift $ lift $ Remote.createPaymentOrder homeScreenState.data.paymentState.invoiceId
@@ -2149,6 +2150,7 @@ ackScreenFlow = do
 subScriptionFlow :: FlowBT String Unit
 subScriptionFlow = do
   appConfig <- getAppConfig Constants.appConfig 
+  liftFlowBT $ runEffectFn1 initiatePP unit
   modifyScreenState $ SubscriptionScreenStateType (\subscriptionScreen -> subscriptionScreen{props{isSelectedLangTamil = (getValueToLocalNativeStore LANGUAGE_KEY) == "TA_IN", offerBannerProps {showOfferBanner = appConfig.subscriptionConfig.showDUOfferBanner, offerBannerValidTill = appConfig.subscriptionConfig.offerBannerValidTill, offerBannerDeadline = appConfig.subscriptionConfig.offerBannerDeadline}}})
   void $ lift $ lift $ loaderText (getString LOADING) (getString PLEASE_WAIT_WHILE_IN_PROGRESS)
   uiAction <- UI.subscriptionScreen

@@ -696,22 +696,26 @@ export const startPP = function (payload) {
 				return function (_response) {
 					return function () {
             var response = JSON.parse(_response);
-						console.log("%cHyperpay Response ","background:darkblue;color:white;font-size:13px;padding:2px", response);                                                               
-						sc(response.payload.payload.status.value0)();
+						console.log("%cHyperpay Response ","background:darkblue;color:white;font-size:13px;padding:2px", response);                                                        
+						sc(response.payload.status)();
 					}
 				}
 			}
-			if (JOS) {      
+			if (JOS) {  
 				try {
 					payload = JSON.parse(payload);                    
 					console.log("%cHyperpay Request ", "background:darkblue;color:white;font-size:13px;padding:2px", payload);
-
-					if (JOS.isMAppPresent("in.juspay.hyperpay")()){
-            console.log("inside process call");
-						JOS.emitEvent("in.juspay.hyperpay")("onMerchantEvent")(["process",JSON.stringify(payload)])(cb)();
-					} else {
-            sc("FAIL")();
-					}
+          if (JBridge.processPP) {
+            window.processCallBack = cb;
+            JBridge.processPP(JSON.stringify(payload));
+          } else {
+            if (JOS.isMAppPresent("in.juspay.hyperpay")()){
+              console.log("inside process call");
+              JOS.emitEvent("in.juspay.hyperpay")("onMerchantEvent")(["process",JSON.stringify(payload)])(cb)();
+            } else {
+              sc("FAIL")();
+            }
+          }
 				} catch (err) {
 					console.error("Hyperpay Request not sent : ", err);
 				}
@@ -794,26 +798,38 @@ function getFileName(url) {
 }
 
 export const initiatePP = function () {
-  var cb = function (code) {
-    return function (_response) {
-      return function () {
-        var response = JSON.parse(_response);
-        console.log("%cHyperpay Terminate Response ", "background:darkblue;color:white;font-size:13px;padding:2px", code, response);
-      }
-    }
+  if (JBridge.ppInitiateStatus && JBridge.ppInitiateStatus()) {
+    window.isPPInitiated = true;
+    return;
   }
-  if (JOS) {
-    try {
-      var innerPayload = Object.assign({},window.__payload.payload);
-      var initiatePayload = Object.assign({},window.__payload);
-      innerPayload["action"] = "initiate";
-      initiatePayload["payload"] = innerPayload;
-      JOS.startApp("in.juspay.hyperpay")(initiatePayload)(cb)();
-    } catch (err) {
-      console.error("Hyperpay initiate Request not sent : ", err);
+  try {
+    if (JBridge.initiatePP) {
+      JBridge.initiatePP(JSON.stringify(getInitiatPayload()));
     }
-  } else {
-    console.log("%cHyperpay initiate Result - Already Initiated", "background:darkblue;color:white;font-size:13px;padding:2px", window.__payload);
+  } catch (err) {
+    console.error("Hyperpay initiate Request not sent : ", err);
+  }
+}
+
+export const initiatePPSingleInstance = function () {
+  if (!JBridge.initiatePP) {
+    if (JOS) {
+      try {
+        var cb = function (code) {
+          return function (_response) {
+            return function () {
+              var response = JSON.parse(_response);
+              console.log("%cHyperpay Terminate Response ", "background:darkblue;color:white;font-size:13px;padding:2px", code, response);
+            }
+          }
+        }
+        JOS.startApp("in.juspay.hyperpay")(getInitiatPayload())(cb)();
+      } catch (err) {
+        console.error("Hyperpay initiate Request not sent : ", err);
+      }
+    } else {
+      console.log("%cHyperpay initiate Result - Already Initiated", "background:darkblue;color:white;font-size:13px;padding:2px", window.__payload);
+    }
   }
 }
 export const getAvailableUpiApps = function (resultCb) {
@@ -915,7 +931,9 @@ export const getPopupObject = function (just, nothing, key){
 }
 
 export const checkPPInitiateStatus = function (cb,services = microapps) {
-  if (window.isPPInitiated && checkPPLoadStatus(services)) {
+  if (JBridge.ppInitiateStatus  && JBridge.ppInitiateStatus() && window.isPPInitiated) {
+    cb()();
+  } else if (window.isPPInitiated && checkPPLoadStatus(services)){
     cb()();
   } else {
     waitTillSeviceLoad(cb,services,checkPPInitiateStatus);
@@ -1038,4 +1056,13 @@ export const getDeviceDefaultDensity = function (){
   } else {
     return window.JBridge.getDensity() * 160;
   }
+}
+
+function getInitiatPayload () {
+  var innerPayload = Object.assign({},window.__payload.payload);
+  var initiatePayload = Object.assign({},window.__payload);
+  innerPayload["action"] = "initiate";
+  initiatePayload["payload"] = innerPayload;
+  initiatePayload["service"] = "in.juspay.hyperpay";
+  return initiatePayload;
 }

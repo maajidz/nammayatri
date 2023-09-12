@@ -338,6 +338,7 @@ type MicroAPPInvokeSignature = String -> (AffSuccess String) ->  Effect Unit
 foreign import startPP :: MicroAPPInvokeSignature
 
 foreign import initiatePP :: EffectFn1 Unit Unit
+foreign import initiatePPSingleInstance :: EffectFn1 Unit Unit
 
 foreign import getAvailableUpiApps :: EffectFn1 ((Array UpiApps) -> Effect Unit) Unit
 

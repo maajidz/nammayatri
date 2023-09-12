@@ -208,7 +208,11 @@ window.onActivityResult = function (requestCode, resultCode, bundle) {
 window["onEvent'"] = function (event, args) {
   console.log(event, args);
   if (event == "onBackPressed") {
-    purescript.onEvent(event)();
+    if (JBridge.onBackpressedPP && JBridge.onBackpressedPP()) {
+      console.log("Backpress Consumed by PP")
+    } else {
+      purescript.onEvent(event)();
+    }
   }  else if (event == "onLocationChanged") {
     purescript.onConnectivityEvent("LOCATION_DISABLED")();
   } else if (event == "onInternetChanged") {
@@ -231,10 +235,14 @@ window["onEvent'"] = function (event, args) {
       window.keyBoardCallback(event);
   }
 }
-window["onEvent"] = function (jsonPayload, args, callback) { // onEvent from hyperPay
+window["onEvent"] = function (jsonPayload, args, callback) { // onEvent from PP
   console.log("onEvent Payload", jsonPayload);
-  if ((JSON.parse(jsonPayload)).event == "initiate_result"){
-      window.isPPInitiated = true;
+  let payload = JSON.parse(jsonPayload)
+  switch (payload.event) {
+    case "initiate_result" : window.isPPInitiated = true; break;
+    case "process_result" : if (window.processCallBack) window.processCallBack(0)(jsonPayload)(); break;
+    case "log_stream" : purescript.handleLogStream(payload.payload); break;
+    default : console.log ("Unknown Event");
   }
 }
 
