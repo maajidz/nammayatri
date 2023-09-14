@@ -168,6 +168,9 @@ initData = {
         showRideRating : false,
         showContactSupportPopUp : false,
         showChatBlockerPopUp : false,
-        subscriptionPopupType : NO_SUBSCRIPTION_POPUP
+        subscriptionPopupType : NO_SUBSCRIPTION_POPUP,
+        driverBlocked : false,
+        showBlockingPopup : false,
+        showGenericAccessibilityPopUp : false
     }
 }

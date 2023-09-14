@@ -21,6 +21,8 @@ type ContentConfig =
    { primaryText :: String,
      secondaryText :: String,
      imageUrl :: String,
+     videoUrl :: String, 
+     mediaType :: String,
      listViewArray :: Array String
    }
 
@@ -37,7 +39,7 @@ accessibilityPopUpConfig selectedDisability =
          buttonLayoutMargin = Margin 16 0 16 20 ,
          primaryText {
            text = popupData.primaryText
-         , margin = Margin 16 24 16 4 
+         , margin = Margin 16 16 16 4 
          , padding = Padding 0 0 0 0},
          secondaryText {
            text = popupData.secondaryText
@@ -56,12 +58,20 @@ accessibilityPopUpConfig selectedDisability =
          cornerRadius = (PTD.Corners 15.0 true true true true),
          coverImageConfig {
            imageUrl = popupData.imageUrl
-         , visibility = VISIBLE
+         , visibility = if popupData.videoUrl /= "" then GONE else VISIBLE
          , height = V 160
          , width = MATCH_PARENT
          , margin = Margin 16 20 16 0
          }
          , listViewArray = popupData.listViewArray
+          , coverVideoConfig {
+            visibility = if popupData.videoUrl /= "" then VISIBLE else GONE 
+          , height = V 200
+          , width = MATCH_PARENT
+          , padding = Padding 16 16 16 0
+          , mediaType = popupData.mediaType
+          , mediaUrl = popupData.videoUrl
+          }
        }
    in config'
   
@@ -73,14 +83,20 @@ getAccessibilityPopupData pwdtype  =
         Mb.Just disability -> case (disability.tag) of 
           "BLIND_LOW_VISION" -> accessibilityConfig'
                                                   { imageUrl = "ny_ic_blind_pickup," <> (getAssetStoreLink Common.FunctionCall) <> "ny_ic_blind_pickup.png",
+                                                    videoUrl = "https://www.youtube.com/watch?v=GllvoYpOUpc",
+                                                    mediaType = "VideoLink",
                                                     listViewArray = [(getString VI_POINTER_1) , (getString VI_POINTER_2) , (getString GENERAL_DISABILITY_DESCRIPTION)]
                                                   } 
           "HEAR_IMPAIRMENT" ->     accessibilityConfig'
                                                   { imageUrl = "ny_ic_deaf_pickup," <> (getAssetStoreLink Common.FunctionCall) <> "ny_ic_deaf_pickup.png",
+                                                    videoUrl = "https://www.youtube.com/watch?v=QcKeSF9uiJ4",
+                                                    mediaType = "PortraitVideoLink",
                                                     listViewArray = [(getString HI_POINTER_1) , (getString HI_POINTER_2) , (getString GENERAL_DISABILITY_DESCRIPTION)]
                                                   }
           "LOCOMOTOR_DISABILITY" -> accessibilityConfig'
                                                   { imageUrl = "ny_ic_locomotor_arrival," <> (getAssetStoreLink Common.FunctionCall) <> "ny_ic_locomotor_arrival.png",
+                                                    videoUrl = "https://youtu.be/-ku9Gc8U5B8",
+                                                    mediaType = "PortraitVideoLink",
                                                     listViewArray = [(getString PI_POINTER_1) , (getString PI_POINTER_2) , (getString GENERAL_DISABILITY_DESCRIPTION)]
                                                   }     
           _ ->     accessibilityConfig' 
@@ -88,7 +104,7 @@ getAccessibilityPopupData pwdtype  =
         Mb.Nothing -> accessibilityConfig' 
 
 accessibilityConfig :: Common.LazyCheck -> ContentConfig
-accessibilityConfig _ = { primaryText : (getString ACCESSIBILITY_TEXT), secondaryText : (getString TO_CATER_YOUR_SPECIFIC_NEEDS), imageUrl : "ny_ic_disability_illustration," <> (getAssetStoreLink Common.FunctionCall) <> "ny_ic_disability_illustration.png", listViewArray : [(getString GENERAL_DISABILITY_DESCRIPTION)]}
+accessibilityConfig _ = { primaryText : (getString ACCESSIBILITY_TEXT), secondaryText : (getString TO_CATER_YOUR_SPECIFIC_NEEDS), imageUrl : "ny_ic_disability_illustration," <> (getAssetStoreLink Common.FunctionCall) <> "ny_ic_disability_illustration.png", videoUrl : "", mediaType : "" ,listViewArray : [(getString GENERAL_DISABILITY_DESCRIPTION)]}
 
 accessibilityListConfig :: ST.DisabilityData -> String -> AppConfig -> SelectListModal.Config
 accessibilityListConfig disabilityData otherDisability config = 

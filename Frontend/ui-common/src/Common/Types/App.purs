@@ -308,3 +308,58 @@ type ShareImageConfig = {
   , logoId :: String
   , isReferral :: Boolean
 }
+type YoutubeData = {
+    videoTitle :: String
+  , setVideoTitle :: Boolean
+  , showMenuButton :: Boolean
+  , showDuration :: Boolean
+  , showSeekBar :: Boolean
+  , videoId :: String
+  , videoType :: String
+  , videoHeight :: Int
+}
+
+
+data YoutubeVideoStatus = PLAY | PAUSE
+
+derive instance genericYoutubeVideoStatus:: Generic YoutubeVideoStatus _
+instance showYoutubeVideoStatus :: Show YoutubeVideoStatus where show = genericShow
+instance eqYoutubeVideoStatus :: Eq YoutubeVideoStatus where eq = genericEq
+
+type CarouselModal = {
+  carouselData ::  Array CarouselData,
+  gravity :: Int 
+}
+
+type CarouselData = {
+  imageConfig :: CarouselImageConfig,
+  titleConfig :: CarouselTextConfig,
+  youtubeConfig :: YoutubeData,
+  contentType :: String,
+  gravity :: Int, 
+  descriptionConfig :: CarouselTextConfig,
+  backgroundColor :: String
+}
+
+type CarouselImageConfig = {
+  height :: Int,
+  width :: Int,
+  bgColor :: String,
+  cornerRadius :: Number,
+  image :: String
+}
+
+type CarouselTextConfig = {
+  textSize :: Int,
+  textColor :: String,
+  gravity :: String, -------- CENTER | LEFT | RIGHT | TOP | BOTTOM
+  margin :: MarginConfig,
+  text :: String
+}
+
+type MarginConfig = {
+  top :: Int ,
+  right :: Int,
+  bottom :: Int,
+  left :: Int
+}

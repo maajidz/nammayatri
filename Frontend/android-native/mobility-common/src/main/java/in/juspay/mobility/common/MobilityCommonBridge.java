@@ -61,6 +61,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,6 +103,7 @@ import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.common.api.ApiException;
@@ -162,11 +164,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer;
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener;
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerFullScreenListener;
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerListener;
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions;
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView;
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.ui.DefaultPlayerUiController;
+
 import in.juspay.hyper.bridge.HyperBridge;
 import in.juspay.hyper.core.BridgeComponents;
 import in.juspay.hyper.core.ExecutorManager;
 import in.juspay.hyper.core.JsCallback;
 import in.juspay.hyper.core.JuspayLogger;
+import in.juspay.mobility.common.carousel.VPAdapter;
+import in.juspay.mobility.common.carousel.ViewPagerItem;
 
 public class MobilityCommonBridge extends HyperBridge {
 
@@ -212,6 +224,9 @@ public class MobilityCommonBridge extends HyperBridge {
     CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     private int lastFocusedEditView;
     private int lastFocusedEditText;
+    public static YouTubePlayerView youTubePlayerView;
+    public static YouTubePlayer youtubePlayer;
+    public static float videoDuration = 0;
     // Others
     private LottieAnimationView animationView;
     protected Method[] methods = null;
@@ -2103,6 +2118,202 @@ public class MobilityCommonBridge extends HyperBridge {
         }
     }
 
+    @JavascriptInterface
+    public void setYoutubePlayer(String rawJson, final String playerId, String videoStatus) {
+        if (bridgeComponents.getActivity() != null) {
+            videoDuration = 0;
+            ExecutorManager.runOnMainThread(() -> {
+                try {
+                    if (videoStatus.equals("PAUSE")) {
+                        pauseYoutubeVideo();
+                    } else {
+                        JSONObject json = new JSONObject(rawJson);
+                        if (youTubePlayerView != null)
+                            youTubePlayerView.release();
+                        boolean showMenuButton = json.getBoolean("showMenuButton");
+                        boolean showDuration = json.getBoolean("showDuration");
+                        boolean setVideoTitle = json.getBoolean("setVideoTitle");
+                        boolean showSeekBar = json.getBoolean("showSeekBar");
+                        String videoTitle = json.getString("videoTitle");
+                        String videoId = json.getString("videoId");
+                        String videoType = "VIDEO";
+                        if (json.has("videoType")) {
+                            videoType = json.getString("videoType");
+                        }
+                        youTubePlayerView = new YouTubePlayerView(bridgeComponents.getContext());
+                        LinearLayout layout = bridgeComponents.getActivity().findViewById(Integer.parseInt(playerId));
+                        layout.addView(youTubePlayerView);
+                        youTubePlayerView.setEnableAutomaticInitialization(false);
+                        YouTubePlayerListener youTubePlayerListener = new AbstractYouTubePlayerListener() {
+                            @Override
+                            public void onReady(@NonNull YouTubePlayer youTubePlayer) {
+                                try {
+                                    youtubePlayer = youTubePlayer;
+                                    DefaultPlayerUiController playerUiController = new DefaultPlayerUiController(youTubePlayerView, youTubePlayer);
+                                    playerUiController.showMenuButton(showMenuButton);
+                                    playerUiController.showDuration(showDuration);
+                                    playerUiController.showSeekBar(showSeekBar);
+                                    playerUiController.showFullscreenButton(true);
+                                    if (setVideoTitle) {
+                                        playerUiController.setVideoTitle(videoTitle);
+                                    }
+                                    playerUiController.showYouTubeButton(false);
+                                    youTubePlayerView.setCustomPlayerUi(playerUiController.getRootView());
+
+                                    youTubePlayer.seekTo(videoDuration);
+                                    youTubePlayer.loadVideo(videoId, 0);
+                                    youTubePlayer.play();
+
+                                } catch (Exception e) {
+                                    Log.e("error inside setYoutubePlayer onReady", String.valueOf(e));
+                                }
+                            }
+
+                            @Override
+                            public void onCurrentSecond(@NonNull YouTubePlayer youTubePlayer, float second) {
+                                videoDuration = second;
+                            }
+                        };
+
+                        String finalVideoType = videoType;
+                        youTubePlayerView.addFullScreenListener(new YouTubePlayerFullScreenListener() {
+                            @Override
+                            public void onYouTubePlayerExitFullScreen() {
+                            }
+
+                            @Override
+                            public void onYouTubePlayerEnterFullScreen() {
+                                Intent newIntent = new Intent(bridgeComponents.getContext(), YoutubeVideoView.class);
+                                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                newIntent.putExtra("videoId", videoId);
+                                newIntent.putExtra("videoDuration", videoDuration);
+                                newIntent.putExtra("videoType", finalVideoType);
+                                bridgeComponents.getContext().startActivity(newIntent);
+                            }
+                        });
+
+                        IFramePlayerOptions options = new IFramePlayerOptions.Builder().controls(0).rel(0).build();
+                        youTubePlayerView.initialize(youTubePlayerListener, options);
+                    }
+                } catch (Exception e) {
+                    Log.e("exception in setYoutubePlayer", String.valueOf(e));
+                }
+            });
+        }
+    }
+
+    @JavascriptInterface
+    public void pauseYoutubeVideo() {
+        if (youTubePlayerView != null) {
+            youtubePlayer.pause();
+        }
+    }
+
+    @JavascriptInterface
+    public void addCarousel(String stringifyArray, String id) {
+        try{
+        Activity activity = bridgeComponents.getActivity();
+        Context context = bridgeComponents.getContext();
+        JSONObject jsonData = new JSONObject(stringifyArray);
+        int gravity = jsonData.getInt("gravity");
+        LinearLayout parentLayout = null;
+        if (activity != null) {
+            parentLayout = activity.findViewById(Integer.parseInt(id));
+        }
+        if (activity == null || parentLayout == null) return;
+        LinearLayout finalParentLayout = parentLayout;
+        activity.runOnUiThread(() -> {
+
+            ViewPager2 viewPager2 = new ViewPager2(context);
+
+            LinearLayout sliderDotsPanel = new LinearLayout(context);
+            LinearLayout.LayoutParams sliderDotsPanelParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+            ViewGroup.LayoutParams scrollViewParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, finalParentLayout.getHeight() );
+            ScrollView scrollView = new ScrollView(context);
+            scrollView.setLayoutParams(scrollViewParams);
+
+            LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, finalParentLayout.getHeight());
+            LinearLayout linearLayout = new LinearLayout(context);
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
+            linearLayout.setLayoutParams(linearLayoutParams);
+
+            //adding data in array list
+            ArrayList<ViewPagerItem> viewPagerItemArrayList = new ArrayList<>();
+            try {
+                JSONArray jsonArray = jsonData.getJSONArray("carouselData");
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    JSONObject imageConfig = jsonObject.getJSONObject("imageConfig");
+                    JSONObject titleConfig = jsonObject.getJSONObject("titleConfig");
+                    JSONObject descriptionConfig = jsonObject.getJSONObject("descriptionConfig");
+                    String contentType = jsonObject.getString("contentType");
+                    JSONObject videoData = jsonObject.getJSONObject("youtubeConfig");
+                    int carouselGravity = jsonObject.getInt("gravity");
+                    int imageID = in.juspay.mobility.app.Utils.getResIdentifier(context,imageConfig.getString("image"), "drawable");
+                    ViewPagerItem viewPagerItem = new ViewPagerItem(imageID, imageConfig, descriptionConfig, titleConfig, contentType, videoData, carouselGravity);
+
+                    viewPagerItemArrayList.add(viewPagerItem);
+                }
+            } catch (Exception e) {
+                Log.e(UTILS, "Exception" + e);
+                return;
+            }
+            VPAdapter vpAdapter = new VPAdapter(viewPagerItemArrayList, bridgeComponents.getContext());
+            viewPager2.setAdapter(vpAdapter);
+
+            // setting the dots layout
+            int dotsCount;
+            ImageView[] dots;
+            dotsCount = vpAdapter.getItemCount();
+            dots = new ImageView[dotsCount];
+            for (int i = 0; i < dotsCount; i++) {
+                dots[i] = new ImageView(context);
+                dots[i].setImageDrawable(ContextCompat.getDrawable(context, in.juspay.mobility.app.R.drawable.carousel_dot_inactive));
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(28, 28);
+                params.setMargins(14, 0, 14, 0);
+                sliderDotsPanel.addView(dots[i], params);
+                dots[0].setImageDrawable(ContextCompat.getDrawable(context, in.juspay.mobility.app.R.drawable.carousel_dot_active));
+                int finalI = i;
+                dots[i].setOnClickListener(view -> viewPager2.setCurrentItem(finalI));
+            }
+            sliderDotsPanel.setLayoutParams(sliderDotsPanelParams);
+            viewPager2.setLayoutParams(new ViewGroup.LayoutParams(finalParentLayout.getWidth(), finalParentLayout.getHeight() - 50));
+
+            viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                    super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+                }
+
+                @Override
+                public void onPageSelected(int position) {
+                    //setting active inactive dots
+                    for (int i = 0; i < dotsCount; i++) {
+                        dots[i].setImageDrawable(ContextCompat.getDrawable(context, in.juspay.mobility.app.R.drawable.carousel_dot_inactive));
+                        dots[i].setContentDescription("Page Indicator, Page "  +( i+1) + " : Swipe or Tap To Go To Next Page\"");
+                    }
+                    dots[position].setImageDrawable(ContextCompat.getDrawable(context, in.juspay.mobility.app.R.drawable.carousel_dot_active));
+                    super.onPageSelected(position);
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+                    super.onPageScrollStateChanged(state);
+                }
+            });
+            linearLayout.addView(viewPager2);
+            linearLayout.setGravity(gravity);
+            linearLayout.addView(sliderDotsPanel);
+            scrollView.addView(linearLayout);
+            sliderDotsPanel.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            finalParentLayout.addView(scrollView);
+        });}
+        catch (Exception e)
+        {
+            Log.e(UTILS, "Exception in add Carousel" + e);
+        }
+    }
     @JavascriptInterface
     public void clearStorageFile(String fileName){
         SharedPreferences sharedPref = bridgeComponents.getContext().getSharedPreferences(fileName,MODE_PRIVATE);

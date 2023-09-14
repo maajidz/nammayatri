@@ -23,7 +23,7 @@ import Effect.Aff (Fiber)
 import Presto.Core.Flow (Flow)
 import Engineering.Helpers.Commons (liftFlow)
 import Data.Maybe (Maybe(..))
-import Common.Types.App (EventPayload(..),ChatComponent(..), DateObj, LayoutBound, ClevertapEventParams, ShareImageConfig)
+import Common.Types.App (EventPayload(..),ChatComponent(..), DateObj, LayoutBound, ClevertapEventParams, ShareImageConfig, YoutubeData, CarouselModal)
 -- import Types.APIv2 (Address)
 import Foreign (Foreign)
 import Control.Monad.Except (runExcept)
@@ -178,6 +178,8 @@ foreign import storeCallBackOpenChatScreen :: forall action. (action -> Effect U
 foreign import sendMessage :: String -> Unit
 foreign import getSuggestionsfromLocal :: String -> Array String
 foreign import getSuggestionfromKey :: String -> String -> String
+foreign import setYoutubePlayer :: Fn3 YoutubeData String String Unit
+foreign import addCarousel :: CarouselModal -> String -> Effect Unit
 foreign import scrollToEnd :: String -> Boolean -> Effect Unit
 foreign import metaLogEvent :: String -> Unit
 foreign import metaLogEventWithParams :: String -> String -> String -> Effect Unit

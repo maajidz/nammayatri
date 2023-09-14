@@ -17,7 +17,7 @@ module Screens.Types where
 
 import MerchantConfig.Types
 
-import Common.Types.App (CountryCodeObj, OTPChannel, OptionButtonList, RateCardType, FeedbackAnswer)
+import Common.Types.App (CountryCodeObj, OTPChannel, OptionButtonList, RateCardType, FeedbackAnswer, CarouselModal)
 import Components.ChatView.Controller (ChatComponent)
 import Components.ChooseVehicle.Controller as ChooseVehicle
 import Components.QuoteListItem.Controller (QuoteListItemState)
@@ -124,18 +124,15 @@ type SplashScreenData =  {
 
 -- ############################################################# WelcomeScreen ################################################################################
 
-type CarouselModel = {
-  image :: String,
-  title :: String,
-  description :: String
-}
+
+
 
 type WelcomeScreenState = {
   data :: WelcomeScreenData
 }
 
 type WelcomeScreenData = {
-  carouselModel :: Array CarouselModel,
+  carouselModal :: CarouselModal,
   logField :: Object Foreign
 }
 
@@ -700,6 +697,7 @@ type HomeScreenStateProps =
   , canSendSuggestion :: Boolean
   , sheetState :: BottomSheetState
   , showDisabilityPopUp :: Boolean
+  , showEducationalCarousel :: Boolean
   }
 
 type RouteEndPoints = {

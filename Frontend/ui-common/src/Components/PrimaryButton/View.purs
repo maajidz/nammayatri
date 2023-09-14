@@ -17,14 +17,14 @@ module Components.PrimaryButton.View where
 import Effect (Effect)
 import Prelude (Unit, bind, const, discard, pure, unit, void, ($), (&&), (==), (<>))
 import Components.PrimaryButton.Controller (Action(..), Config)
-import PrestoDOM (Gravity(..), Length(..), Orientation(..), PrestoDOM, Visibility(..), Accessiblity(..),afterRender, alpha, background, clickable, color, cornerRadius, fontStyle, gravity, height, id, imageView, lineHeight, linearLayout, lottieAnimationView, margin, onClick, orientation, padding, relativeLayout, stroke, text, textSize, textView, visibility, width, imageWithFallback, gradient, accessibilityHint, accessibility, weight)
+import PrestoDOM (Gravity(..), Length(..), Orientation(..), PrestoDOM, Visibility(..), Accessiblity(..),afterRender, alpha, background, clickable, color, cornerRadius, fontStyle, gravity, height, id, imageView, lineHeight, linearLayout, lottieAnimationView, margin, onClick, orientation, padding, relativeLayout, stroke, text, textSize, textView, visibility, width, imageWithFallback, gradient, accessibilityHint, accessibility, weight, textFromHtml)
 import JBridge (toggleBtnLoader, getKeyInSharedPrefKeys, startLottieProcess, lottieAnimationConfig)
 import Engineering.Helpers.Commons (getNewIDWithTag, os)
 import MerchantConfig.Utils (getValueFromConfig)
 import Font.Style as FontStyle
 import Common.Styles.Colors as Color
 import Common.Types.App (LazyCheck(..))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), isNothing, fromMaybe)
 import PrestoDOM.Animation as PrestoAnim
 
 view :: forall w. (Action -> Effect Unit) -> Config -> PrestoDOM (Effect Unit) w
@@ -85,7 +85,7 @@ view push config =
                     $ [ height config.textConfig.height
                       , accessibilityHint config.textConfig.accessibilityHint
                       , accessibility ENABLE
-                      , text config.textConfig.text
+                      , if isNothing config.textConfig.textFromHtml  then text config.textConfig.text else textFromHtml $ fromMaybe "" config.textConfig.textFromHtml
                       , color config.textConfig.color
                       , gravity config.textConfig.gravity
                       , lineHeight "20"

@@ -1,4 +1,4 @@
-package in.juspay.mobility.driver;
+package in.juspay.mobility.common;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView;
-
 
 public class YoutubeVideoView extends AppCompatActivity {
     float duration;
@@ -60,10 +59,10 @@ public class YoutubeVideoView extends AppCompatActivity {
             youTubePlayerView.release();
         }
         super.onDestroy();
-        if(MobilityDriverBridge.youtubePlayer != null) {
-            MobilityDriverBridge.youTubePlayerView.exitFullScreen();
-            MobilityDriverBridge.youtubePlayer.seekTo(duration);
-            MobilityDriverBridge.youtubePlayer.play();
+        if(MobilityCommonBridge.youtubePlayer != null) {
+            MobilityCommonBridge.youTubePlayerView.exitFullScreen();
+            MobilityCommonBridge.youtubePlayer.seekTo(duration);
+            MobilityCommonBridge.youtubePlayer.play();
         }
     }
 }

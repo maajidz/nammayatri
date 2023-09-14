@@ -18,7 +18,7 @@ module Screens.HomeScreen.View where
 import Accessor (_lat, _lon, _selectedQuotes, _fareProductType)
 import Animation (fadeOut, translateYAnimFromTop, scaleAnim, translateYAnimFromTopWithAlpha, fadeIn)
 import Animation.Config (Direction(..), translateFullYAnimWithDurationConfig, translateYAnimHomeConfig)
-import Common.Types.App (LazyCheck(..))
+import Common.Types.App (LazyCheck(..), YoutubeData, CarouselData)
 import Components.Banner.Controller as BannerConfig
 import Components.Banner.View as Banner
 import Components.ChatView as ChatView
@@ -56,13 +56,13 @@ import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff)
 import Effect.Class (liftEffect)
-import Engineering.Helpers.Commons (countDown, flowRunner, getNewIDWithTag, liftFlow, os, safeMarginBottom, safeMarginTop, screenHeight, isPreviousVersion, screenWidth, camelCaseToSentenceCase)
+import Engineering.Helpers.Commons (countDown, flowRunner, getNewIDWithTag, liftFlow, os, safeMarginBottom, safeMarginTop, screenHeight, isPreviousVersion, screenWidth, camelCaseToSentenceCase, getVideoID)
 import Engineering.Helpers.Utils (showAndHideLoader)
 import Engineering.Helpers.LogEvent (logEvent)
 import Font.Size as FontSize
 import Font.Style as FontStyle
 import Helpers.Utils (decodeError, fetchAndUpdateCurrentLocation, getCurrentLocationMarker, getLocationName, getNewTrackingId, getPreviousVersion, parseFloat, storeCallBackCustomer, storeCallBackLocateOnMap, storeOnResumeCallback, toString, getCommonAssetStoreLink, getAssetStoreLink, getAssetsBaseUrl, getSearchType)
-import JBridge (addMarker, animateCamera, drawRoute, enableMyLocation, firebaseLogEvent, getCurrentPosition, getHeightFromPercent, isCoordOnPath, isInternetAvailable, removeAllPolylines, removeMarker, requestKeyboardShow, showMap, startLottieProcess, toast, updateRoute, getExtendedPath, generateSessionId, initialWebViewSetUp, stopChatListenerService, startChatListenerService, startTimerWithTime, storeCallBackMessageUpdated, isMockLocation, storeCallBackOpenChatScreen, scrollOnResume, waitingCountdownTimer, lottieAnimationConfig, getLayoutBounds, startTimerWithTime)
+import JBridge (addMarker, animateCamera, drawRoute, enableMyLocation, firebaseLogEvent, getCurrentPosition, getHeightFromPercent, isCoordOnPath, isInternetAvailable, removeAllPolylines, removeMarker, requestKeyboardShow, showMap, startLottieProcess, toast, updateRoute, getExtendedPath, generateSessionId, initialWebViewSetUp, stopChatListenerService, startChatListenerService, startTimerWithTime, storeCallBackMessageUpdated, isMockLocation, storeCallBackOpenChatScreen, scrollOnResume, waitingCountdownTimer, lottieAnimationConfig, getLayoutBounds, startTimerWithTime, addCarousel)
 import Language.Strings (getString)
 import Language.Types (STR(..))
 import Log (printLog)
@@ -70,7 +70,7 @@ import MerchantConfig.Utils (Merchant(..), getMerchant, getValueFromConfig)
 import Prelude (Unit, bind, const, discard, map, negate, not, pure, show, unit, void, when, ($), (&&), (*), (+), (-), (/), (/=), (<), (<<<), (<=), (<>), (==), (>), (||))
 import Presto.Core.Types.API (ErrorResponse)
 import Presto.Core.Types.Language.Flow (Flow, doAff, delay)
-import PrestoDOM (BottomSheetState(..), Gradient(..), Gravity(..), Length(..), Accessiblity(..), Margin(..), Accessiblity(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), adjustViewWithKeyboard, afterRender, alignParentBottom, background, clickable, color, cornerRadius, disableClickFeedback, ellipsize, fontStyle, frameLayout, gradient, gravity, halfExpandedRatio, height, id, imageView, imageWithFallback, lineHeight, linearLayout, lottieAnimationView, margin, maxLines, onBackPressed, onClick, orientation, padding, peakHeight, relativeLayout, singleLine, stroke, text, textFromHtml, textSize, textView, url, visibility, webView, weight, width, layoutGravity, accessibilityHint, accessibility, accessibilityFocusable, focusable, scrollView)
+import PrestoDOM (BottomSheetState(..), Gradient(..), Gravity(..), Length(..), Accessiblity(..), Margin(..), Accessiblity(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), adjustViewWithKeyboard, afterRender, alignParentBottom, background, clickable, color, cornerRadius, disableClickFeedback, ellipsize, fontStyle, frameLayout, gradient, gravity, halfExpandedRatio, height, id, imageView, imageWithFallback, lineHeight, linearLayout, lottieAnimationView, margin, maxLines, onBackPressed, onClick, orientation, padding, peakHeight, relativeLayout, singleLine, stroke, text, textFromHtml, textSize, textView, url, visibility, webView, weight, width, layoutGravity, accessibilityHint, accessibility, accessibilityFocusable, focusable, scrollView, onAnimationEnd)
 import PrestoDOM.Animation as PrestoAnim
 import PrestoDOM.Elements.Elements (bottomSheetLayout, coordinatorLayout)
 import PrestoDOM.Properties (cornerRadii, sheetState)
@@ -266,7 +266,7 @@ view push state =
             )
             (const MapReadyAction)
         ]
-        [ relativeLayout
+       [ relativeLayout
             [ width MATCH_PARENT
             , weight 1.0
             , orientation VERTICAL
@@ -274,7 +274,7 @@ view push state =
             , accessibility DISABLE
             , height MATCH_PARENT
             ]
-            [ frameLayout
+            ([ frameLayout
                 [ width MATCH_PARENT
                 , height MATCH_PARENT
                 , accessibility DISABLE
@@ -366,7 +366,15 @@ view push state =
             -- , if state.props.zoneTimerExpired then zoneTimerExpiredView state push else emptyTextView state
             , if state.props.callSupportPopUp then callSupportPopUpView push state else emptyTextView state
             , if state.props.showDisabilityPopUp &&  (getValueToLocalStore DISABILITY_UPDATED == "true") then disabilityPopUpView push state else emptyTextView state
-            ]
+            ] <> if state.props.showEducationalCarousel then 
+                    [ linearLayout
+                      [ height MATCH_PARENT
+                      , width MATCH_PARENT
+                      , gravity CENTER
+                      , onClick push $ const NoAction
+                      , background Color.black9000
+                      ][ PrestoAnim.animationSet [ fadeIn state.props.showEducationalCarousel] $ carouselView state push ]] 
+                    else [])
         ]
     ] 
 
@@ -2263,3 +2271,89 @@ genderBanner push state =
 
 isAnyOverlayEnabled :: HomeScreenState -> Boolean
 isAnyOverlayEnabled state = ( state.data.settingSideBar.opened /= SettingSideBar.CLOSED || state.props.emergencyHelpModal || state.props.cancelSearchCallDriver || state.props.isCancelRide || state.props.isLocationTracking || state.props.callSupportPopUp || state.props.showCallPopUp || state.props.showRateCard || (state.props.showShareAppPopUp && ((getValueFromConfig "isShareAppEnabled") == "true")))
+
+carouselView:: HomeScreenState -> (Action -> Effect Unit)  -> forall w . PrestoDOM (Effect Unit) w
+carouselView state push = 
+  PrestoAnim.animationSet [ fadeIn true ] $ 
+  linearLayout
+  [ height WRAP_CONTENT
+  , width MATCH_PARENT
+  , padding $ Padding 16 16 16 16
+  , background Color.white900
+  , cornerRadius 16.0
+  , gravity CENTER
+  , visibility if state.props.showEducationalCarousel then VISIBLE else GONE
+  , orientation VERTICAL
+  , margin $ MarginHorizontal 16 16
+  ][  textView $ 
+      [ text $ getString INCLUSIVE_AND_ACCESSIBLE
+      , margin $ MarginBottom 20
+      , color Color.black800
+      ] <> FontStyle.body7 TypoGraphy
+    , linearLayout
+      [ height WRAP_CONTENT
+      , width MATCH_PARENT
+      , stroke $ "1," <> Color.grey900
+      , background Color.grey700
+      , margin $ MarginBottom 16
+      , orientation VERTICAL
+      , cornerRadius 8.0
+      ][  PrestoAnim.animationSet [ fadeIn true ] $  linearLayout
+          [ height $ V 340
+          , width MATCH_PARENT
+          , orientation VERTICAL
+          , id $ getNewIDWithTag "AccessibilityCarouselView"
+          , accessibility DISABLE
+          , gravity CENTER    
+          , onAnimationEnd (\action -> do
+              _ <- push action
+              _ <- addCarousel { gravity : 48, carouselData : getCarouselData state } (getNewIDWithTag "AccessibilityCarouselView")
+              pure unit
+            ) (const AfterRender)
+          ][]
+        ]
+    , PrimaryButton.view (push <<< UpdateProfileButtonAC) (updateProfileConfig state)
+    , PrimaryButton.view (push <<< SkipAccessibilityUpdateAC) (maybeLaterConfig state)]
+
+
+getCarouselData :: HomeScreenState -> Array CarouselData
+getCarouselData state =
+  map (\item -> 
+    { imageConfig : { image : item.image , height : item.imageHeight , width : 200, bgColor : item.imageBgColor, cornerRadius : 8.0 },
+      youtubeConfig : (getYoutubeData item.videoLink item.videoHeight),
+      contentType : if item.videoLink == "" then "IMAGE" else "VIDEO" ,
+      gravity : item.gravity ,
+      backgroundColor : item.carouselBgColor,
+      titleConfig : {
+        text : item.title,
+        textSize : 16,
+        textColor : Color.black800,
+        gravity : "CENTER",
+        margin : { top : 16 , bottom : 0 , right : 16 , left : 16 }
+      }, 
+      descriptionConfig : {
+        text : item.description, 
+        textSize : item.descTextSize,
+        textColor : Color.black700,
+        gravity : "LEFT",
+        margin : { top : 0 , bottom : 0 , right : 16 , left : 16 }
+      }
+    }) [ {image : "carousel_4" , videoLink : (getVideoID "https://www.youtube.com/watch?v=tzrf2Rdpkc4"), videoHeight : 690, imageHeight : 0, imageBgColor : Color.grey700, title:  (getString EDUCATIONAL_POP_UP_SLIDE_1_TITLE), description : (getString EDUCATIONAL_POP_UP_SLIDE_1_SUBTITLE) , descTextSize : 14 , carouselBgColor : Color.grey700, gravity : 0},
+        {image : "ny_ic_blind_pickup" , videoLink : "" , videoHeight :  0, imageHeight :  160, imageBgColor :  Color.blue600, title :   (getString EDUCATIONAL_POP_UP_SLIDE_2_TITLE) , description :  (getString EDUCATIONAL_POP_UP_SLIDE_2_SUBTITLE) , descTextSize : 12, carouselBgColor :  Color.grey700,  gravity : 0},
+        {image : "ny_ic_deaf_pickup" , videoLink : "" , videoHeight :  0, imageHeight :  160, imageBgColor :  Color.blue600, title :   (getString EDUCATIONAL_POP_UP_SLIDE_3_TITLE) , description :  (getString EDUCATIONAL_POP_UP_SLIDE_3_SUBTITLE) , descTextSize : 12 ,carouselBgColor :  Color.grey700,  gravity : 0},
+        {image : "ny_ic_locomotor_arrival" , videoLink : "" , videoHeight :  0, imageHeight :  160, imageBgColor :  Color.blue600, title :   (getString EDUCATIONAL_POP_UP_SLIDE_4_TITLE) , description :  (getString EDUCATIONAL_POP_UP_SLIDE_4_SUBTITLE) , descTextSize : 12, carouselBgColor :  Color.grey700, gravity : 0},
+        {image : "ny_ic_disability_illustration" , videoLink : "" , videoHeight :  0, imageHeight :  160, imageBgColor :  Color.white900, title :   (getString EDUCATIONAL_POP_UP_SLIDE_5_TITLE) , description :  (getString EDUCATIONAL_POP_UP_SLIDE_5_SUBTITLE) , descTextSize : 12 ,carouselBgColor :  Color.grey700, gravity : 0}
+      ]
+
+
+getYoutubeData :: String -> Int -> YoutubeData
+getYoutubeData videoLink videoHeight = {
+  videoTitle: "title",
+  setVideoTitle : false,
+  showMenuButton : false,
+  showDuration : true ,
+  showSeekBar : true ,
+  videoId : videoLink,
+  videoType : "PORTRAIT_VIDEO",
+  videoHeight : videoHeight
+}

@@ -1942,3 +1942,23 @@ export const scrollViewFocus = function (parentID) {
     return false;
   }
 }
+
+export const setYoutubePlayer = function (json, viewId, videoStatus) {
+  if (JBridge.setYoutubePlayer) {
+    try {
+      console.log("Inside setYoutubePlayer ------------");
+      return JBridge.setYoutubePlayer(JSON.stringify(json), viewId, videoStatus);
+    } catch (err) {
+      console.log("error in setYoutubePlayer");
+    }
+  }
+};
+
+export const addCarousel = function (carouselModalJson) {
+  return function (id) {
+    var carouselJson = JSON.stringify(carouselModalJson)
+    if(JBridge.addCarousel){
+      return JBridge.addCarousel(carouselJson, id);
+    }
+  }
+};

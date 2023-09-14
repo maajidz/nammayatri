@@ -72,9 +72,19 @@ type Config = {
     backgroundColor  :: String,
     optionWithHtml :: OptionWithHtmlConfig,
     topTitle :: TopTitle,
-    listViewArray :: Array String
+    listViewArray :: Array String,
+    coverVideoConfig :: CoverVideoConfig
 }
 
+type CoverVideoConfig = {
+  visibility :: Visibility,
+  height :: Length ,
+  width :: Length ,
+  margin :: Margin ,
+  padding :: Padding ,
+  mediaUrl :: String ,
+  mediaType :: String 
+}
 type ContactViewConfig = {
   visibility :: Visibility,
   fullName :: String,
@@ -386,6 +396,15 @@ config = {
     , fareEstimateText : ""
     , tipSelectedText : ""
     , listViewArray : []
+    , coverVideoConfig : {
+        visibility : GONE ,
+        height : V 400 ,
+        width : WRAP_CONTENT ,
+        margin : (Margin 0 0 0 0) ,
+        padding : (Padding 0 0 0 0) ,
+        mediaType : "",
+        mediaUrl : ""
+    }
 }
 
 
