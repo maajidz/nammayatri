@@ -16,9 +16,9 @@
 module Screens.RideHistoryScreen.Controller where
 
 import Effect.Unsafe
-import Prelude
-import Screens.Types (RideHistoryScreenState, AnimationState(..), ItemState(..), IndividualRideCardState(..), DisabilityType(..))
 import Log
+import Prelude
+
 import Components.BottomNavBar.Controller (Action(..)) as BottomNavBar
 import Components.DatePickerModel as DatePickerModel
 import Components.ErrorModal as ErrorModalController
@@ -36,15 +36,16 @@ import Data.Show (show)
 import Data.String (Pattern(..), split)
 import Engineering.Helpers.Commons (getNewIDWithTag, strToBool)
 import Engineering.Helpers.LogEvent (logEvent)
-import JBridge (cleverTapCustomEvent, metaLogEvent, firebaseLogEvent)
 import Helpers.Utils (setRefreshing, setEnabled, parseFloat, getRideLabelData, convertUTCtoISC, getRequiredTag)
+import JBridge (cleverTapCustomEvent, metaLogEvent, firebaseLogEvent)
 import Language.Strings (getString)
 import Language.Types (STR(..))
 import Log (trackAppActionClick, trackAppEndScreen, trackAppScreenRender, trackAppBackPress)
-import PrestoDOM (Eval, continue, exit, ScrollState(..), updateAndExit)
+import PrestoDOM (Eval, ScrollState(..), continue, exit, updateAndExit)
 import PrestoDOM.Types.Core (class Loggable, toPropValue)
 import Resource.Constants (decodeAddress, tripDatesCount)
 import Screens (ScreenName(..), getScreen)
+import Screens.Types (RideHistoryScreenState, AnimationState(..), ItemState(..), IndividualRideCardState(..), DisabilityType(..))
 import Services.API (RidesInfo(..), Status(..))
 import Storage (KeyStore(..), getValueToLocalNativeStore, setValueToLocalNativeStore)
 import Styles.Colors as Color
@@ -163,9 +164,7 @@ eval (BottomNavBarAction (BottomNavBar.OnNavigate screen)) state = do
 
 eval (IndividualRideCardAction (IndividualRideCardController.Select index)) state = do
   let filteredRideList = rideListFilter state.currentTab state.rideList
-  exit $ GoToTripDetails state {
-      selectedItem = (fromMaybe dummyCard (filteredRideList !! index))
-  }
+  updateAndExit state { selectedItem = (fromMaybe dummyCard (filteredRideList !! index)) } $ GoToTripDetails state { selectedItem = (fromMaybe dummyCard (filteredRideList !! index)) }
 eval Loader state = do
   exit $ LoaderOutput state{loaderButtonVisibility = false}
 
@@ -219,7 +218,7 @@ rideHistoryListTransformer list = (map (\(RidesInfo ride) ->
                               Nothing -> "",
       status :  toPropValue ride.status,
       vehicleModel : toPropValue ride.vehicleModel ,
-      shortRideId : toPropValue ride.shortRideId  ,
+      shortRideId : toPropValue ((getString TRIP_ID )<> ": " <> ride.shortRideId),
       vehicleNumber :  toPropValue ride.vehicleNumber  ,
       driverName : toPropValue ride.driverName  ,
       driverSelectedFare : toPropValue ride.driverSelectedFare  ,
@@ -233,12 +232,13 @@ rideHistoryListTransformer list = (map (\(RidesInfo ride) ->
                     "CANCELLED" -> Color.red
                     _ -> Color.black800),
       riderName : toPropValue $ fromMaybe "" ride.riderName,
-      metroTagVisibility : toPropValue if (ride.specialLocationTag /= Nothing && (getRequiredTag "text" ride.specialLocationTag accessibilityTag) /= Nothing && (isNothing accessibilityTag)) then "visible" else "gone",
-      accessibilityTagVisibility : toPropValue if (isJust accessibilityTag) then "visible" else "gone",
-      specialZoneText : toPropValue $ getRideLabelData "text" (if (isJust accessibilityTag) then Just "Purple_Ride" else ride.specialLocationTag) Nothing,
-      specialZoneImage : toPropValue $ getRideLabelData "imageUrl" ride.specialLocationTag accessibilityTag,
-      specialZoneLayoutBackground : toPropValue $ getRideLabelData "backgroundColor" ride.specialLocationTag accessibilityTag
-
+      spLocTagVisibility : toPropValue if (isJust ride.specialLocationTag && (getRequiredTag "text" ride.specialLocationTag) /= Nothing) then "visible" else "gone",
+      specialZoneText : toPropValue $ getRideLabelData "text" ride.specialLocationTag,
+      specialZoneImage : toPropValue $ getRideLabelData "imageUrl" ride.specialLocationTag,
+      specialZoneLayoutBackground : toPropValue $ getRideLabelData "backgroundColor" ride.specialLocationTag,
+      gotoTagVisibility : toPropValue if isJust ride.driverGoHomeRequestId then "visible" else "gone",
+      purpleTagVisibility : toPropValue if isJust ride.disabilityTag then "visible" else "gone",
+      tipTagVisibility : toPropValue if isJust ride.customerExtraFee then "visible" else "gone"
     }) list )
 
 getDisabilityType :: Maybe String -> Maybe DisabilityType
@@ -250,7 +250,10 @@ getDisabilityType disabilityString = case disabilityString of
                                       _ -> Nothing
 
 rideListResponseTransformer :: Array RidesInfo -> Array IndividualRideCardState
-rideListResponseTransformer list = (map (\(RidesInfo ride) -> {
+rideListResponseTransformer list = 
+  (map (\(RidesInfo ride) -> let accessibilityTag = (getDisabilityType ride.disabilityTag)
+  in 
+  {
     date : (convertUTCtoISC (ride.createdAt) "D MMM"),
     time : (convertUTCtoISC (ride.createdAt )"h:mm A"),
     total_amount : (case (ride.status) of
@@ -273,7 +276,14 @@ rideListResponseTransformer list = (map (\(RidesInfo ride) -> {
     source : (decodeAddress (ride.fromLocation) false),
     destination : (decodeAddress (ride.toLocation) false),
     vehicleType : ride.vehicleVariant,
-    riderName : fromMaybe "" ride.riderName
+    riderName : fromMaybe "" ride.riderName,
+    customerExtraFee : ride.customerExtraFee,
+    purpleTagVisibility : isJust ride.disabilityTag,
+    gotoTagVisibility : isJust ride.driverGoHomeRequestId,
+    spLocTagVisibility : ride.specialLocationTag /= Nothing && (getRequiredTag "text" ride.specialLocationTag) /= Nothing,
+    specialZoneLayoutBackground : getRideLabelData "backgroundColor" ride.specialLocationTag,
+    specialZoneImage : getRideLabelData "imageUrl" ride.specialLocationTag,
+    specialZoneText : getRideLabelData "text" ride.specialLocationTag
 }) list )
 
 
@@ -303,5 +313,12 @@ dummyCard =  {
     source : "",
     destination : "",
     vehicleType : "",
-    riderName : ""
+    riderName : "",
+    customerExtraFee : Nothing,
+    purpleTagVisibility : false,
+    gotoTagVisibility : false,
+    spLocTagVisibility : false,
+    specialZoneLayoutBackground : "",
+    specialZoneImage : "",
+    specialZoneText : ""
   }

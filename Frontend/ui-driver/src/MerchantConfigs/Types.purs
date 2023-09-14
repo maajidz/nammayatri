@@ -14,7 +14,8 @@ type AppConfig =
     subscriptionConfig :: SubscriptionConfig,
     rideActionModelConfig :: RideActionModelConfig,
     profile :: ProfileConfig,
-    enablePurpleRideBanner :: Boolean
+    enablePurpleRideBanner :: Boolean,
+    gotoConfig :: GotoConfig
   } 
 
 type Language =  {
@@ -52,4 +53,8 @@ type RideCompletedCardConfig = {
 
 type ProfileConfig = {
   bookingOptionMenuForTaxi :: Boolean
+}
+
+type GotoConfig = {
+  maxGotoLocations :: Int
 }

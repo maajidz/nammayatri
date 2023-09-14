@@ -74,4 +74,7 @@ commonConfig =
             { bookingOptionMenuForTaxi : false
             }
         , enablePurpleRideBanner : false
+        , gotoConfig : {
+            maxGotoLocations : 5
+        }
         }

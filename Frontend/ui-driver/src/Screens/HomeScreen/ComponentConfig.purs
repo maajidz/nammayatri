@@ -22,9 +22,11 @@ import Common.Types.App as CommonTypes
 import Components.Banner as Banner
 import Components.ChatView as ChatView
 import Components.ErrorModal (primaryButtonConfig)
+import Components.GoToLocationModal as GoToLocationModal
 import Components.InAppKeyboardModal as InAppKeyboardModal
 import Components.MakePaymentModal as MakePaymentModal
 import Components.PopUpModal as PopUpModal
+import Components.PrimaryButton as PrimaryButton
 import Components.RateCard as RateCard
 import Components.RatingCard as RatingCard
 import Components.RequestInfoCard as RequestInfoCard
@@ -48,11 +50,11 @@ import Helpers.Utils as HU
 import JBridge as JB
 import Language.Strings (getString)
 import Language.Types (STR(..))
-import Prelude (unit, ($), (-), (/), (<), (<=), (<>), (==), (>=), (||), (>), (/=), show, map, (&&), not, bottom, (<>), (*))
-import PrestoDOM (Accessiblity(..), Gravity(..), Length(..), Margin(..), Padding(..), Visibility(..), cornerRadius, gravity, padding)
+import Prelude (unit, ($), (-), (/), (<), (<=), (<>), (==), (>=), (||), (>), (/=), show, map, (&&), not, bottom, (<>), (*), negate, otherwise)
+import PrestoDOM (Gravity(..), Length(..), Margin(..), Padding(..), Visibility(..), Accessiblity(..), cornerRadius, padding, gravity)
 import PrestoDOM.Types.DomAttributes as PTD
 import Resource.Constants as Const
-import Screens.Types (AutoPayStatus(..), SubscriptionBannerType(..), SubscriptionPopupType(..))
+import Screens.Types (AutoPayStatus(..), SubscriptionBannerType(..), SubscriptionPopupType(..), GoToPopUpType(..))
 import Screens.Types as ST
 import Services.API (PaymentBreakUp(..), PromotionPopupConfig(..), Status(..))
 import Storage (KeyStore(..), getValueToLocalNativeStore, getValueToLocalStore)
@@ -433,13 +435,17 @@ cancelConfirmationConfig state = let
   popUpConfig' = config'{
     gravity = CENTER,
     margin = MarginHorizontal 24 24 ,
-    buttonLayoutMargin = Margin 16 0 16 20 ,
+    buttonLayoutMargin = Margin 16 24 16 20 ,
     primaryText {
       text = case state.data.activeRide.specialLocationTag of
               Nothing -> getString FREQUENT_CANCELLATIONS_WILL_LEAD_TO_LESS_RIDES
-              Just specialLocationTag -> getString $ getCancelAlertText $ HU.getRideLabelData  "cancelText" (Just specialLocationTag) state.data.activeRide.disabilityTag
-    , margin = Margin 16 24 16 24 },
-    secondaryText {visibility = GONE},
+              Just specialLocationTag -> getString $ getCancelAlertText $ HU.getRideLabelData  "cancelText" $ Just specialLocationTag
+    , margin = Margin 16 24 16 0 },
+    secondaryText {
+      visibility = if state.data.activeRide.specialLocationTag == (Just "GOTO") then VISIBLE else GONE,
+      text = getString GO_TO_CANCELLATION_DESC,
+      margin = MarginTop 6
+      },
     option1 {
       text = (getString CONTINUE)
     , width = V $ (((EHC.screenWidth unit)-92)/2) 
@@ -461,8 +467,9 @@ cancelConfirmationConfig state = let
     backgroundClickable = false,
     cornerRadius = (PTD.Corners 15.0 true true true true),
     coverImageConfig {
-      imageUrl = if state.data.activeRide.specialLocationTag == Nothing || HU.getRequiredTag "" state.data.activeRide.specialLocationTag state.data.activeRide.disabilityTag == Nothing then "ic_cancel_prevention," <> (getAssetStoreLink FunctionCall) <> "ny_ic_cancel_prevention.png"
-                  else HU.getRideLabelData "cancelConfirmImage" (state.data.activeRide.specialLocationTag) state.data.activeRide.disabilityTag
+      imageUrl =  if (state.data.activeRide.specialLocationTag == Nothing && (HU.getRequiredTag "text" state.data.activeRide.specialLocationTag) == Nothing) 
+                    then "ic_cancel_prevention," <> (getAssetStoreLink FunctionCall) <> "ny_ic_cancel_prevention.png"
+                  else HU.getRideLabelData "cancelConfirmImage" state.data.activeRide.specialLocationTag
     , visibility = VISIBLE
     , margin = Margin 16 20 16 0
     , height = V 178
@@ -585,9 +592,6 @@ silentModeConfig state = let
   in popUpConfig'
 
 
-
-
-
 enterOtpStateConfig :: ST.HomeScreenState -> InAppKeyboardModal.InAppKeyboardModalState
 enterOtpStateConfig state = let
       config' = InAppKeyboardModal.config
@@ -644,6 +648,7 @@ getCancelAlertText :: String -> STR
 getCancelAlertText key = case key of
   "ZONE_CANCEL_TEXT_PICKUP" -> ZONE_CANCEL_TEXT_PICKUP
   "ZONE_CANCEL_TEXT_DROP" -> ZONE_CANCEL_TEXT_DROP
+  "GO_TO_CANCELLATION_TITLE" -> GO_TO_CANCELLATION_TITLE
   _ -> FREQUENT_CANCELLATIONS_WILL_LEAD_TO_LESS_RIDES
 
 mapRouteConfig :: String -> String -> Boolean -> PolylineAnimationConfig -> JB.MapRouteConfig
@@ -1035,6 +1040,7 @@ getAccessibilityHeaderText state = if state.data.activeRide.status == NEW then
                           Just ST.LOCOMOTOR_DISABILITY -> {primaryText : getString CUSTOMER_HAS_LOW_MOBILITY, secondaryText : getString PLEASE_HELP_THEM_AS_YOU_CAN, imageUrl : "ny_ic_disability_purple," <> (getAssetStoreLink FunctionCall) <> "ny_ic_disability_purple.png", videoUrl : "", mediaType : ""}
                           Just ST.OTHER_DISABILITY -> {primaryText : getString CUSTOMER_HAS_DISABILITY, secondaryText : getString PLEASE_HELP_THEM_AS_YOU_CAN, imageUrl : "ny_ic_disability_purple," <> (getAssetStoreLink FunctionCall) <> "ny_ic_disability_purple.png", videoUrl : "", mediaType : ""}
                           Nothing -> {primaryText : getString CUSTOMER_HAS_DISABILITY, secondaryText : getString PLEASE_HELP_THEM_AS_YOU_CAN, imageUrl : "ny_ic_disability_purple," <> (getAssetStoreLink FunctionCall) <> "ny_ic_disability_purple.png", videoUrl : "", mediaType : ""}
+
 getRideCompletedConfig :: ST.HomeScreenState -> RideCompletedCard.Config 
 getRideCompletedConfig state = let 
   config = RideCompletedCard.config
@@ -1226,3 +1232,284 @@ subsBlockerPopUpConfig state = let
     dismissPopup = false
     }
   in popUpConf'
+
+gotoKnowMoreConfig :: ST.HomeScreenState-> PopUpModal.Config
+gotoKnowMoreConfig state = let
+    config = PopUpModal.config
+    popUpConfig' = config {
+      optionButtonOrientation = "HORIZONTAL",
+      buttonLayoutMargin = Margin 16 0 16 20,
+      gravity = CENTER,
+      margin = MarginHorizontal 20 20,
+      cornerRadius = PTD.Corners 15.0 true true true true,
+      primaryText{ text = getString KNOW_MORE},
+      secondaryText{text = getString THIS_FEATURE_WILL_BE_APPLICABLE,
+      margin = MarginVertical 16 20,
+      color = Color.black600},
+      option1 {
+        text = getString GO_BACK,
+        margin = MarginHorizontal 16 16,
+        color = "#339DFF",
+        background = Color.white900,
+        strokeColor = Color.white900,
+        width = MATCH_PARENT
+      },
+      option2 {
+        visibility = false
+      }
+    }
+    in popUpConfig'
+
+-------------------------------------------------DriverRequestPopuop------------------------------------------
+
+gotoRequestPopupConfig :: ST.HomeScreenState -> PopUpModal.Config
+gotoRequestPopupConfig state = let
+  config' = PopUpModal.config
+  popUpConfig' = config'{
+      gravity = CENTER,
+      optionButtonOrientation = "HORIZONTAL",
+      buttonLayoutMargin = Margin 16 0 16 20,
+      margin = MarginHorizontal 20 20, 
+      primaryText {
+        text = strings.primaryText
+      , textStyle = Heading2
+      , margin = Margin 16 0 16 10},
+      secondaryText{
+        text = strings.secondaryText
+      , textStyle = Body5
+      , margin = MarginBottom 20 },
+      option1 {
+        text = strings.buttonText
+      , color = Color.yellow900
+      , background = Color.black900
+      , strokeColor = Color.transparent
+      , textStyle = FontStyle.SubHeading1
+      , width = MATCH_PARENT
+      },
+      option2 { visibility = false
+      },
+      cornerRadius = PTD.Corners 15.0 true true true true,
+      coverImageConfig {
+        imageUrl = strings.imageURL
+      , visibility = VISIBLE
+      , margin = Margin 16 20 16 24
+      , width = MATCH_PARENT
+      , height = V 270
+      }
+  }
+  in popUpConfig'
+    where (PopupReturn strings) = gotoCounterStrings state.data.driverGotoState.goToPopUpType
+
+newtype PopupReturn = PopupReturn {
+  primaryText :: String,
+  secondaryText :: String,
+  imageURL :: String,
+  buttonText :: String
+} 
+
+gotoCounterStrings :: GoToPopUpType -> PopupReturn
+gotoCounterStrings popupType = case popupType of 
+  MORE_GOTO_RIDES -> PopupReturn { primaryText : getString MORE_GOTO_RIDE_COMING
+                            , secondaryText : getString MORE_GOTO_RIDE_COMING_DESC
+                            , imageURL : "ny_ic_goto_more_rides,"
+                            , buttonText : getString OKAY
+                            }
+  REDUCED 0 -> PopupReturn { primaryText : getString GOTO_REDUCED_TO_ZERO
+                            , secondaryText : getString DUE_TO_MULTIPLE_CANCELLATIONS <> " 0."
+                            , imageURL : "ny_ic_gotodriver_zero,https://assets.juspay.in/beckn/nammayatri/user/images/ny_ic_driver_near.png"
+                            , buttonText : getString OK_GOT_IT
+                            }
+  REDUCED n -> PopupReturn { primaryText : getString GOTO_REDUCED_TO <> " " <> show n
+                            , secondaryText : getString DUE_TO_MULTIPLE_CANCELLATIONS <> " " <> show  n <> "."
+                            , imageURL : "ny_ic_gotodriver_1"
+                            , buttonText : getString OK_GOT_IT
+                            }
+  VALIDITY_EXPIRED -> PopupReturn { primaryText : getString VALIDITY_EXPIRED_STR
+                            , secondaryText : getString VALIDITY_EXPIRED_DESC
+                            , imageURL : "ny_ic_validity_expired,https://assets.juspay.in/beckn/nammayatri/user/images/ny_ic_driver_near.png"
+                            , buttonText : getString OK_GOT_IT
+                            }
+  REACHED_HOME -> PopupReturn { primaryText : getString GOTO_LOC_REACHED
+                            , secondaryText : getString YOU_ARE_ALMOST_AT_LOCATION
+                            , imageURL : "ny_ic_goto_arrived,https://assets.juspay.in/beckn/nammayatri/user/images/ny_ic_driver_near.png"
+                            , buttonText : getString OK_GOT_IT
+                            }
+  NO_POPUP_VIEW -> PopupReturn { primaryText : "" , secondaryText : "" , imageURL : "" , buttonText : "" }
+
+------------------------------------------------------------------------------gotoLocInRange------------------------------------------------------------------------------------
+gotoLocInRangeConfig :: ST.HomeScreenState-> PopUpModal.Config
+gotoLocInRangeConfig state = let
+    config = PopUpModal.config
+    popUpConfig' = config {
+      optionButtonOrientation = "HORIZONTAL",
+      buttonLayoutMargin = Margin 16 0 16 20,
+      gravity = CENTER,
+      margin = MarginHorizontal 20 20,
+      cornerRadius = PTD.Corners 15.0 true true true true,
+      primaryText{ text = getString YOU_ARE_VERY_CLOSE},
+      secondaryText{
+        text = getString GOTO_IS_APPLICABLE_FOR,
+        margin = MarginVertical 16 20,
+        color = Color.black600},
+      option1 {
+        text = getString GOT_IT,
+        margin = MarginHorizontal 16 16,
+        color = Color.yellow900,
+        background = Color.black900,
+        strokeColor = Color.white900,
+        width = MATCH_PARENT
+      },
+      option2 {
+        visibility = false
+      }
+    }
+    in popUpConfig'
+
+disableGotoConfig :: ST.HomeScreenState-> PopUpModal.Config
+disableGotoConfig state = let
+    config = PopUpModal.config
+    popUpConfig' = config {
+      optionButtonOrientation = "VERTICAL",
+      buttonLayoutMargin = Margin 16 0 16 20,
+      gravity = CENTER,
+      backgroundClickable = false,
+      margin = MarginHorizontal 20 20,
+      cornerRadius = PTD.Corners 15.0 true true true true,
+      primaryText{ text = getString DISABLE_GOTO_STR},
+      secondaryText{text = getString YOU_STILL_HAVE_TIME_LEFT,
+      margin = Margin 0 16 0 20,
+      color = Color.black600},
+      option1 {
+        text = getString YES_DISABLE,
+        margin = MarginHorizontal 16 16,
+        color = Color.yellow900,
+        background = Color.black900,
+        strokeColor = Color.white900,
+        width = MATCH_PARENT
+      },
+      option2 {
+        text = getString CANCEL,
+        margin = MarginHorizontal 16 16,
+        color = Color.black650,
+        background = Color.white900,
+        strokeColor = Color.white900,
+        width = MATCH_PARENT
+      }
+    }
+    in popUpConfig'
+
+locationListItemConfig :: ST.GoToLocation -> ST.HomeScreenState -> GoToLocationModal.GoToModalConfig
+locationListItemConfig state homeScreenState = 
+    GoToLocationModal.config {
+      id = state.id,
+      lat = state.lat,
+      lon = state.lon,
+      address =state.address,
+      tag = if state.tag == "" then "Home" else state.tag,
+      isSelectable = true,
+      isEditEnabled = false,
+      isSelected = homeScreenState.data.driverGotoState.selectedGoTo == state.id,
+      removeAcText = Nothing,
+      editAcText = Nothing,
+      disabled = state.disabled
+    }
+
+primaryButtonConfig :: ST.HomeScreenState -> PrimaryButton.Config
+primaryButtonConfig state =
+  let
+    config = PrimaryButton.config
+    primaryButtonConfig' =
+      config
+        { textConfig
+          { text = getString ADD_LOCATION}
+        , margin = (Margin 16 15 16 24)
+        , height = V 52
+        }
+  in
+    primaryButtonConfig'
+
+enableButtonConfig :: ST.HomeScreenState -> PrimaryButton.Config
+enableButtonConfig state =
+    PrimaryButton.config
+      { textConfig 
+        { text = getString YES_ENABLE
+        , textStyle = SubHeading1
+        , weight = Just 1.0
+        }
+      , height = WRAP_CONTENT
+      , gravity = CENTER
+      , cornerRadius = 8.0
+      , padding = Padding 10 14 10 15
+      , margin = MarginLeft 0
+      , id = "EnableGoto"
+      , alpha = if state.data.driverGotoState.selectedGoTo /= "" then 1.0 else 0.5
+      , isClickable = state.data.driverGotoState.selectedGoTo /= ""
+      , enableLoader = JB.getBtnLoader "EnableGoto"
+      , lottieConfig 
+        { lottieURL = (HU.getAssetsBaseUrl FunctionCall) <> "lottie/primary_button_loader.json"
+        , width = V 90
+        , height = V 50
+        }
+      }
+
+cancelButtonConfig :: ST.HomeScreenState -> PrimaryButton.Config
+cancelButtonConfig state = 
+    PrimaryButton.config
+      { textConfig
+        { text = getString CANCEL
+        , gravity = LEFT
+        , height = WRAP_CONTENT
+        , textStyle = SubHeading1
+        , weight = Just 1.0
+        , color = Color.black900
+        }
+      , height = WRAP_CONTENT
+      , gravity = CENTER
+      , cornerRadius = 8.0
+      , padding = Padding 10 14 10 15
+      , margin = MarginLeft 0
+      , stroke = "1," <> Color.grey800
+      , background = Color.white900
+      }
+
+gotoButtonConfig :: ST.HomeScreenState -> PrimaryButton.Config
+gotoButtonConfig state =
+    PrimaryButton.config
+      { textConfig 
+        { text = if (state.data.driverGotoState.isGotoEnabled) then state.data.driverGotoState.timerInMinutes else getString GO_TO
+        , textStyle = Tags
+        , weight = Just 1.0
+        , gravity = CENTER
+        , color = gotoTimer.textColor
+        }
+      , height = WRAP_CONTENT
+      , gravity = CENTER
+      , cornerRadius = 22.0
+      , width = WRAP_CONTENT
+      , padding = if (state.data.driverGotoState.isGotoEnabled) then Padding 16 11 16 11 else Padding 24 11 24 11
+      , margin = MarginLeft 0
+      , isPrefixImage = true
+      , stroke = "0," <> Color.black900
+      , background = gotoTimer.bgColor
+      , prefixImageConfig
+        { imageUrl = gotoTimer.imageString
+        , height = V 15
+        , width = V 15
+        , margin = MarginRight 5
+        }
+      , id = "GotoClick"
+      , alpha = if state.data.driverGotoState.gotoCount == 0 then 0.3 else 1.0
+      , enableLoader = JB.getBtnLoader "GotoClick"
+      , lottieConfig 
+        { lottieURL = (HU.getAssetsBaseUrl FunctionCall) <> "lottie/primary_button_loader.json"
+        , width = V 100
+        , height = V 35
+        , autoDisableLoader = false
+        }
+      }
+    where gotoTimer = gotoTimerConfig state.data.driverGotoState.isGotoEnabled
+
+gotoTimerConfig :: Boolean -> {bgColor :: String , imageString :: String, textColor :: String }
+gotoTimerConfig enabled 
+  | enabled = {bgColor : Color.green900, imageString : "ny_pin_check_white,", textColor : Color.white900}
+  | otherwise = {bgColor : Color.white900, imageString : "ny_ic_goto_icon_map_pin_check,", textColor : Color.black800}
