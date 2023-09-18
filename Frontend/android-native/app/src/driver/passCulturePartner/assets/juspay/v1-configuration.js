@@ -53,6 +53,9 @@ window.getMerchantConfig = function () {
     , "navigationAppConfig" : {
       "query" : "https://waze.com/ul?ll=%f,%f"
     , "packageName" : "com.waze"
-  }
+    }
+    , "mapConfig" : {
+        "animationDelay" : 400
+    }
   })
 }

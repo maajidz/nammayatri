@@ -21,7 +21,7 @@ window.getMerchantConfig = function () {
     "BONUS_EARNED" : "true",
     "clientName" : "Namma Yatri",
     "languageList" : [
-      {"name":"English","value":"EN_US", "subtitle": "ಆಂಗ್ಲ"}, 
+      {"name":"English","value":"EN_US", "subtitle": "ಆಂಗ್ಲ"},
       {"name":"ಕನ್ನಡ","value":"KN_IN", "subtitle": "Kannada"},
       {"name":"हिंदी","value":"HI_IN", "subtitle": "Hindi"},
       {"name":"தமிழ்","value":"TA_IN", "subtitle": "Tamil"}
@@ -76,14 +76,17 @@ window.getMerchantConfig = function () {
     , "fontKannada" : "NotoSansKannada"
     , "allowAllMobileNumber" : false
     , "navigationAppConfig" : {
-      "query" : "google.navigation:q=%f,%f"
-    , "packageName" : "com.google.android.apps.maps"
-  }
+        "query" : "google.navigation:q=%f,%f"
+      , "packageName" : "com.google.android.apps.maps"
+    }
     , "showGenderBanner" : true
     , "defaultLanguage" : "EN_US"
     , "OTP_MESSAGE_REGEX" : "is your OTP for login to [A-Za-z]+ [A-Za-z]+ [A-Za-z]+"
     , "leaderBoard": {
-      "isMaskedName": true
+        "isMaskedName": true
+    }
+    , "mapConfig" : {
+        "animationDelay" : 400
     }
     , "subscriptionConfig" : {
       "enableBlocking" : true

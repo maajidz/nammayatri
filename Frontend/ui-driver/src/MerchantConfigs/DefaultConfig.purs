@@ -22,4 +22,7 @@ config =
   subscriptionConfig : {
     enableBlocking : false
   }
+  , mapConfig : {
+    animationDelay : 400
+  }
   }

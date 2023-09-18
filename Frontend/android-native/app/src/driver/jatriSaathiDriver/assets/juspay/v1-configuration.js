@@ -37,7 +37,7 @@ window.getMerchantConfig = function () {
       },
       {
         "name":"தமிழ்",
-        "value":"TA_IN", 
+        "value":"TA_IN",
         "subtitle": "Tamil"
       }
     ],
@@ -98,5 +98,8 @@ window.getMerchantConfig = function () {
     }
     , "OTP_MESSAGE_REGEX" : "is your OTP for login to [A-Za-z]+ [A-Za-z]+ [A-Za-z]+"
     , "autoPayBanner" : false
+    , "mapConfig" : {
+        "animationDelay" : 400
+    }
   })
 }

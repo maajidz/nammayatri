@@ -242,6 +242,14 @@ window.getMerchantConfig = function () {
   , "callOptions" : ["ANONYMOUS"]
   , "showNearByDrivers" : true
   , "showDisabilityBanner" : false
+  , "mapConfig" : {
+      "dottedLine" : {
+          "visible" : true
+        , "range" : 100
+        , "color" : "#323643"
+      }
+    , "animationDelay" : 400
+  }
   })
 }
 

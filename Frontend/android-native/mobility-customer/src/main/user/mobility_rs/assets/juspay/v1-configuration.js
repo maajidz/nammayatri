@@ -166,5 +166,13 @@ window.getMerchantConfig = function () {
         "query" : "google.navigation:q=%f,%f"
       , "packageName" : "com.google.android.apps.maps"
     }
+    , "mapConfig" : {
+        "dottedLine" : {
+            "visible" : true
+          , "range" : 100
+          , "color" : "#323643"
+        }
+      , "animationDelay" : 400
+    }
   })
 }

@@ -54,6 +54,7 @@ type AppConfig =
   , callOptions :: Array String
   , autoVariantEnabled :: Boolean
   , showDisabilityBanner :: Boolean
+  , mapConfig :: MapConfig
   } 
 
 type QuoteListItemConfig = {
@@ -95,8 +96,8 @@ type DriverInfoConfig = {
 }
 
 type SearchLocationConfig = {
-  searchLocationTheme :: String, 
-  setLocationOnMapColor :: String, 
+  searchLocationTheme :: String,
+  setLocationOnMapColor :: String,
   strokeColor :: String,
   enableLocationTagbar :: String,
   resultsCardCornerRadius :: Number,
@@ -141,7 +142,18 @@ type BannerViewState = {
   imageUrl :: String
 }
 type TerminateBtnConfig = {
-    visibility :: Boolean, 
+    visibility :: Boolean,
     title :: String,
     imageUrl :: String
+}
+
+type MapConfig = {
+  dottedLine :: DottedLineConfig,
+  animationDelay :: Int
+}
+
+type DottedLineConfig = {
+  visible :: Boolean,
+  range :: Int,
+  color :: String
 }

@@ -171,6 +171,14 @@ window.getMerchantConfig = function () {
   , "navigationAppConfig" : {
     "query" : "https://waze.com/ul?ll=%f,%f"
   , "packageName" : "com.waze"
-}
+  }
+  , "mapConfig" : {
+      "dottedLine" : {
+          "visible" : true
+        , "range" : 100
+        , "color" : "#323643"
+      }
+    , "animationDelay" : 400
+  }
   })
 }

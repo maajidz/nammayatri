@@ -11,6 +11,7 @@ type AppConfig =
     imageUploadOptional :: Boolean,
     leaderBoard :: LeaderBoard,
     subscriptionConfig :: SubscriptionConfig
+    mapConfig :: MapConfig
   } 
 
 type Language =  {
@@ -26,3 +27,7 @@ type LeaderBoard = {
 type SubscriptionConfig =  {
   enableBlocking :: Boolean
  }
+ 
+type MapConfig = {
+  animationDelay :: Int
+}

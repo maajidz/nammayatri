@@ -18,7 +18,7 @@ config =
   , cancelSearchTextColor: "#E55454"
   , showHamMenu : true
   , showQuoteFindingText : false
-  , quoteListItemConfig: 
+  , quoteListItemConfig:
     { primaryButtonCorner: 8.0
     , expiresColor: "#E55454"
     , driverImagebg: "#F1F1F1"
@@ -42,7 +42,7 @@ config =
     , noQuotesImageWidth : 137
     , closeIcon : "ny_ic_close_white,https://assets.juspay.in/beckn/nammayatri/user/images/ny_ic_close_white.png"
     }
-  , searchLocationConfig : 
+  , searchLocationConfig :
     { searchLocationTheme: "#2C2F3A"
     , setLocationOnMapColor:"#6D7280"
     , strokeColor: "1,#E5E7EB"
@@ -55,13 +55,13 @@ config =
     , primaryButtonHeight : 60
     , backArrow : "ny_ic_chevron_left_white,https://assets.juspay.in/beckn/nammayatri/user/images/ny_ic_chevron_left_white.png"
     }
-  , driverInfoConfig : 
+  , driverInfoConfig :
     { ratingTextColor: "#454545"
     , ratingBackground: "#F1F1F1"
     , ratingStroke: "0,#717171"
     , ratingCornerRadius: 6.0
     , callBackground: "#2053BB6F"
-    , callButtonStroke: "0,#EB0055" 
+    , callButtonStroke: "0,#EB0055"
     , cardStroke: "1,#E5E7EB"
     , otpStroke: "0,#717171"
     , showNumberPlatePrefix : true
@@ -72,12 +72,12 @@ config =
     , showCancelPrevention : false
     , showTrackingButton : true
     }
-  , ratingConfig : 
+  , ratingConfig :
     { secondaryButtonTextColor : "#FCC32C"
     , secondaryButtonStroke : "1,#2C2F3A"
     , buttonCornerRadius : 8.0
     }
-  , cancelReasonConfig : 
+  , cancelReasonConfig :
     { secondaryButtonTextColor : "#2C2F3A"
     , secondaryButtonStroke : "1,#2C2F3A"
     , buttonCornerRadius : 8.0
@@ -98,7 +98,7 @@ config =
       , titleColor :"#269574"
       , actionText : "Update now"
       , actionTextColor : "#269574"
-      , imageUrl : "ny_ic_banner_gender_feat,https://assets.juspay.in/beckn/merchantcommon/images/ny_ic_banner_gender_feat.png" 
+      , imageUrl : "ny_ic_banner_gender_feat,https://assets.juspay.in/beckn/merchantcommon/images/ny_ic_banner_gender_feat.png"
       }
   , popupBackground : "#FFFFFF"
   , profileCompletion : "#FCC32C"
@@ -109,7 +109,7 @@ config =
   , logs : ["JUSPAY", "FIREBASE", "CLEVERTAP"]
   , showCorporateAddress : false
   , terminateBtnConfig : {
-          visibility: false, 
+          visibility: false,
           title : "Paytm",
           imageUrl : "ny_ic_chevron_left_double,https://assets.juspay.in/beckn/mobilitypaytm/mobilitypaytmcommon/ny_ic_chevron_left_double.png"
       }
@@ -123,4 +123,12 @@ config =
   , callOptions : ["ANONYMOUS"]
   , autoVariantEnabled : true
   , showDisabilityBanner : true
+  , mapConfig : {
+      dottedLine : {
+          visible : true
+        , range : 100
+        , color : "#323643"
+      }
+    , animationDelay : 400
+    }
   }

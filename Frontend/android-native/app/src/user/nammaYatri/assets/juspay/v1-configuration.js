@@ -181,6 +181,14 @@ window.getMerchantConfig = function () {
   , "OTP_MESSAGE_REGEX" : "is your OTP for login to [A-Za-z]+ [A-Za-z]+ [A-Za-z]+"
   , "callOptions" : ["ANONYMOUS", "DIRECT"]
   , "showDisabilityBanner" : true
+  , "mapConfig" : {
+        "dottedLine" : {
+            "visible" : true
+          , "range" : 100
+          , "color" : "#323643"
+        }
+      , "animationDelay" : 400
+    }
   })
 }
 
