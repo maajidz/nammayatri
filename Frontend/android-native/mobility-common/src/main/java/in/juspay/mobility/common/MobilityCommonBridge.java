@@ -193,7 +193,7 @@ public class MobilityCommonBridge extends HyperBridge {
     protected Method[] methods = null;
     protected  Receivers receivers;
     protected static int animationDelay = 400;
-    protected static JSONObject dottedLineConfig = null;
+    protected static JSONObject locateOnMapConfig = null;
 
 
     public MobilityCommonBridge(BridgeComponents bridgeComponents) {
@@ -1078,7 +1078,7 @@ public class MobilityCommonBridge extends HyperBridge {
                     try {
                         JSONObject googleMapConfig = new JSONObject(mapConfig);
                         animationDelay = googleMapConfig.optInt("animationDelay", 400);
-                        dottedLineConfig = googleMapConfig.optJSONObject("dottedLine");
+                        locateOnMapConfig = googleMapConfig.optJSONObject("locateOnMapConfig");
                         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
                         FragmentManager supportFragmentManager = ((FragmentActivity) bridgeComponents.getActivity()).getSupportFragmentManager();
                         FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();

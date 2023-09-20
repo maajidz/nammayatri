@@ -57,4 +57,18 @@ commonConfig =
             , packageName : "com.google.android.apps.maps"
             , walkQuery : "google.navigation:q=%f,%f&mode=w"
             }
+        , mapConfig : 
+            { locateOnMapConfig : 
+                { dottedLineConfig : 
+                    { visible : true
+                    , range : 100
+                    , color : "#323643"
+                    }
+                , hotSpotConfig : 
+                    { goToNearestPointWithinRadius : 50.0
+                    , showHotSpotsWithinRadius : 110.0
+                    }
+                }
+            , animationDelay : 400
+            }
         }

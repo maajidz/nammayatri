@@ -148,7 +148,7 @@ type TerminateBtnConfig = {
 }
 
 type MapConfig = {
-  dottedLine :: DottedLineConfig,
+  locateOnMapConfig :: LocateOnMapConfig,
   animationDelay :: Int
 }
 
@@ -156,4 +156,14 @@ type DottedLineConfig = {
   visible :: Boolean,
   range :: Int,
   color :: String
+}
+
+type LocateOnMapConfig = {
+  dottedLineConfig :: DottedLineConfig,
+  hotSpotConfig :: HotSpotConfig
+}
+
+type HotSpotConfig = {
+  goToNearestPointWithinRadius :: Number,
+  showHotSpotsWithinRadius :: Number
 }

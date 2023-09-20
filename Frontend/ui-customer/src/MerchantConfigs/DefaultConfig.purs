@@ -124,10 +124,16 @@ config =
   , autoVariantEnabled : true
   , showDisabilityBanner : true
   , mapConfig : {
-      dottedLine : {
-          visible : true
-        , range : 100
-        , color : "#323643"
+      locateOnMapConfig : {
+          dottedLineConfig : {
+              visible : true
+            , range : 100
+            , color : "#323643"
+          }
+        , hotSpotConfig : {
+              goToNearestPointWithinRadius : 50.0
+            , showHotSpotsWithinRadius : 100.0
+        }
       }
     , animationDelay : 400
     }
