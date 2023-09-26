@@ -44,6 +44,7 @@ allocatorHandle flowRt env =
   SchedulerHandle
     { getTasksById = QAllJ.getTasksById,
       getReadyTasks = QAllJ.getReadyTasks $ Just env.maxShards,
+      getReadyTask = QAllJ.getReadyTask,
       markAsComplete = QAllJ.markAsComplete,
       markAsFailed = QAllJ.markAsFailed,
       updateErrorCountAndFail = QAllJ.updateErrorCountAndFail,
