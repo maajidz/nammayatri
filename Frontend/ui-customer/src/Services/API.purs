@@ -903,7 +903,8 @@ newtype RideBookingRes = RideBookingRes {
   bookingDetails :: RideBookingAPIDetails ,
   fromLocation ::  BookingLocationAPIEntity,
   merchantExoPhone :: String,
-  specialLocationTag :: Maybe String
+  specialLocationTag :: Maybe String,
+  hasDisability :: Maybe Boolean
 }
 
 newtype FareBreakupAPIEntity = FareBreakupAPIEntity {
@@ -1191,6 +1192,7 @@ newtype FeedbackReq = FeedbackReq
   { rating :: Int
   , rideId :: String
   , feedbackDetails :: String
+  , wasOfferedAssistance :: Maybe Boolean
   }
 
 newtype FeedbackRes = FeedbackRes

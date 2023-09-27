@@ -136,9 +136,10 @@ bottomCardView config push =
   , background Color.white900
   , weight 1.0
   ][  if config.customerIssueCard.issueFaced then customerIssueView config push
-        else if config.customerBottomCard.visible then customerBottomCardView config push
-          else if config.badgeCard.visible then badgeCardView config push 
-            else if config.driverBottomCard.visible then driverBottomCardView config push else dummyTextView 
+        else if config.customerIssueCard.wasOfferedAssistanceCardView then customerIssueView config push
+          else if config.customerBottomCard.visible then customerBottomCardView config push
+            else if config.badgeCard.visible then badgeCardView config push 
+              else if config.driverBottomCard.visible then driverBottomCardView config push else dummyTextView 
     , linearLayout
       [ width MATCH_PARENT
       , height WRAP_CONTENT
@@ -172,7 +173,7 @@ customerIssueView config push =
         , gravity CENTER
         , margin $ MarginTop 15
         , orientation VERTICAL
-        , visibility if config.customerIssueCard.selectedYesNoButton == 0 then VISIBLE else GONE
+        , visibility if config.customerIssueCard.selectedYesNoButton == 0 && not config.customerIssueCard.wasOfferedAssistanceCardView then VISIBLE else GONE
         ](mapWithIndex (\ index item ->
             linearLayout
             [ height WRAP_CONTENT

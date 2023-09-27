@@ -455,11 +455,12 @@ rideFeedbackBT payload = do
       errorHandler errorPayload = do
             BackT $ pure GoBack
 
-makeFeedBackReq :: Int -> String -> String -> FeedbackReq
-makeFeedBackReq rating rideId feedback = FeedbackReq
+makeFeedBackReq :: Int -> String -> String -> Maybe Boolean -> FeedbackReq
+makeFeedBackReq rating rideId feedback wasOfferedAssistance = FeedbackReq
     {   "rating" : rating
     ,   "rideId" : rideId
     ,   "feedbackDetails" : feedback
+    ,   "wasOfferedAssistance" : wasOfferedAssistance
     }
 
 

@@ -272,6 +272,7 @@ currentRideFlow rideAssigned = do
                   , bookingId = resp.id
                   , isPopUp = NoPopUp
                   , zoneType = getSpecialTag resp.specialLocationTag
+                  , showOfferedAssistancePopUp = if resp.hasDisability == Just true then true else false
                   }}
         when (not rideAssigned) $ do
           void $ pure $ logEventWithTwoParams logField_ "ny_active_ride_with_idle_state" "status" status "bookingId" resp.id
@@ -1063,7 +1064,7 @@ homeScreenFlow = do
     SUBMIT_RATING state -> do
       liftFlowBT $ logEventWithParams logField_ "ny_user_ride_give_feedback" "Rating" (show $ state.data.rating)
       _ <- Remote.bookingFeedbackBT (Remote.makeRideFeedBackReq (state.data.rideRatingState.rideId) (state.data.rideRatingState.feedbackList))
-      _ <- Remote.rideFeedbackBT (Remote.makeFeedBackReq (state.data.rideRatingState.rating) (state.data.rideRatingState.rideId) (state.data.rideRatingState.feedback))
+      _ <- Remote.rideFeedbackBT (Remote.makeFeedBackReq (state.data.rideRatingState.rating) (state.data.rideRatingState.rideId) (state.data.rideRatingState.feedback) (state.data.ratingViewState.wasOfferedAssistance))
       _ <- updateLocalStage HomeScreen
       let finalAmount = if state.data.finalAmount == 0 then state.data.rideRatingState.finalAmount else state.data.finalAmount
       let bookingId = if state.props.bookingId == "" then state.data.rideRatingState.bookingId else state.props.bookingId
