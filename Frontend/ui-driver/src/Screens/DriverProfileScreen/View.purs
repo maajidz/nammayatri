@@ -21,28 +21,17 @@ import Screens.DriverProfileScreen.ComponentConfig
 
 import Animation as Anim
 import Animation.Config as AnimConfig
-import Animation.Config as AnimConfig
 import Common.Types.App (LazyCheck(..))
 import Components.BottomNavBar.Controller (navData)
 import Components.BottomNavBar.View as BottomNavBar
 import Components.CheckListView.View as CheckListView
-import Components.CheckListView.View as CheckListView
-import Components.GenericHeader.View as GenericHeader
 import Components.GenericHeader.View as GenericHeader
 import Components.InAppKeyboardModal.Controller as InAppKeyboardModalController
-import Components.InAppKeyboardModal.Controller as InAppKeyboardModalController
-import Components.InAppKeyboardModal.View as InAppKeyboardModal
 import Components.InAppKeyboardModal.View as InAppKeyboardModal
 import Components.PopUpModal as PopUpModal
-import Components.PopUpModal as PopUpModal
-import Components.PopUpModal as PopUpModal
-import Components.PrimaryButton as PrimaryButton
 import Components.PrimaryButton as PrimaryButton
 import Components.PrimaryEditText as PrimaryEditText
-import Components.PrimaryEditText as PrimaryEditText
 import Components.PrimaryEditText.View as PrimaryEditText
-import Components.PrimaryEditText.View as PrimaryEditText
-import Control.Applicative (unless)
 import Control.Applicative (unless)
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Trans.Class (lift)
@@ -53,9 +42,7 @@ import Data.List (elem)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Maybe (fromMaybe)
-import Debug (spy)
-import Debug (spy)
-import Debug (spy)
+import Data.Number (round)
 import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff)
@@ -65,42 +52,30 @@ import Engineering.Helpers.Commons as EHC
 import Engineering.Helpers.Utils as EHU
 import Font.Size as FontSize
 import Font.Style as FontStyle
-import Helpers.Utils (getAssetStoreLink, getCommonAssetStoreLink)
-import Helpers.Utils (getVehicleType)
+import Helpers.Utils (getAssetStoreLink, getCommonAssetStoreLink, parseFloat)
 import Helpers.Utils (getVehicleType)
 import JBridge as JB
 import Language.Strings (getString)
 import Language.Types (STR(..))
 import MerchantConfig.Utils (getValueFromConfig)
 import MerchantConfig.Utils as MU
-import Prelude (Unit, ($), const, map, (+), (==), (<), (||), (/), (/=), unit, bind, (-), (<>), (<=), (<<<), (>), pure, discard, show, (&&), void, negate, not)
+import Prelude (Unit, ($), const, map, (+), (==), (<), (||), (/), (/=), unit, bind, (-), (<>), (<=), (>=), (<<<), (>), pure, discard, show, (&&), void, negate, not, (*))
 import Presto.Core.Types.Language.Flow (doAff)
 import PrestoDOM (Gravity(..), Length(..), Margin(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), afterRender, alpha, background, clickable, color, cornerRadius, fontStyle, frameLayout, gravity, height, id, imageUrl, imageView, imageWithFallback, layoutGravity, linearLayout, margin, onBackPressed, onClick, orientation, padding, relativeLayout, scrollBarY, scrollView, text, textSize, textView, url, visibility, webView, weight, width)
 import PrestoDOM (Gravity(..), Length(..), Margin(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), horizontalScrollView, afterRender, alpha, background, color, cornerRadius, fontStyle, frameLayout, gravity, height, id, imageUrl, imageView, imageWithFallback, layoutGravity, linearLayout, margin, onBackPressed, onClick, orientation, padding, scrollView, text, textSize, textView, visibility, weight, width, webView, url, clickable, relativeLayout, stroke, alignParentBottom, disableClickFeedback)
 import PrestoDOM (Gravity(..), Length(..), Margin(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), horizontalScrollView, afterRender, alpha, background, color, cornerRadius, fontStyle, frameLayout, gravity, height, id, imageUrl, imageView, imageWithFallback, layoutGravity, linearLayout, margin, onBackPressed, onClick, orientation, padding, scrollView, text, textSize, textView, visibility, weight, width, webView, url, clickable, relativeLayout, stroke, alignParentBottom, disableClickFeedback)
 import PrestoDOM.Animation as PrestoAnim
-import PrestoDOM.Animation as PrestoAnim
 import PrestoDOM.Properties (cornerRadii)
-import PrestoDOM.Properties (cornerRadii)
-import PrestoDOM.Types.DomAttributes (Corners(..))
 import PrestoDOM.Types.DomAttributes (Corners(..))
 import Screens as ScreenNames
 import Screens as ScreenNames
 import Screens.DriverProfileScreen.Controller (Action(..), ScreenOutput, eval, getTitle, checkGenderSelect, getGenderName, optionList)
-import Screens.DriverProfileScreen.Controller (Action(..), ScreenOutput, eval, getTitle, checkGenderSelect, getGenderName, optionList)
-import Screens.DriverProfileScreen.ScreenData (MenuOptions(..))
 import Screens.DriverProfileScreen.ScreenData (MenuOptions(..))
 import Screens.Types as ST
-import Screens.Types as ST
-import Services.API (GetDriverInfoReq(..), GetDriverInfoResp(..))
 import Services.API (GetDriverInfoReq(..), GetDriverInfoResp(..), GetAllRcDataReq(..), GetAllRcDataResp(..))
 import Services.Backend as Remote
-import Services.Backend as Remote
-import Storage (KeyStore(..), getValueToLocalStore)
 import Storage (KeyStore(..), getValueToLocalStore)
 import Storage (isLocalStageOn)
-import Storage (isLocalStageOn)
-import Styles.Colors as Color
 import Styles.Colors as Color
 import Types.App (defaultGlobalState)
 
@@ -435,6 +410,7 @@ missedOppArray analyticsData = [{key : (getString CANCELLATION_RATE), value :  (
   {key : (getString RIDES_CANCELLED), value : show analyticsData.ridesCancelled , value1 : show analyticsData.totalRidesAssigned , infoImageUrl : "ny_ic_info_blue,https://assets.juspay.in/nammayatri/images/common/ny_ic_info_blue.png", postfixImage : "ny_ic_api_failure_popup,https://assets.juspay.in/nammayatri/images/driver/ny_ic_api_failure_popup.png", showPostfixImage : false, showInfoImage : false, valueColor : Color.charcoalGrey, action : NoAction},
     {key : (getString EARNINGS_MISSED), value : "₹" <> EHC.formatCurrencyWithCommas (show analyticsData.missedEarnings) , value1 : "", infoImageUrl : "ny_ic_info_blue,https://assets.juspay.in/nammayatri/images/common/ny_ic_info_blue.png", postfixImage : "ny_ic_api_failure_popup,https://assets.juspay.in/nammayatri/images/driver/ny_ic_api_failure_popup.png", showPostfixImage : false, showInfoImage : false, valueColor : Color.charcoalGrey, action : NoAction}]
 ------------------------------------------- DRIVER ANALYTICS VIEW  ----------------------------------------------------------
+
 driverAnalyticsView :: forall w. ST.DriverProfileScreenState -> (Action -> Effect Unit) -> PrestoDOM (Effect Unit) w
 driverAnalyticsView state push =
   let analyticsData = state.data.analyticsData
@@ -479,7 +455,7 @@ driverAnalyticsView state push =
         [ width MATCH_PARENT
         , height WRAP_CONTENT
         , margin $ Margin 0 12 0 12
-        ][  infoTileView state {primaryText: (show $ fromMaybe 0.0 analyticsData.rating), subText: (getString RATED_BY_USERS1)<> " " <> show analyticsData.totalUsersRated <> " " <> (getString RATED_BY_USERS2), postImgVisibility : true, seperatorView : true, margin : MarginRight 6}
+        ][  infoTileView state {primaryText: (parseFloat (fromMaybe 0.0 analyticsData.rating) 1), subText: (getString RATED_BY_USERS1)<> " " <> show analyticsData.totalUsersRated <> " " <> (getString RATED_BY_USERS2), postImgVisibility : true, seperatorView : true, margin : MarginRight 6}
           , infoTileView state {primaryText: show analyticsData.totalCompletedTrips, subText: (getString TRIPS_COMPLETED), postImgVisibility : false, seperatorView : true, margin : MarginLeft 6}
         ]
       , horizontalScrollView
@@ -1188,9 +1164,11 @@ infoTileView state config =
                     ][imageView
                         [ height $ V 13
                         , width $ V 13
-                        , imageWithFallback if item <= (fromMaybe 0.0 state.data.analyticsData.rating) then "ny_ic_star_active,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_active.png" else "ny_ic_star_inactive,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_inactive.png"
+                        , imageWithFallback if ((fromMaybe 0.0 state.data.analyticsData.rating) - item < -0.50) then "ny_ic_star_inactive,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_inactive.png" 
+                                              else if ((fromMaybe 0.0 state.data.analyticsData.rating) - item >= 0.00) then "ny_ic_star_active,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_active.png"
+                                              else "ny_ic_star_half_active,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_half_active.png"
                         ]
-                    ]) [1.0,2.0,3.0,4.0,5.0])
+                    ]) [1.0, 2.0, 3.0, 4.0, 5.0])
           ]
       , textView
         ([ width WRAP_CONTENT

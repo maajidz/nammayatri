@@ -32,7 +32,7 @@ import Effect.Class (liftEffect)
 import Engineering.Helpers.Commons (flowRunner, os, safeMarginBottom, screenWidth, getExpiryTime)
 import Font.Size as FontSize
 import Font.Style as FontStyle
-import Helpers.Utils (getAssetStoreLink, getAssetsBaseUrl, getCommonAssetStoreLink, getPaymentMethod, secondsToHms, zoneOtpExpiryTimer, makeNumber)
+import Helpers.Utils (getAssetStoreLink, getAssetsBaseUrl, getCommonAssetStoreLink, getPaymentMethod, secondsToHms, zoneOtpExpiryTimer, makeNumber, parseFloat)
 import Language.Strings (getString)
 import Language.Types (STR(..))
 import MerchantConfig.Utils (Merchant(..), getMerchant, getValueFromConfig)
@@ -943,7 +943,7 @@ ratingView push state =
       , accessibility DISABLE
       ]
     , textView (
-      [ text $ if state.data.rating == 0.0 then (getString NEW_) else show state.data.rating
+      [ text $ if state.data.rating == 0.0 then (getString NEW_) else (parseFloat state.data.rating 1)
       , color state.data.config.driverInfoConfig.ratingTextColor
       , gravity CENTER
       , margin (Margin 8 0 2 0)

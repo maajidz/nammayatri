@@ -24,6 +24,7 @@ import Data.String (length)
 import Data.String.CodeUnits (charAt)
 import Data.Time.Duration (Milliseconds(..))
 import Effect (Effect)
+import Data.Number (round)
 import Effect.Aff (launchAff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1, EffectFn2, mkEffectFn1, runEffectFn1, runEffectFn2)
@@ -39,7 +40,6 @@ import MerchantConfig.Types (AppConfig)
 import Presto.Core.Types.Language.Flow (Flow, doAff, getState, modifyState, delay)
 import PrestoDOM.Core (terminateUI)
 import Types.App (FlowBT, GlobalState(..))
-
 
 foreign import toggleLoaderIOS :: EffectFn1 Boolean Unit
 
@@ -125,3 +125,6 @@ getAppConfigImpl =
           Left err -> do
             _ <- pure $ printLog "Not able to decode config not able to  find in default config" (show err)
             pure $ DefaultConfig.config
+
+truncate :: Int -> Number -> Number
+truncate precision num = (round (num * (10.0 `pow` (toNumber  precision)))) / (10.0 `pow` (toNumber precision))
