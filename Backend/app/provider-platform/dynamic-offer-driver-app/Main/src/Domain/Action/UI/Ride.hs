@@ -63,6 +63,7 @@ import qualified SharedLogic.CallBAP as BP
 import qualified SharedLogic.DriverLocation as DLoc
 import qualified SharedLogic.External.LocationTrackingService.Flow as LF
 import SharedLogic.FareCalculator (fareSum)
+import qualified SharedLogic.LocationMapping as SLM
 import qualified Storage.CachedQueries.BapMetadata as CQSM
 import qualified Storage.CachedQueries.Driver.GoHomeRequest as CGHR
 import qualified Storage.CachedQueries.Exophone as CQExophone
