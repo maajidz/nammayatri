@@ -191,11 +191,14 @@ skipButtonConfig state =
         , id = "SkipButton"
         , enableLoader = (JB.getBtnLoader "SkipButton")
         , visibility = if state.data.ratingViewState.doneButtonVisibility || not state.props.showOfferedAssistancePopUp then VISIBLE else GONE
-        , isClickable = issueFaced || state.data.ratingViewState.selectedRating > 0 || state.data.ratingViewState.selectedYesNoButton >= 0
-        , alpha = if issueFaced || (state.data.ratingViewState.selectedRating >= 1) || state.data.ratingViewState.selectedYesNoButton >= 0 then 1.0 else 0.4
+        , isClickable = issueFaced || state.data.ratingViewState.selectedRating > 0 || getSelectedYesNoButton state >= 0
+        , alpha = if issueFaced || (state.data.ratingViewState.selectedRating >= 1) || getSelectedYesNoButton state >= 0 then 1.0 else 0.4
         }
   in
     primaryButtonConfig'
+
+getSelectedYesNoButton :: ST.HomeScreenState -> Int
+getSelectedYesNoButton state = state.data.ratingViewState.selectedYesNoButton
 
 whereToButtonConfig :: ST.HomeScreenState -> PrimaryButton.Config
 whereToButtonConfig state =
