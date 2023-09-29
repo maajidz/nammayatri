@@ -69,6 +69,12 @@ white900 = "#FFFFFF"
 yellow900 :: Color
 yellow900 = "#FCC32C"
 
+transparentGrey :: Color
+transparentGrey = "#66888888"
+
+green200 :: Color
+green200 = "#2053BB6F"
+
 -- Theme Colors
 
 borderColorLight :: Color

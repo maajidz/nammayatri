@@ -4,7 +4,6 @@ var timerIdDebounce = null;
 var driverWaitingTimerId = null;
 var zoneOtpExpiryTimerId = null;
 var inputForDebounce;
-var timerIdForTimeout;
 var tracking_id = 0;
 export const getNewTrackingId = function (unit) {
   tracking_id += 1;
@@ -219,17 +218,6 @@ export const zoneOtpExpiryTimer = function (startingTime) {
     };
   }
 };
-
-export const clearWaitingTimer = function (id){
-  console.log("clearWaitingTimer" + id);
-  if(__OS == "IOS" && id=="countUpTimerId") {
-    if (window.JBridge.clearCountUpTimer) {
-      window.JBridge.clearCountUpTimer();
-    }
-  } else {
-    clearInterval(parseInt(id));
-  }
-}
 
 export const clearCountDownTimer = function (id){
   if(__OS == "IOS"){

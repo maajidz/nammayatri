@@ -23,15 +23,15 @@ import Font.Size as FontSize
 import PrestoDOM.Types.DomAttributes (Corners(..))
 import Font.Style as FontStyle
 import Data.Array (mapWithIndex , (!!), length, null)
-import Data.String (split, Pattern(..), length) as STR
+import Data.String (split, Pattern(..), length, null) as STR
 import Data.Maybe (fromMaybe, Maybe(..))
-import JBridge (renderBase64Image, scrollToEnd, addMediaFile, getSuggestionfromKey)
+import JBridge (renderBase64Image, scrollToEnd, addMediaFile, getSuggestionfromKey, getWidthFromPercent)
 import Components.ChatView.Controller (Action(..), Config(..), ChatComponent)
 import Common.Types.App
-import Common.Styles.Colors (white900) as Color
+import Common.Styles.Colors (white900,grey900) as Color
 import PrestoDOM.Elements.Elements (progressBar)
 import PrestoDOM.Events (afterRender)
-import Engineering.Helpers.Commons (screenHeight, safeMarginTop)
+import Engineering.Helpers.Commons (screenHeight, safeMarginTop, convertUTCtoISC)
 import Engineering.Helpers.Suggestions(getMessageFromKey)
 import Helpers.Utils (getCommonAssetStoreLink)
 
@@ -199,15 +199,23 @@ chatView config push =
       , scrollBarY false
       ]
       [ linearLayout
-        [ height MATCH_PARENT
+        [ height WRAP_CONTENT
         , width MATCH_PARENT
         , orientation VERTICAL
+        , padding $ config.chatBodyPadding
         ][linearLayout
          [ height WRAP_CONTENT
          , width MATCH_PARENT
          , orientation VERTICAL
          , padding (PaddingHorizontal 16 16)
-         ](mapWithIndex (\index item -> chatComponent config push item (if (config.messagesSize /= "-1") then (show index == config.messagesSize ) else (index == (length config.messages - 1))) (config.userConfig.appType)) (config.messages))
+         ](mapWithIndex (\index item ->
+            let nextItem =(config.messages !! (index + 1))
+                isLastItem =
+                  if config.messagesSize /= "-1"
+                  then show index == config.messagesSize
+                  else index == (length config.messages - 1)
+            in chatComponent config push item nextItem isLastItem (config.userConfig.appType)
+          ) config.messages)
          , if (length config.suggestionsList) > 0 && config.spanParent then suggestionsView config push else dummyTextView
         ]
       ]
@@ -344,9 +352,14 @@ quickMessageView config message isLastItem push =
      , background config.grey900
      ][]
   ]
-chatComponent :: forall w. Config -> (Action -> Effect Unit) -> ChatComponent -> Boolean -> String -> PrestoDOM (Effect Unit) w
-chatComponent state push config isLastItem userType =
-  PrestoAnim.animationSet
+chatComponent :: forall w. Config -> (Action -> Effect Unit) -> ChatComponent -> Maybe ChatComponent -> Boolean -> String -> PrestoDOM (Effect Unit) w
+chatComponent state push config nextConfig isLastItem userType =
+  linearLayout[
+    height MATCH_PARENT
+  , width MATCH_PARENT
+  , orientation VERTICAL
+  ][
+    PrestoAnim.animationSet
     [ if state.userConfig.appType == config.sentBy then
         if (state.spanParent) then
           translateInXForwardFadeAnimWithDelay config.delay true
@@ -362,8 +375,8 @@ chatComponent state push config isLastItem userType =
   [height WRAP_CONTENT
   , width MATCH_PARENT
   , alpha if state.spanParent then 0.0 else 1.0
-  , margin (getChatConfig state config.sentBy isLastItem (STR.length config.timeStamp > 0)).margin
-  , gravity (getChatConfig state config.sentBy isLastItem (STR.length config.timeStamp > 0)).gravity
+  , margin (getChatConfig state config.sentBy isLastItem (hasTimeStamp config nextConfig)).margin
+  , gravity (getChatConfig state config.sentBy isLastItem (hasTimeStamp config nextConfig)).gravity
   , orientation VERTICAL
   , onAnimationEnd (\action ->
       if isLastItem || state.spanParent then do
@@ -373,19 +386,18 @@ chatComponent state push config isLastItem userType =
         pure unit) (const NoAction)
   ][ linearLayout
      [ padding (Padding 12 12 12 12)
-     , margin (MarginBottom 4)
      , height WRAP_CONTENT
-     , width $ if (os == "IOS" && (STR.length config.message) > (if state.languageKey == "HI_IN" then 50 else 30) ) then MATCH_PARENT else WRAP_CONTENT
-     , background (getChatConfig state config.sentBy isLastItem (STR.length config.timeStamp > 0)).background
-     , cornerRadii (getChatConfig state config.sentBy isLastItem (STR.length config.timeStamp > 0)).cornerRadii
-     , gravity (getChatConfig state config.sentBy isLastItem (STR.length config.timeStamp > 0)).gravity
+     , width $ if (os == "IOS" && (STR.length config.message) > (if state.languageKey == "HI_IN" then 50 else 30) && config.type /= "Image" && config.type /= "Audio") then MATCH_PARENT else WRAP_CONTENT
+     , background (getChatConfig state config.sentBy isLastItem (hasTimeStamp config nextConfig)).background
+     , cornerRadii (getChatConfig state config.sentBy isLastItem (hasTimeStamp config nextConfig)).cornerRadii
+     , gravity (getChatConfig state config.sentBy isLastItem (hasTimeStamp config nextConfig)).gravity
      ][ case config.type of
-        "Image" -> linearLayout
+        "Image" -> PrestoAnim.animationSet[(translateInXForwardAnim true)] $ linearLayout
                  [ cornerRadius 12.0
                  , background Color.white900
                  , width $ V 180
                  , id (getNewIDWithTag config.message)
-                 , afterRender (\action -> do
+                 , onAnimationEnd (\action -> do
                                 renderBase64Image config.message (getNewIDWithTag config.message) true "FIT_CENTER"
                  ) (const NoAction)
                  , onClick push (const $ OnImageClick config.message)
@@ -396,10 +408,14 @@ chatComponent state push config isLastItem userType =
                     , height WRAP_CONTENT
                     ]
                   ]
-        "Audio" -> linearLayout
+        "Audio" -> PrestoAnim.animationSet[(translateInXForwardAnim true)] $ linearLayout
                    [ width MATCH_PARENT
-                   , height WRAP_CONTENT
+                   , height MATCH_PARENT
                    , orientation HORIZONTAL
+                   , onAnimationEnd (\action -> do
+                                    _ <- addMediaFile (getNewIDWithTag "ChatAudioPlayer") config.message (getNewIDWithTag "ChatAudioPlayerLoader") "ny_ic_play_no_background" "ny_ic_pause_no_background" (getNewIDWithTag "ChatAudioPlayerTimer")
+                                    pure unit
+                                  ) (const NoAction)
                    ][ imageView
                     [ width $ V 48
                     , height $ V 48
@@ -417,15 +433,13 @@ chatComponent state push config isLastItem userType =
                     ][ linearLayout
                      [ id (getNewIDWithTag "ChatAudioPlayer")
                      , height $ V 32
-                     , minWidth 180
-                     , afterRender (\action -> do
-                                     _ <- addMediaFile (getNewIDWithTag "ChatAudioPlayer") config.message (getNewIDWithTag "ChatAudioPlayerLoader") "ny_ic_play_no_background" "ny_ic_pause_no_background" (getNewIDWithTag "ChatAudioPlayerTimer")
-                                     pure unit
-                                   ) (const NoAction)
+                     , width $ V (getWidthFromPercent 40)
                      ] []
                      , linearLayout
                      [ id (getNewIDWithTag "ChatAudioPlayerTimer")
                      , color Color.white900
+                     , width WRAP_CONTENT
+                     , height $ V 16
                      ] []
                     ]
                    ]
@@ -435,17 +449,49 @@ chatComponent state push config isLastItem userType =
           , singleLine false
           , lineHeight "18"
           , margin $ MarginTop $ if state.languageKey == "KN_IN" then 6 else 0
-          , color (getChatConfig state config.sentBy isLastItem (STR.length config.timeStamp > 0)).textColor
+          , color (getChatConfig state config.sentBy isLastItem (hasTimeStamp config nextConfig)).textColor
           , fontStyle $ FontStyle.medium LanguageStyle
           ]
-      ]
-     , textView
-       [ text config.timeStamp
+      ] 
+      , textView
+       [ text (convertUTCtoISC config.timeStamp "hh:mm A")
        , textSize FontSize.a_10
-       , visibility if STR.length config.timeStamp > 0 then VISIBLE else GONE
+       , visibility if (hasTimeStamp config nextConfig) then VISIBLE else GONE
        , color state.black800
        , fontStyle $ FontStyle.regular LanguageStyle
        ]
+  ]
+      , linearLayout
+      [
+        width MATCH_PARENT
+      , height MATCH_PARENT
+      , gravity CENTER
+      , visibility if (hasDateFooter config nextConfig) then VISIBLE else GONE
+      ][
+        linearLayout
+          [ height $ V 1
+          , width MATCH_PARENT
+          , background Color.grey900
+          , gravity CENTER
+          , weight 1.0
+          ][]
+      , textView
+       [ text (case nextConfig of
+          Just nextConfig' -> (convertUTCtoISC nextConfig'.timeStamp "ddd, DD/MM/YYYY")
+          Nothing -> "")
+       , textSize FontSize.a_10
+       , color state.black800
+       , fontStyle $ FontStyle.regular LanguageStyle
+       , gravity CENTER
+       ]
+      , linearLayout
+        [ height $ V 1
+        , width MATCH_PARENT
+        , background Color.grey900
+        , gravity CENTER
+        , weight 1.0
+        ][]
+      ]
   ]
 
 getConfig :: String -> {margin :: Int, customerVisibility :: Visibility, driverVisibility :: Visibility}
@@ -480,3 +526,13 @@ getChatConfig state sentBy isLastItem hasTimeStamp =
       cornerRadii : (Corners 16.0 true true true false ),
       textColor :   state.black800
     }
+
+hasTimeStamp :: ChatComponent -> Maybe ChatComponent -> Boolean
+hasTimeStamp msgConfig nxtMsgConfig = case nxtMsgConfig of
+  Just nxtMsgConfig -> not ((STR.null msgConfig.timeStamp && STR.null nxtMsgConfig.timeStamp && (convertUTCtoISC msgConfig.timeStamp "hh:mm A") == (convertUTCtoISC nxtMsgConfig.timeStamp "hh:mm A") && msgConfig.sentBy == nxtMsgConfig.sentBy) || STR.null msgConfig.timeStamp)
+  Nothing -> STR.length msgConfig.timeStamp /= 0
+
+hasDateFooter :: ChatComponent -> Maybe ChatComponent -> Boolean
+hasDateFooter msgConfig nxtMsgConfig = case nxtMsgConfig of
+  Just nxtMsgConfig' -> STR.null msgConfig.timeStamp && STR.null nxtMsgConfig'.timeStamp && (convertUTCtoISC msgConfig.timeStamp "DD:MM:YYYY") /= (convertUTCtoISC nxtMsgConfig'.timeStamp "DD:MM:YYYY")
+  Nothing -> false

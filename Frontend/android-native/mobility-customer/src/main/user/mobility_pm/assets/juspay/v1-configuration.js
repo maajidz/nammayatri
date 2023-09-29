@@ -166,5 +166,7 @@ window.getMerchantConfig = function () {
         "query" : "google.navigation:q=%f,%f"
       , "packageName" : "com.google.android.apps.maps"
     }
+    , "showIssueOption": false
+    
   })
 }

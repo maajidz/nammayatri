@@ -173,5 +173,6 @@ window.getMerchantConfig = function () {
   , "packageName" : "com.waze"
   , "dashboardUrl" : "https://www.getyatri.com/open/?source=in-app"
 }
+, "showIssueOption": false
   })
 }

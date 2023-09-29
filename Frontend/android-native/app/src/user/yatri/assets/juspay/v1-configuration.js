@@ -14,7 +14,9 @@ window.getMerchantConfig = function () {
     "REGISTERED_ADDRESS_DESCRIPTION_ADDITIONAL",
     "CALL_NAMMA_YATRI_SUPPORT",
     "YOUR_FEEDBACK_HELPS_US",
-    "YOUR_FEEDBACK_HELPS_US"
+    "YOUR_FEEDBACK_HELPS_US",
+    "REPORT_ISSUE_CHAT_PLACEHOLDER",
+    "CALL_SUPPORT_DESCRIPTION"
     ],
     "isReferralEnabled": "false",
     "showBookingPreference": "false",
@@ -148,7 +150,9 @@ window.getMerchantConfig = function () {
       "REGISTERED_ADDRESS_DESCRIPTION_ADDITIONAL" : "",
       "CORPORATE_ADDRESS_DESCRIPTION_ADDITIONAL" : "",
       "CALL_NAMMA_YATRI_SUPPORT" : "Call Yatri Support",
-      "YOUR_FEEDBACK_HELPS_US" : "Your feedback helps us improve the Yatri experience"
+      "YOUR_FEEDBACK_HELPS_US" : "Your feedback helps us improve the Yatri experience",
+      "REPORT_ISSUE_CHAT_PLACEHOLDER" : "Describe your issue. Yatri will try to resolve it in under 24 hours.",
+      "CALL_SUPPORT_DESCRIPTION" : "You are about to place a call to Yatri Support. Do you want to proceed?"
     },
     "malayalamStrings": {
       "WELCOME_TEXT" : "യാത്രയിലേക്ക് സ്വാഗതം",
@@ -165,7 +169,9 @@ window.getMerchantConfig = function () {
       "REGISTERED_ADDRESS_DESCRIPTION_ADDITIONAL" : "",
       "CORPORATE_ADDRESS_DESCRIPTION_ADDITIONAL" : "",
       "CALL_NAMMA_YATRI_SUPPORT" : "യാത്രി സപ്പോർട്ടിലേക്ക് വിളിക്കുക",
-      "YOUR_FEEDBACK_HELPS_US" : "യാത്രാ അനുഭവം മെച്ചപ്പെടുത്താൻ നിങ്ങളുടെ ഫീഡ്‌ബാക്ക് ഞങ്ങളെ സഹായിക്കുന്നു"
+      "YOUR_FEEDBACK_HELPS_US" : "യാത്രാ അനുഭവം മെച്ചപ്പെടുത്താൻ നിങ്ങളുടെ ഫീഡ്‌ബാക്ക് ഞങ്ങളെ സഹായിക്കുന്നു",
+      "REPORT_ISSUE_CHAT_PLACEHOLDER" : "നിങ്ങളുടെ പ്രശ്നം വിവരിക്കുക. 24 മണിക്കൂറിനുള്ളിൽ അത് പരിഹരിക്കാൻ യാത്രി ശ്രമിക്കും.",
+      "CALL_SUPPORT_DESCRIPTION" : "നിങ്ങൾ യാത്രി സപ്പോർട്ടിലേക്ക് ഒരു കോൾ ചെയ്യാൻ പോകുകയാണ്. നിങ്ങൾക്ക് തുടരണോ?"
   },
     "languageList": [{
       "name": "English",

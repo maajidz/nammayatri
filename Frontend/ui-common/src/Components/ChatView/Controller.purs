@@ -15,6 +15,8 @@
 
 module Components.ChatView.Controller where
 
+import PrestoDOM.Types.DomAttributes (Padding(..))
+
 data Action = SendMessage
             | SendSuggestion String
             | BackPressed
@@ -55,6 +57,7 @@ type Config =
   , black800 :: String
   , black700 :: String
   , canSendSuggestion :: Boolean
+  , chatBodyPadding :: Padding
   }
 
 type UserConfig =
@@ -106,6 +109,7 @@ config =
     , black800 : ""
     , black700 : ""
     , canSendSuggestion : true
+    , chatBodyPadding : (Padding 0 0 0 0)
   }
 
 makeChatComponent' :: String -> String -> String -> String -> Int -> ChatComponent

@@ -419,14 +419,8 @@ golden = "#E9BE4D"
 greenGrey :: Color
 greenGrey = "#268C6E"
 
-transparentGrey :: Color
-transparentGrey = "#66888888"
-
 transparent :: Color
 transparent = "#00FFFFFF"
-
-green200 :: Color
-green200 = "#2053BB6F"
 
 green600 :: Color
 green600 = "#269574"

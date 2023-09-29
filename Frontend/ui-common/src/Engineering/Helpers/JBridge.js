@@ -1,4 +1,6 @@
 import { callbackMapper } from 'presto-ui';
+
+var timerIdForTimeout;
 const btnLoaderState = new Map();
 const { JBridge } = window;
 var mainFiber = null;
@@ -635,6 +637,17 @@ export const storeCallBackMessageUpdated = function (cb) {
   };
 };
 
+export const storeKeyBoardCallback = function (cb) {
+  return function(action) {
+    return function () {
+      var keyBoardCallback = function(state) {
+        cb (action (state))();
+      }
+      window.keyBoardCallback = keyBoardCallback;
+    }
+  }
+};
+
 export const getChatMessages = function(string) {
     return [].concat(window.chatMessages !== undefined ? window.chatMessages : []);
 }
@@ -828,6 +841,91 @@ export const addMediaFile = function (viewID) {
       }
   }
 }
+
+export const clearFocus = function (id) {
+  return function () {
+    if(window.JBridge.clearFocus){
+      return JBridge.clearFocus(id)
+    }
+  }
+}
+
+
+export const removeMediaPlayer = function (id) {
+  return function () {
+    if (window.JBridge.removeMediaPlayer){
+      JBridge.removeMediaPlayer();
+    }
+  };
+};
+
+export const renderBase64ImageFile = function (base64Image) {
+  return function(id) {
+      return function (fitCenter) {
+        return function (imgScaleType){
+          return function () {
+            try{
+              return JBridge.renderBase64ImageFile(base64Image, id, fitCenter, imgScaleType);
+            }catch (err){
+              return JBridge.renderBase64ImageFile(base64Image, id, fitCenter);
+            }
+          }
+        }  
+      }
+  }
+}
+
+export const uploadMultiPartData = function (path) {
+  return function (url) {
+      return function(fileType) {
+          return function() {
+            if (window.JBridge.uploadMultiPartData){
+              JBridge.uploadMultiPartData(path, url, fileType);
+            }
+          }
+      }
+  }
+}
+
+export const startAudioRecording = function (id) {
+  return function() {
+    if (window.JBridge.startAudioRecording){
+      if (window.__OS == "IOS") {
+        return JBridge.startAudioRecording() == "0" ? false : true;
+     } else {
+        return JBridge.startAudioRecording();
+     }
+    }
+  }
+};
+
+export const stopAudioRecording = function (id) {
+  return function() {
+    if (window.JBridge.stopAudioRecording){
+      return JBridge.stopAudioRecording();
+    }
+  }
+}
+
+export const saveAudioFile = function (source) {
+  return function() {
+    if (window.JBridge.saveAudioFile){
+      return JBridge.saveAudioFile(source);
+    }
+  }
+}
+
+
+export const differenceBetweenTwoUTC = function (str1) {
+  return function (str2) {
+    var curr1 = new Date(str1);
+    var departure = new Date(str2);
+    console.log(departure + " , " + curr1 + "STR");
+    var diff =(curr1.getTime() - departure.getTime())/ 1000;
+    diff = (Math.round(diff));
+    return diff
+  };
+};
 
 export const isCoordOnPath = function (data) {
   return function (lat) {
@@ -1324,6 +1422,21 @@ export const storeCallBackImageUpload = function (cb) {
   }
 }
 
+export const storeCallBackUploadMultiPartData = function (cb) {
+  return function (action) {
+    return function () {
+      try {
+        var callback = callbackMapper.map(function (fileType, fileId) {
+            cb(action (fileType)(fileId))();
+        });
+        window.JBridge.storeCallBackUploadMultiPartData(callback);
+      }catch (error){
+        console.log("Error occurred in storeCallBackUploadMultiPartData ------", error);
+      }
+    }
+  }
+}
+
 export const storeCallBackOverlayPermission = function (cb) {
   try {
   return function (action) {
@@ -1414,18 +1527,7 @@ export const renderBase64Image = function (image) {
             return JBridge.renderBase64Image(image, id, fitCenter, imgScaleType);
           }
         }catch(err1){
-          try {
-            if (JBridge.renderBase64Image) {
-              return JBridge.renderBase64Image(image, id, fitCenter);
-            }
-          } catch (err2) {
-          /*
-          * This function is deprecated on 22 May - 2023
-          * Added only for Backward Compability
-          * Remove this function once it is not begin used.
-          */
-            return JBridge.renderBase64Image(image, id);
-          }
+          return JBridge.renderBase64Image(image, id, fitCenter);
         }
       }
     };
@@ -1816,6 +1918,17 @@ export const waitingCountdownTimer = function (startingTime) {
     };
   };
 };
+
+export const clearWaitingTimer = function (id){
+  console.log("clearWaitingTimer" + id);
+  if(__OS == "IOS" && id=="countUpTimerId") {
+    if (window.JBridge.clearCountUpTimer) {
+      window.JBridge.clearCountUpTimer();
+    }
+  } else {
+    clearInterval(parseInt(id));
+  }
+}
 
 export const cleverTapEvent = function(event){
   return function (param){

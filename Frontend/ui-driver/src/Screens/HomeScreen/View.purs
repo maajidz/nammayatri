@@ -100,7 +100,7 @@ screen initialState =
                 Nothing -> do
                            setValueToLocalStore IS_RIDE_ACTIVE "false"
                            void $ pure $ JB.setCleverTapUserProp "Driver On-ride" "No"
-          let startingTime = (HU.differenceBetweenTwoUTC (HU.getCurrentUTC "") (getValueToLocalStore SET_WAITING_TIME))
+          let startingTime = (JB.differenceBetweenTwoUTC (HU.getCurrentUTC "") (getValueToLocalStore SET_WAITING_TIME))
           if ((getValueToLocalStore IS_WAIT_TIMER_STOP) == "Triggered") && initialState.props.timerRefresh  then do
             _ <- pure $ setValueToLocalStore IS_WAIT_TIMER_STOP (show (PostTriggered))
             _ <- JB.waitingCountdownTimer startingTime push WaitTimerCallback

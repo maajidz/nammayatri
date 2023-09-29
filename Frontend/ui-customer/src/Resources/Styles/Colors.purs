@@ -497,3 +497,9 @@ pickledBlue = "#29334A"
 
 aliceBlue :: Color 
 aliceBlue = "#F1F3F4"
+
+blueBtn :: Color
+blueBtn = "#0066FF"
+
+lightGreyBlue :: Color
+lightGreyBlue = "#E9EEF2F6"

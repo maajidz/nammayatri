@@ -14,7 +14,9 @@ window.getMerchantConfig = function () {
     "REGISTERED_ADDRESS_DESCRIPTION_ADDITIONAL",
     "CORPORATE_ADDRESS_DESCRIPTION_ADDITIONAL",
     "CALL_NAMMA_YATRI_SUPPORT",
-    "YOUR_FEEDBACK_HELPS_US"
+    "YOUR_FEEDBACK_HELPS_US",
+    "REPORT_ISSUE_CHAT_PLACEHOLDER",
+    "CALL_SUPPORT_DESCRIPTION"
     ],
     "isReferralEnabled": "false",
     "showBookingPreference": "false",
@@ -151,7 +153,9 @@ window.getMerchantConfig = function () {
       "REGISTERED_ADDRESS_DESCRIPTION" : "Department of Information Technology & Electronics Government of West Bengal, Monibhandar (5th and 6th floor), Premise of Webel Bhavan, Block - EP & GP, Sector-V, Salt Lake, Kolkata - 700091",
       "REGISTERED_ADDRESS_DESCRIPTION_ADDITIONAL" : "",
       "CALL_NAMMA_YATRI_SUPPORT" : "Call Yatri Sathi Support",
-      "YOUR_FEEDBACK_HELPS_US" : "Your feedback helps us improve the Yatri Sathi experience"
+      "YOUR_FEEDBACK_HELPS_US" : "Your feedback helps us improve the Yatri Sathi experience",
+      "REPORT_ISSUE_CHAT_PLACEHOLDER" : "Describe your issue. Yatri Sathi will try to resolve it in under 24 hours.",
+      "CALL_SUPPORT_DESCRIPTION" : "You are about to place a call to Yatri Sathi Support. Do you want to proceed?"
     },
     "hindiStrings": {
       "ABOUT_APP_DESCRIPTION": "यात्री साथी सवारियों को चालकों से जोड़ने का एक खुला मंच है। ऐप राइडर्स के लिए मीटर रेट के साथ राइड बुक करना सुविधाजनक बनाता है इसलिए न्यूनतम किराया।",
@@ -171,7 +175,9 @@ window.getMerchantConfig = function () {
       "REGISTERED_ADDRESS_DESCRIPTION" : "पश्चिम बंगाल सरकार के सूचना प्रौद्योगिकी और इलेक्ट्रॉनिक्स विभाग, मोनीभंडार (5वीं और 6वीं मंजिल), वेबेल भवन का परिसर, ब्लॉक - ईपी और जीपी, सेक्टर-वी, साल्ट लेक, कोलकाता - 700091",
       "REGISTERED_ADDRESS_DESCRIPTION_ADDITIONAL" : "",
       "CALL_NAMMA_YATRI_SUPPORT" : "यात्री साथी सहायता को कॉल करें",
-      "YOUR_FEEDBACK_HELPS_US" : "आपका फीडबैक हमें यात्री साथी अनुभव को बेहतर बनाने में मदद करता है"
+      "YOUR_FEEDBACK_HELPS_US" : "आपका फीडबैक हमें यात्री साथी अनुभव को बेहतर बनाने में मदद करता है",
+      "REPORT_ISSUE_CHAT_PLACEHOLDER" : "अपने मामले का वर्णन करें। यात्री साथी 24 घंटे के अंदर इसका समाधान करने का प्रयास करेंगे।",
+      "CALL_SUPPORT_DESCRIPTION" : "आप यात्री साथी सहायता को कॉल करने वाले हैं। क्या आपकी आगे बढ़ने की इच्छा है?"
     },
     "bengaliStrings": {
       "ABOUT_APP_DESCRIPTION": "যাত্রী সাথী হল চালকদের সাথে রাইডারদের সংযোগ করার জন্য একটি উন্মুক্ত প্ল্যাটফর্ম। অ্যাপটি রাইডারদের জন্য মিটার রেট সহ একটি রাইড বুক করা সুবিধাজনক করে তোলে তাই ন্যূনতম ভাড়া।",
@@ -191,7 +197,9 @@ window.getMerchantConfig = function () {
       "REGISTERED_ADDRESS_DESCRIPTION" : "পশ্চিমবঙ্গ সরকারের তথ্য প্রযুক্তি ও ইলেকট্রনিক্স বিভাগ, মনিভান্ডার (৫ম এবং ৬ষ্ঠ তলা), ওয়েবেল ভবনের প্রাঙ্গণ, ব্লক - ইপি অ্যান্ড জিপি, সেক্টর-ভি, সল্টলেক, কলকাতা - 700091",
       "REGISTERED_ADDRESS_DESCRIPTION_ADDITIONAL" : "",
       "CALL_NAMMA_YATRI_SUPPORT" : "সহযাত্রী সমর্থন কল করুন",
-      "YOUR_FEEDBACK_HELPS_US" : "আপনার প্রতিক্রিয়া আমাদের যাত্রী সাথী অভিজ্ঞতা উন্নত করতে সাহায্য করে"
+      "YOUR_FEEDBACK_HELPS_US" : "আপনার প্রতিক্রিয়া আমাদের যাত্রী সাথী অভিজ্ঞতা উন্নত করতে সাহায্য করে",
+      "REPORT_ISSUE_CHAT_PLACEHOLDER" : "আপনার সমস্যাটি বর্ণনা. যাত্রী সাথী 24 ঘন্টার মধ্যে এটি সমাধান করার চেষ্টা করবে।",
+      "CALL_SUPPORT_DESCRIPTION" : "আপনি যাত্রী সাথী সমর্থনে একটি কল করতে চলেছেন৷ আপনি কি এগিয়ে যেতে চান?"
     },
     "languageList": [{
       "name": "English",
