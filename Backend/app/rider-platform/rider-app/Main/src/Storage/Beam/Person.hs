@@ -70,7 +70,8 @@ data PersonT f = PersonT
     hasTakenValidRide :: B.C f Bool,
     hasDisability :: B.C f (Maybe Bool),
     referralCode :: B.C f (Maybe Text),
-    referredAt :: B.C f (Maybe Time.UTCTime)
+    referredAt :: B.C f (Maybe Time.UTCTime),
+    nightTimeSafety :: B.C f Bool
   }
   deriving (Generic, B.Beamable)
 

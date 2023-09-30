@@ -317,7 +317,8 @@ otpRideCreate driver otpCode booking = do
             numberOfDeviation = Nothing,
             uiDistanceCalculationWithAccuracy = Nothing,
             uiDistanceCalculationWithoutAccuracy = Nothing,
-            driverGoHomeRequestId = ghrId
+            driverGoHomeRequestId = ghrId,
+            safetyAlertTriggerCount = 0
           }
 
     buildTrackingUrl rideId = do

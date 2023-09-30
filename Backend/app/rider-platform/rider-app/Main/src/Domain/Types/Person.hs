@@ -115,7 +115,8 @@ data PersonE e = Person
     createdAt :: UTCTime,
     updatedAt :: UTCTime,
     bundleVersion :: Maybe Version,
-    clientVersion :: Maybe Version
+    clientVersion :: Maybe Version,
+    nightTimeSafety :: Bool
   }
   deriving (Generic)
 

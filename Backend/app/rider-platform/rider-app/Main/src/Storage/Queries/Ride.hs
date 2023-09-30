@@ -118,6 +118,13 @@ updateDriverArrival rideId = do
     ]
     [Se.Is BeamR.id (Se.Eq $ getId rideId)]
 
+updateSafetyCheckStatus :: MonadFlow m => Id Ride -> Text -> m ()
+updateSafetyCheckStatus rideId res = do
+  updateOneWithKV
+    [ Se.Set BeamR.safetyCheckStatus res
+    ]
+    [Se.Is BeamR.id (Se.Eq $ getId rideId)]
+
 data StuckRideItem = StuckRideItem
   { rideId :: Id Ride,
     bookingId :: Id Booking,
@@ -317,7 +324,8 @@ instance FromTType' BeamR.Ride Ride where
             rideRating = rideRating,
             createdAt = createdAt,
             updatedAt = updatedAt,
-            driverMobileCountryCode = driverMobileCountryCode
+            driverMobileCountryCode = driverMobileCountryCode,
+            safetyCheckStatus = safetyCheckStatus
           }
 
 instance ToTType' BeamR.Ride Ride where
@@ -350,7 +358,8 @@ instance ToTType' BeamR.Ride Ride where
         BeamR.createdAt = createdAt,
         BeamR.updatedAt = updatedAt,
         BeamR.driverMobileCountryCode = driverMobileCountryCode,
-        BeamR.driverImage = driverImage
+        BeamR.driverImage = driverImage,
+        BeamR.safetyCheckStatus = safetyCheckStatus
       }
 
 countRidesByRiderId :: MonadFlow m => Id Person -> m Int

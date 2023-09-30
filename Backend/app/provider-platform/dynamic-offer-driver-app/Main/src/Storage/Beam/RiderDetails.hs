@@ -40,7 +40,8 @@ data RiderDetailsT f = RiderDetailsT
     hasTakenValidRideAt :: B.C f (Maybe Time.UTCTime),
     otpCode :: B.C f (Maybe Text),
     createdAt :: B.C f Time.UTCTime,
-    updatedAt :: B.C f Time.UTCTime
+    updatedAt :: B.C f Time.UTCTime,
+    nightSafetyChecks :: B.C f Bool
   }
   deriving (Generic, B.Beamable)
 

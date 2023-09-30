@@ -356,5 +356,6 @@ instance ToTType' BeamP.Person Person where
         BeamP.createdAt = createdAt,
         BeamP.updatedAt = updatedAt,
         BeamP.bundleVersion = versionToText <$> bundleVersion,
-        BeamP.clientVersion = versionToText <$> clientVersion
+        BeamP.clientVersion = versionToText <$> clientVersion,
+        BeamP.nightTimeSafety = nightTimeSafety
       }

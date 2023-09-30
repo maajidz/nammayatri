@@ -59,7 +59,8 @@ data RideT f = RideT
     rideRating :: B.C f (Maybe Int),
     createdAt :: B.C f Time.UTCTime,
     updatedAt :: B.C f Time.UTCTime,
-    driverImage :: B.C f (Maybe Text)
+    driverImage :: B.C f (Maybe Text),
+    safetyCheckStatus :: B.C f Text
   }
   deriving (Generic, B.Beamable)
 

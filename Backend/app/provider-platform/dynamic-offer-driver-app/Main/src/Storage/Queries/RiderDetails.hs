@@ -87,7 +87,8 @@ instance FromTType' BeamRD.RiderDetails RiderDetails where
             hasTakenValidRide = hasTakenValidRide,
             hasTakenValidRideAt = hasTakenValidRideAt,
             merchantId = Id merchantId,
-            otpCode = otpCode
+            otpCode = otpCode,
+            nightSafetyChecks = nightSafetyChecks
           }
 
 instance ToTType' BeamRD.RiderDetails RiderDetails where
@@ -105,5 +106,6 @@ instance ToTType' BeamRD.RiderDetails RiderDetails where
         BeamRD.hasTakenValidRide = hasTakenValidRide,
         BeamRD.hasTakenValidRideAt = hasTakenValidRideAt,
         BeamRD.merchantId = getId merchantId,
+        BeamRD.nightSafetyChecks = nightSafetyChecks,
         BeamRD.otpCode = otpCode
       }

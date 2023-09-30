@@ -77,7 +77,8 @@ data DConfirmReq = DConfirmReq
     customerPhoneNumber :: Text,
     fromAddress :: DBL.LocationAddress,
     toAddress :: DBL.LocationAddress,
-    mbRiderName :: Maybe Text
+    mbRiderName :: Maybe Text,
+    nightSafetyCheck :: Maybe Bool
   }
 
 data DConfirmRes = DConfirmRes
@@ -118,7 +119,7 @@ handler ::
 handler transporter req quote = do
   booking <- QRB.findById req.bookingId >>= fromMaybeM (BookingDoesNotExist req.bookingId.getId)
   now <- getCurrentTime
-  (riderDetails, isNewRider) <- getRiderDetails transporter.id req.customerMobileCountryCode req.customerPhoneNumber now
+  (riderDetails, isNewRider) <- getRiderDetails transporter.id req.customerMobileCountryCode req.customerPhoneNumber now req.nightSafetyCheck
   unless (booking.status == DRB.NEW) $
     throwError (BookingInvalidStatus $ show booking.status)
   case booking.bookingType of
@@ -268,7 +269,8 @@ handler transporter req quote = do
             numberOfDeviation = Nothing,
             uiDistanceCalculationWithAccuracy = Nothing,
             uiDistanceCalculationWithoutAccuracy = Nothing,
-            driverGoHomeRequestId = ghrId
+            driverGoHomeRequestId = ghrId,
+            safetyAlertTriggerCount = 0
           }
 
     buildTrackingUrl rideId = do
@@ -280,8 +282,8 @@ handler transporter req quote = do
             baseUrlPath = baseUrlPath bppUIUrl <> "/driver/location/" <> rideid
           }
 
-getRiderDetails :: (EncFlow m r, EsqDBFlow m r) => Id DM.Merchant -> Text -> Text -> UTCTime -> m (DRD.RiderDetails, Bool)
-getRiderDetails merchantId customerMobileCountryCode customerPhoneNumber now =
+getRiderDetails :: (EncFlow m r, EsqDBFlow m r) => Id DM.Merchant -> Text -> Text -> UTCTime -> Maybe Bool -> m (DRD.RiderDetails, Bool)
+getRiderDetails merchantId customerMobileCountryCode customerPhoneNumber now nightSafetyCheck =
   QRD.findByMobileNumberAndMerchant customerPhoneNumber merchantId >>= \case
     Nothing -> fmap (,True) . encrypt =<< buildRiderDetails
     Just a -> return (a, False)
@@ -302,7 +304,8 @@ getRiderDetails merchantId customerMobileCountryCode customerPhoneNumber now =
             referredAt = Nothing,
             hasTakenValidRide = False,
             hasTakenValidRideAt = Nothing,
-            otpCode = Just otp
+            otpCode = Just otp,
+            nightSafetyChecks = fromMaybe False nightSafetyCheck
           }
 
 buildRideDetails ::

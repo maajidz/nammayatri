@@ -57,7 +57,8 @@ data RideT f = RideT
     numberOfDeviation :: B.C f (Maybe Bool),
     uiDistanceCalculationWithAccuracy :: B.C f (Maybe Int),
     uiDistanceCalculationWithoutAccuracy :: B.C f (Maybe Int),
-    driverGoHomeRequestId :: B.C f (Maybe Text)
+    driverGoHomeRequestId :: B.C f (Maybe Text),
+    safetyAlertTriggerCount :: B.C f Int
   }
   deriving (Generic, B.Beamable)
 
