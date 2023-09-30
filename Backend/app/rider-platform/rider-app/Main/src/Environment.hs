@@ -55,6 +55,7 @@ import Kernel.Utils.Servant.Client (HttpClientOptions, RetryCfg)
 import Kernel.Utils.Servant.SignatureAuth
 import Lib.SessionizerMetrics.Prometheus.Internal
 import Lib.SessionizerMetrics.Types.Event
+import SharedLogic.CallBPPInternal
 import SharedLogic.GoogleTranslate
 import qualified Storage.CachedQueries.BlackListOrg as QBlackList
 import Storage.CachedQueries.Merchant as CM
@@ -82,9 +83,9 @@ data AppCfg = AppCfg
     autoMigrate :: Bool,
     coreVersion :: Text,
     loggerConfig :: LoggerConfig,
+    driverOfferBppInternal :: DriverOfferBppInternal,
     googleTranslateUrl :: BaseUrl,
     googleTranslateKey :: Text,
-    internalAPIKey :: Text,
     metricsSearchDurationTimeout :: Seconds,
     graceTerminationPeriod :: Seconds,
     apiRateLimitOptions :: APIRateLimitOptions,
@@ -128,6 +129,7 @@ data AppEnv = AppEnv
     searchRequestExpiry :: Maybe Seconds,
     coreVersion :: Text,
     loggerConfig :: LoggerConfig,
+    driverOfferBppInternal :: DriverOfferBppInternal,
     googleTranslateUrl :: BaseUrl,
     googleTranslateKey :: Text,
     graceTerminationPeriod :: Seconds,
@@ -165,7 +167,6 @@ data AppEnv = AppEnv
     kafkaProducerTools :: KafkaProducerTools,
     kafkaEnvs :: BAPKafkaEnvs,
     rideCfg :: RideConfig,
-    internalAPIKey :: Text,
     dashboardToken :: Text,
     cacheConfig :: CacheConfig,
     cacheTranslationConfig :: CacheTranslationConfig,

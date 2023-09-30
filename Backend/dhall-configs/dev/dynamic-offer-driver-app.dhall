@@ -28,7 +28,7 @@ let esqLocationDBCfg = esqDBCfg
 
 let esqLocationDBRepCfg =
       { connectHost = esqLocationDBCfg.connectHost
-      , connectPort = 5454
+      , connectPort = 5434
       , connectUser = esqLocationDBCfg.connectUser
       , connectPassword = esqLocationDBCfg.connectPassword
       , connectDatabase = esqLocationDBCfg.connectDatabase
@@ -147,7 +147,7 @@ let appBackendBapInternal =
       { name = "APP_BACKEND"
       , url = "http://localhost:8013/"
       , apiKey = sec.appBackendApikey
-      , internalKey = sec.internalKey
+      , internalAPIKey = sec.internalAPIKey
       }
 
 let registryMap =
