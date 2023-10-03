@@ -16,6 +16,7 @@
 module Storage.Queries.SearchRequest where
 
 import Data.Ord
+import qualified Data.Text as T
 import qualified Domain.Types.Location as DL
 import qualified Domain.Types.LocationMapping as DLM
 import Domain.Types.Merchant.MerchantPaymentMethod (MerchantPaymentMethod)
@@ -117,6 +118,7 @@ instance FromTType' BeamSR.SearchRequest SearchRequest where
                 let toLocMap = maximumBy (comparing (.order)) toLocationMappings
                 QL.findById toLocMap.locationId
           return (fl, tl)
+    searchTypes' <- readMaybe (T.unpack searchTypes) & fromMaybeM (InternalError "Unable to parse \'search_types\' field of \'search_request\' table")
     pure $
       Just
         SearchRequest
@@ -126,6 +128,7 @@ instance FromTType' BeamSR.SearchRequest SearchRequest where
             riderId = Id riderId,
             fromLocation = fl,
             toLocation = tl,
+            searchTypes = searchTypes',
             distance = HighPrecMeters <$> distance,
             maxDistance = HighPrecMeters <$> maxDistance,
             estimatedRideDuration = estimatedRideDuration,
@@ -152,6 +155,7 @@ instance ToTType' BeamSR.SearchRequest SearchRequest where
         BeamSR.riderId = getId riderId,
         BeamSR.fromLocationId = Just $ getId fromLocation.id,
         BeamSR.toLocationId = getId <$> (toLocation <&> (.id)),
+        BeamSR.searchTypes = T.pack $ show searchTypes,
         BeamSR.distance = getHighPrecMeters <$> distance,
         BeamSR.maxDistance = getHighPrecMeters <$> maxDistance,
         BeamSR.estimatedRideDuration = estimatedRideDuration,

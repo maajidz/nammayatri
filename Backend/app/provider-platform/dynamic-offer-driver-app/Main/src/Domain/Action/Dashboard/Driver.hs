@@ -763,6 +763,7 @@ castVehicleVariant = \case
   Common.AUTO_RICKSHAW -> DVeh.AUTO_RICKSHAW
   Common.TAXI -> DVeh.TAXI
   Common.TAXI_PLUS -> DVeh.TAXI_PLUS
+  Common.BUS -> DVeh.BUS
 
 castVehicleVariantDashboard :: DVeh.Variant -> Common.Variant
 castVehicleVariantDashboard = \case
@@ -772,6 +773,7 @@ castVehicleVariantDashboard = \case
   DVeh.AUTO_RICKSHAW -> Common.AUTO_RICKSHAW
   DVeh.TAXI -> Common.TAXI
   DVeh.TAXI_PLUS -> Common.TAXI_PLUS
+  DVeh.BUS -> Common.BUS
 
 ---------------------------------------------------------------------
 getAllVehicleForFleet :: ShortId DM.Merchant -> Text -> Flow Common.ListVehicleRes
