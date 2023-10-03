@@ -12,12 +12,23 @@
   the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -}
 {-# LANGUAGE DerivingStrategies #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Storage.Beam.Merchant.TransporterConfig where
 
 import qualified Data.Aeson as A
+import qualified Data.ByteString as ByteString
+import qualified Data.Text as T
+import qualified Data.Vector as V
 import qualified Database.Beam as B
-import Kernel.Prelude
+import Database.Beam.Backend (BeamSqlBackend, FromBackendRow, HasSqlValueSyntax (sqlValueSyntax))
+import Database.Beam.MySQL ()
+import Database.Beam.Postgres (Postgres)
+import Database.PostgreSQL.Simple.FromField (FromField, fromField)
+import qualified Database.PostgreSQL.Simple.FromField as DPSF
+import GHC.Generics (Generic)
+import Kernel.External.Types (Language)
+import Kernel.Prelude hiding (Generic)
 import Kernel.Types.Common
 import Tools.Beam.UtilsTH
 
@@ -91,7 +102,8 @@ data TransporterConfigT f = TransporterConfigT
     orderAndNotificationStatusCheckTimeLimit :: B.C f Seconds,
     ratingAsDecimal :: B.C f Bool,
     createdAt :: B.C f UTCTime,
-    updatedAt :: B.C f UTCTime
+    updatedAt :: B.C f UTCTime,
+    languagesToBeTranslated :: B.C f [Language]
   }
   deriving (Generic, B.Beamable)
 
@@ -102,6 +114,27 @@ instance B.Table TransporterConfigT where
   primaryKey = Id . merchantId
 
 type TransporterConfig = TransporterConfigT Identity
+
+instance HasSqlValueSyntax be (V.Vector Text) => HasSqlValueSyntax be [Language] where
+  sqlValueSyntax x = sqlValueSyntax (V.fromList (T.pack . show <$> x))
+
+-- instance HasSqlValueSyntax be Text => HasSqlValueSyntax be Language where
+--   sqlValueSyntax x = sqlValueSyntax (T.pack (show  x))
+
+instance FromField [Language] where
+  fromField = fromFieldLanguage
+
+fromFieldLanguage ::
+  DPSF.Field ->
+  Maybe ByteString.ByteString ->
+  DPSF.Conversion [Language]
+fromFieldLanguage f mbValue = case mbValue of
+  Nothing -> DPSF.returnError DPSF.UnexpectedNull f mempty
+  Just _ -> V.toList <$> fromField f mbValue
+
+instance BeamSqlBackend be => B.HasSqlEqualityCheck be [Language]
+
+instance FromBackendRow Postgres [Language]
 
 $(enableKVPG ''TransporterConfigT ['merchantId] [])
 

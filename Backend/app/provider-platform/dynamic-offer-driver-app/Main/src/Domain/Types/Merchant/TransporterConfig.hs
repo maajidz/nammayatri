@@ -88,6 +88,7 @@ data TransporterConfigD u = TransporterConfig
     updatedAt :: UTCTime,
     rcLimit :: Int,
     automaticRCActivationCutOff :: Seconds,
+    languagesToBeTranslated :: [Language],
     isAvoidToll :: Bool,
     aadhaarImageResizeConfig :: Maybe AadhaarImageResizeConfig,
     enableFaceVerification :: Bool,

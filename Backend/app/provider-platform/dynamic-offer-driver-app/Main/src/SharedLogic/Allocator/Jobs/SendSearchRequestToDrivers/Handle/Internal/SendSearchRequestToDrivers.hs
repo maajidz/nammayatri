@@ -26,6 +26,7 @@ import qualified Domain.Types.Location as DLoc
 import Domain.Types.Merchant.DriverPoolConfig
 import Domain.Types.Person (Driver)
 import qualified Domain.Types.SearchRequest as DSR
+import qualified Domain.Types.SearchRequest.SearchReqLocation as DLoc
 import Domain.Types.SearchRequestForDriver
 import qualified Domain.Types.SearchTry as DST
 import Kernel.Prelude
@@ -33,8 +34,9 @@ import qualified Kernel.Storage.Esqueleto as Esq
 import qualified Kernel.Storage.Hedis as Redis
 import Kernel.Types.CacheFlow
 import Kernel.Types.Common
+import Kernel.Types.Error (TransporterError (..))
 import Kernel.Types.Id
-import Kernel.Utils.Common (addUTCTime, logInfo)
+import Kernel.Utils.Common (addUTCTime, fromMaybeM, logInfo)
 import qualified Lib.DriverScore as DS
 import qualified Lib.DriverScore.Types as DST
 import SharedLogic.Allocator.Jobs.SendSearchRequestToDrivers.Handle.Internal.DriverPool (getPoolBatchNum)
@@ -42,6 +44,7 @@ import SharedLogic.DriverPool
 import SharedLogic.GoogleTranslate
 import qualified Storage.CachedQueries.BapMetadata as CQSM
 import qualified Storage.CachedQueries.Driver.GoHomeRequest as CQDGR
+import qualified Storage.CachedQueries.Merchant.TransporterConfig as SCT
 import qualified Storage.Queries.Driver.DriverFlowStatus as QDFS
 import qualified Storage.Queries.SearchRequestForDriver as QSRD
 import Tools.Maps as Maps
@@ -90,7 +93,13 @@ sendSearchRequestToDrivers searchReq searchTry driverExtraFeeBounds driverPoolCo
 
   forM_ driverPoolZipSearchRequests $ \(dPoolRes, sReqFD) -> do
     let language = fromMaybe Maps.ENGLISH dPoolRes.driverPoolResult.language
-    let translatedSearchReq = fromMaybe searchReq $ M.lookup language languageDictionary
+    -- let translatedSearchReq = fromMaybe searchReq $ M.lookup language languageDictionary
+    transporterConfig <- SCT.findByMerchantId searchReq.providerId >>= fromMaybeM (TransporterConfigNotFound searchReq.providerId.getId)
+    let languagesToBeTranslated = transporterConfig.languagesToBeTranslated
+    let translatedSearchReq =
+          if elem language languagesToBeTranslated
+            then fromMaybe searchReq $ M.lookup language languageDictionary
+            else searchReq
     let entityData = makeSearchRequestForDriverAPIEntity sReqFD translatedSearchReq searchTry bapMetadata dPoolRes.intelligentScores.rideRequestPopupDelayDuration dPoolRes.keepHiddenForSeconds searchTry.vehicleVariant
 
     Notify.notifyOnNewSearchRequestAvailable searchReq.providerId sReqFD.driverId dPoolRes.driverPoolResult.driverDeviceToken entityData
@@ -145,28 +154,17 @@ sendSearchRequestToDrivers searchReq searchTry driverExtraFeeBounds driverPoolCo
               }
       pure searchRequestForDriver
 
-buildTranslatedSearchReqLocation :: (TranslateFlow m r, EsqDBFlow m r, CacheFlow m r) => DLoc.Location -> Maybe Maps.Language -> m DLoc.Location
-buildTranslatedSearchReqLocation DLoc.Location {..} mbLanguage = do
+buildTranslatedSearchReqLocation :: (TranslateFlow m r, EsqDBFlow m r, CacheFlow m r) => DLoc.SearchReqLocation -> Maybe Maps.Language -> m DLoc.SearchReqLocation
+buildTranslatedSearchReqLocation DLoc.SearchReqLocation {..} mbLanguage = do
   areaRegional <- case mbLanguage of
-    Nothing -> return address.area
+    Nothing -> return area
     Just lang -> do
-      mAreaObj <- translate ENGLISH lang `mapM` address.area
+      mAreaObj <- translate ENGLISH lang `mapM` area
       let translation = (\areaObj -> listToMaybe areaObj._data.translations) =<< mAreaObj
       return $ (.translatedText) <$> translation
   pure
-    DLoc.Location
-      { address =
-          DLoc.LocationAddress
-            { area = areaRegional,
-              street = address.street,
-              door = address.door,
-              city = address.city,
-              state = address.state,
-              country = address.country,
-              building = address.building,
-              areaCode = address.areaCode,
-              fullAddress = address.fullAddress
-            },
+    DLoc.SearchReqLocation
+      { area = areaRegional,
         ..
       }
 
@@ -191,7 +189,8 @@ translateSearchReq DSR.SearchRequest {..} language = do
 addLanguageToDictionary ::
   ( TranslateFlow m r,
     CacheFlow m r,
-    EsqDBFlow m r
+    EsqDBFlow m r,
+    Esq.EsqDBReplicaFlow m r
   ) =>
   DSR.SearchRequest ->
   LanguageDictionary ->
@@ -199,8 +198,12 @@ addLanguageToDictionary ::
   m LanguageDictionary
 addLanguageToDictionary searchReq dict dPoolRes = do
   let language = fromMaybe Maps.ENGLISH dPoolRes.driverPoolResult.language
-  if isJust $ M.lookup language dict
-    then return dict
-    else do
-      translatedSearchReq <- translateSearchReq searchReq language
-      pure $ M.insert language translatedSearchReq dict
+  transporterConfig <- SCT.findByMerchantId searchReq.providerId >>= fromMaybeM (TransporterConfigNotFound searchReq.providerId.getId)
+  if elem language transporterConfig.languagesToBeTranslated
+    then
+      if isJust $ M.lookup language dict
+        then return dict
+        else do
+          translatedSearchReq <- translateSearchReq searchReq language
+          pure $ M.insert language translatedSearchReq dict
+    else return dict
