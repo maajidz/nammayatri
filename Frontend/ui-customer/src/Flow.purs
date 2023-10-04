@@ -39,7 +39,7 @@ import Data.String (Pattern(..), drop, indexOf, split, toLower, trim, take)
 import Debug (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Effect.Uncurried (runEffectFn5, runEffectFn2)
+import Effect.Uncurried (runEffectFn5, runEffectFn2, runEffectFn6)
 import Engineering.Helpers.BackTrack (getState, liftFlowBT)
 import Engineering.Helpers.Commons (liftFlow, os, getNewIDWithTag, bundleVersion, getExpiryTime, stringToVersion, convertUTCtoISC, getCurrentUTC, getWindowVariable, flowRunner)
 import Engineering.Helpers.Suggestions (suggestionsDefinitions, getSuggestions)
@@ -92,6 +92,7 @@ import Effect.Aff (makeAff, nonCanceler, launchAff)
 import Control.Monad.Except (runExceptT)
 import Control.Transformers.Back.Trans (runBackT)
 import Screens.AccountSetUpScreen.Transformer (getDisabilityList)
+import Animation.Config (zoomLevel)
 
 baseAppFlow :: GlobalPayload -> Boolean-> FlowBT String Unit
 baseAppFlow (GlobalPayload gPayload) refreshFlow = do
@@ -1176,7 +1177,7 @@ homeScreenFlow = do
       if (fromMaybe "" sourceServiceabilityResp.geoJson) /= "" && (fromMaybe "" sourceServiceabilityResp.geoJson) /= state.data.polygonCoordinates && pickUpPoints /= state.data.nearByPickUpPoints then do
         modifyScreenState $ HomeScreenStateType (\homeScreen -> homeScreen{data{polygonCoordinates = fromMaybe "" sourceServiceabilityResp.geoJson,nearByPickUpPoints=pickUpPoints},props{isSpecialZone =  (sourceServiceabilityResp.geoJson) /= Nothing , defaultPickUpPoint = (fromMaybe HomeScreenData.dummyLocation (state.data.nearByPickUpPoints!!0)).place, confirmLocationCategory = srcSpecialLocation.category}})
         _ <- pure $ removeAllPolylines ""
-        liftFlowBT $ runEffectFn5 locateOnMap false lat lon (fromMaybe "" sourceServiceabilityResp.geoJson) pickUpPoints
+        liftFlowBT $ runEffectFn6 locateOnMap false lat lon (fromMaybe "" sourceServiceabilityResp.geoJson) pickUpPoints zoomLevel
         homeScreenFlow
       else do
         PlaceName placeDetails <- getPlaceName lat lon gateAddress
@@ -1219,7 +1220,7 @@ homeScreenFlow = do
       if (fromMaybe "" sourceServiceabilityResp.geoJson) /= "" && (fromMaybe "" sourceServiceabilityResp.geoJson) /= state.data.polygonCoordinates && pickUpPoints /= state.data.nearByPickUpPoints then do
         modifyScreenState $ HomeScreenStateType (\homeScreen -> homeScreen{data{polygonCoordinates = fromMaybe "" sourceServiceabilityResp.geoJson,nearByPickUpPoints=pickUpPoints},props{isSpecialZone =  (sourceServiceabilityResp.geoJson) /= Nothing , defaultPickUpPoint = (fromMaybe HomeScreenData.dummyLocation (pickUpPoints!!0)).place, confirmLocationCategory = srcSpecialLocation.category}})
         _ <- pure $ removeAllPolylines ""
-        liftFlowBT $ runEffectFn5 locateOnMap false lat lon (fromMaybe "" sourceServiceabilityResp.geoJson) pickUpPoints
+        liftFlowBT $ runEffectFn6 locateOnMap false lat lon (fromMaybe "" sourceServiceabilityResp.geoJson) pickUpPoints zoomLevel
         homeScreenFlow
       else do
         PlaceName address <- getPlaceName lat lon gateAddress
@@ -1448,7 +1449,7 @@ rideSearchFlow flowType = do
       case finalState.props.sourceSelectedOnMap of
         false -> do
           pure $ removeAllPolylines ""
-          liftFlowBT $ runEffectFn5 locateOnMap false finalState.props.sourceLat finalState.props.sourceLong finalState.data.polygonCoordinates finalState.data.nearByPickUpPoints
+          liftFlowBT $ runEffectFn6 locateOnMap false finalState.props.sourceLat finalState.props.sourceLong finalState.data.polygonCoordinates finalState.data.nearByPickUpPoints zoomLevel
           modifyScreenState $ HomeScreenStateType (\homeScreen -> homeScreen{props{currentStage = ConfirmingLocation,rideRequestFlow = true}})
           _ <- pure $ updateLocalStage ConfirmingLocation
           void $ lift $ lift $ toggleLoader false
@@ -1971,7 +1972,7 @@ addNewAddressScreenFlow input = do
                                                                                                              }
                                                                                                       })
         _ <- pure $ removeAllPolylines ""
-        liftFlowBT $ runEffectFn5 locateOnMap false lat lon (fromMaybe "" sourceServiceabilityResp.geoJson) pickUpPoints
+        liftFlowBT $ runEffectFn6 locateOnMap false lat lon (fromMaybe "" sourceServiceabilityResp.geoJson) pickUpPoints zoomLevel
         addNewAddressScreenFlow ""
       else do
         PlaceName address <- getPlaceName lat lon gateAddress

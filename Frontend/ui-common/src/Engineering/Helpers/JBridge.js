@@ -600,27 +600,16 @@ export const updateRouteMarker = function (data) {
   }
 }
 
-export const updateRoute = function (data) {
-  return function (destMarker) {
-    return function (eta) {
-      return function (srcMarker){
-        return function (specialLocation) {
-          return function () {
-            if (window.JBridge.updateRoute) {
-              var json = JSON.stringify(data);
-              try{
-                console.log("I AM HERE ------------------ IN UPDATE ROUTE");
-                return window.JBridge.updateRoute(json, destMarker, eta, srcMarker, JSON.stringify(specialLocation));
-              }catch (err){
-                console.log("Catch error" + err);
-                return window.JBridge.updateRoute(json, destMarker, eta, JSON.stringify(specialLocation));
-              }
-            }
-          }
-        };
-      };
-    };
-  };
+export const updateRoute = function (data, destMarker, eta, srcMarker, specialLocation, zoomLevel) {
+    if (window.JBridge.updateRoute) {
+      var json = JSON.stringify(data);
+    try{
+        var payload = {"data":json, "destMarker": destMarker, "eta": eta, "srcMarker": srcMarker, "specialLocation": JSON.stringify(specialLocation), "zoomLevel": zoomLevel }
+        return window.JBridge.updateRoute(JSON.stringify(payload));
+    } catch(err){
+        return window.JBridge.updateRoute(json, destMarker, eta, srcMarker, JSON.stringify(specialLocation), zoomLevel);
+    }
+  }
 };
 
 export const storeCallBackMessageUpdated = function (cb) {
@@ -1494,11 +1483,12 @@ export const showKeyboard = function(id){
     JBridge.showKeyboard(id); // imeOptions is set to IME_ACTION_SEARCH and IME_ACTION_DONE
 }
 
-export const locateOnMap = function (str, lat, lon, geoJson, coodinates) {
-  try {
-    return JBridge.locateOnMap(str, lat, lon, geoJson, JSON.stringify(coodinates));
-  } catch (err) {
-    return JBridge.locateOnMap(str, lat, lon);
+export const locateOnMap = function (str, lat, lon, geoJson, coodinates, zoomLevel) {
+  try{
+      let payload = { "goToCurrentLocation": str, "lat": lat, "lon": lon, "geoJson": geoJson, "points": JSON.stringify(coodinates), "zoomLevel": zoomLevel};
+      return JBridge.locateOnMap(JSON.stringify(payload));
+  } catch (err){
+      return JBridge.locateOnMap(str, lat, lon, geoJson, JSON.stringify(coodinates));
   }
 };
 

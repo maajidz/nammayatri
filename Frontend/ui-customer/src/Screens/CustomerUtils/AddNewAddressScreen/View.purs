@@ -31,7 +31,7 @@ import Components.PrimaryEditText as PrimaryEditText
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Uncurried (runEffectFn5)
+import Effect.Uncurried (runEffectFn5, runEffectFn6)
 import Engineering.Helpers.Commons as EHC
 import Font.Size as FontSize
 import Font.Style as FontStyle
@@ -48,6 +48,7 @@ import Storage (KeyStore(..), getValueToLocalStore)
 import Debug (spy)
 import Data.String as DS
 import Styles.Colors as Color
+import Animation.Config (zoomLevel)
 
 screen :: ST.AddNewAddressScreenState -> Screen Action ST.AddNewAddressScreenState ScreenOutput
 screen initialState =
@@ -81,7 +82,7 @@ view push state =
           _ <- (JB.showMap (EHC.getNewIDWithTag "AddNewAddressHomeScreenMap") true "satellite" (19.0) push MAPREADY)
           pure $ HU.setText (EHC.getNewIDWithTag "SavedLocationEditText") (state.data.address)
           pure $ HU.setText (EHC.getNewIDWithTag "SaveAsEditText") (state.data.addressSavedAs)
-          _ <- runEffectFn5 JB.locateOnMap true 0.0 0.0 "" []
+          _ <- runEffectFn6 JB.locateOnMap true 0.0 0.0 "" [] zoomLevel
           _ <- if (state.data.activeIndex == Just 2 && state.props.showSavePlaceView) then JB.requestKeyboardShow (EHC.getNewIDWithTag ("SaveAsEditText")) else pure unit
           pure unit
           ) (const AfterRender)

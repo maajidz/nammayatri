@@ -36,7 +36,7 @@ import Foreign.Generic (decodeJSON)
 import Presto.Core.Utils.Encoding (defaultDecode, defaultEncode)
 import Data.Either (Either(..))
 import Engineering.Helpers.Commons (screenHeight, screenWidth, parseFloat)
-import Effect.Uncurried (EffectFn3, EffectFn2, EffectFn1, runEffectFn1, EffectFn5)
+import Effect.Uncurried (EffectFn3, EffectFn2, EffectFn1, runEffectFn1, EffectFn5, EffectFn6)
 import Data.Maybe (Maybe(..))
 -- import LoaderOverlay.Handler as UI
 -- import Effect.Aff (launchAff)
@@ -77,7 +77,7 @@ import Foreign.Class (encode)
 foreign import showLoaderImpl      :: String -> Effect Unit
 -- foreign import readFile'      :: String -> Effect String
 -- foreign import showLoader'      :: String -> Effect Unit
-foreign import locateOnMap :: EffectFn5 Boolean Number Number String (Array Location) Unit
+foreign import locateOnMap :: EffectFn6 Boolean Number Number String (Array Location) Number Unit
 
 foreign import exitLocateOnMap :: String -> Unit
 foreign import shareTextMessage :: String -> String -> Unit
@@ -115,7 +115,7 @@ foreign import copyToClipboard :: String -> Unit
 foreign import drawRoute :: Locations -> String -> String -> Boolean -> String -> String -> Int -> String -> String -> String -> MapRouteConfig -> Effect Unit
 foreign import updateRouteMarker :: UpdateRouteMarker -> Effect Unit
 foreign import isCoordOnPath :: Locations -> Number -> Number -> Int -> Effect IsLocationOnPath
-foreign import updateRoute :: Locations -> String -> String -> String -> MapRouteConfig -> Effect Unit
+foreign import updateRoute :: EffectFn6 Locations String String String MapRouteConfig Number Unit
 -- -- foreign import drawActualRoute :: String -> String -> Locations -> Effect Int
 -- -- foreign import showAndDrawRoute :: String -> String -> String -> Locations -> Effect Int
 -- foreign import addMarkers :: Markers -> Effect Unit

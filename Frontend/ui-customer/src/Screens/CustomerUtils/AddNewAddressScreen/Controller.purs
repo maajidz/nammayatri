@@ -32,7 +32,7 @@ import Data.Maybe (Maybe(..), fromMaybe, fromJust)
 import Data.Number (fromString) as Number
 import Data.String (trim, length, split, Pattern(..), drop, indexOf, toLower)
 import Effect (Effect)
-import Effect.Uncurried (runEffectFn5)
+import Effect.Uncurried (runEffectFn5, runEffectFn6)
 import Effect.Unsafe (unsafePerformEffect)
 import Engineering.Helpers.Commons (os, getNewIDWithTag)
 import Helpers.Utils (getAssetStoreLink, getCommonAssetStoreLink)
@@ -53,6 +53,7 @@ import Services.API (AddressComponents, Prediction, SavedReqLocationAPIEntity(..
 import Storage (KeyStore(..), getValueToLocalStore)
 import JBridge (fromMetersToKm)
 import Debug(spy)
+import Animation.Config (zoomLevel)
 
 instance showAction :: Show Action where
   show _ = ""
@@ -159,7 +160,7 @@ eval (ClearEditText) state = do
   continue state{props{isSearchedLocationServiceable = true}}
 
 eval SetLocationOnMap state = do 
-  let _ = unsafePerformEffect $ runEffectFn5 locateOnMap true 0.0 0.0 state.data.polygonCoordinates state.data.nearByPickUpPoints
+  let _ = unsafePerformEffect $ runEffectFn6 locateOnMap true 0.0 0.0 state.data.polygonCoordinates state.data.nearByPickUpPoints zoomLevel
   _ <- pure $ removeAllPolylines ""
   _ <- pure $ hideKeyboardOnNavigation true
   _ <- pure $ toggleBtnLoader "" false

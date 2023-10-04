@@ -66,7 +66,7 @@ import Data.String as STR
 import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff)
-import Effect.Uncurried (runEffectFn5)
+import Effect.Uncurried (runEffectFn5, runEffectFn6)
 import Effect.Unsafe (unsafePerformEffect)
 import Engineering.Helpers.Commons (clearTimer, flowRunner, getNewIDWithTag, os, getExpiryTime, convertUTCtoISC, getCurrentUTC)
 import Engineering.Helpers.LogEvent (logEvent, logEventWithTwoParams, logEventWithMultipleParams)
@@ -109,6 +109,7 @@ import PrestoDOM.Properties (sheetState) as PP
 import Screens.RideBookingFlow.HomeScreen.Config(reportIssueOptions)
 import Data.Function (const)
 import Data.List ((:))
+import Animation.Config (zoomLevel)
 
 instance showAction :: Show Action where
   show _ = ""
@@ -1451,7 +1452,7 @@ eval (SearchLocationModelActionController (SearchLocationModelController.SetLoca
       lon = if (not isSource && state.props.destinationLat /= 0.0 && state.props.destinationLong /= 0.0) then state.props.destinationLong else state.props.sourceLong
   _ <- pure $ hideKeyboardOnNavigation true
   _ <- pure $ removeAllPolylines ""
-  _ <- pure $ unsafePerformEffect $ runEffectFn5 locateOnMap false lat lon state.data.polygonCoordinates state.data.nearByPickUpPoints
+  _ <- pure $ unsafePerformEffect $ runEffectFn6 locateOnMap false lat lon state.data.polygonCoordinates state.data.nearByPickUpPoints zoomLevel
   pure $ unsafePerformEffect $ logEvent state.data.logField if state.props.isSource == Just true  then "ny_user_src_set_location_on_map" else "ny_user_dest_set_location_on_map"
   let srcValue = if state.data.source == "" then getString CURRENT_LOCATION else state.data.source
   let newState = state{data{source = srcValue}, props{isSearchLocation = LocateOnMap, currentStage = SearchLocationModel, locateOnMap = true, isRideServiceable = true, showlocUnserviceablePopUp = false}}

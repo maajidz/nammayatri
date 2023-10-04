@@ -90,7 +90,9 @@ import Types.App (GlobalState, defaultGlobalState)
 import Halogen.VDom.DOM.Prop (Prop)
 import Data.String as DS
 import Data.Function.Uncurried (runFn1)
+import Effect.Uncurried (runEffectFn6)
 import Components.CommonComponentConfig as CommonComponentConfig
+import Animation.Config (zoomLevel)
 
 
 screen :: HomeScreenState -> Screen Action HomeScreenState ScreenOutput
@@ -257,7 +259,7 @@ view push state =
         , afterRender
             ( \action -> do
                 _ <- push action
-                _ <- showMap (getNewIDWithTag "CustomerHomeScreenMap") isCurrentLocationEnabled "satellite" (17.0) push MAPREADY
+                _ <- showMap (getNewIDWithTag "CustomerHomeScreenMap") isCurrentLocationEnabled "satellite" zoomLevel push MAPREADY
                 if(state.props.openChatScreen == true && state.props.currentStage == RideAccepted) then push OpenChatScreen
                 else pure unit
                 case state.props.currentStage of
@@ -2011,7 +2013,7 @@ driverLocationTracking push action driverArrivedAction updateState duration trac
                                                     specialLocationConfig "" sourceSpecialTagIcon
                                                   else
                                                     specialLocationConfig "" destSpecialTagIcon
-                        liftFlow $ updateRoute newPoints markers.destMarker (metersToKm locationResp.distance state) markers.srcMarker specialLocationTag
+                        liftFlow $ runEffectFn6 updateRoute newPoints markers.destMarker (metersToKm locationResp.distance state) markers.srcMarker specialLocationTag zoomLevel
                         _ <- doAff do liftEffect $ push $ updateState locationResp.eta locationResp.distance
                         void $ delay $ Milliseconds duration
                         driverLocationTracking push action driverArrivedAction updateState duration trackingId state routeState

@@ -123,7 +123,7 @@ foreign import getTime :: Unit -> Int
 
 foreign import drawPolygon :: String -> String -> Effect Unit
 
-foreign import removeLabelFromMarker :: Unit -> Effect Unit
+foreign import removeLabelFromMarker :: Number -> Effect Unit
 -- foreign import generateSessionToken :: String -> String
 foreign import requestKeyboardShow :: String -> Effect Unit
 

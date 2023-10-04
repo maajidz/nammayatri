@@ -95,3 +95,6 @@ translateFullYAnimWithDurationConfig duration = animConfig {
 , toY = 0
 , interpolator = PrestoAnim.EaseInOut
 }
+
+zoomLevel :: Number
+zoomLevel = 17.0

@@ -468,10 +468,14 @@ export const drawPolygon = function(geoJson) {
   }
 }
 
-export const removeLabelFromMarker = function(unit){
+export const removeLabelFromMarker = function(zoomLevel){
   return function () {
     if (JBridge.removeLabelFromMarker){
-      return JBridge.removeLabelFromMarker();
+      try{
+        return JBridge.removeLabelFromMarker(zoomLevel);
+      } catch (err){
+        return JBridge.removeLabelFromMarker();
+      }
     }
   }
 }
