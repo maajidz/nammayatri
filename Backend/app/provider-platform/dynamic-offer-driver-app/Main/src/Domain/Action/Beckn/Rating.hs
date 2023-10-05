@@ -36,7 +36,8 @@ import Tools.Error
 data DRatingReq = DRatingReq
   { bookingId :: Id DBooking.Booking,
     ratingValue :: Int,
-    feedbackDetails :: Maybe Text
+    feedbackDetails :: Maybe Text,
+    wasOfferedAssistance :: Maybe Bool
   }
 
 handler :: Id Merchant -> DRatingReq -> DRide.Ride -> Flow ()
@@ -50,12 +51,12 @@ handler merchantId req ride = do
     Nothing -> do
       logTagInfo "FeedbackAPI" $
         "Creating a new record for " +|| ride.id ||+ " with rating " +|| ratingValue ||+ "."
-      newRating <- buildRating ride.id driverId ratingValue feedbackDetails
+      newRating <- buildRating ride.id driverId ratingValue feedbackDetails req.wasOfferedAssistance
       QRating.create newRating
     Just rideRating -> do
       logTagInfo "FeedbackAPI" $
         "Updating existing rating for " +|| ride.id ||+ " with new rating " +|| ratingValue ||+ "."
-      QRating.updateRating rideRating.id driverId ratingValue feedbackDetails
+      QRating.updateRating rideRating.id driverId ratingValue feedbackDetails req.wasOfferedAssistance
   calculateAverageRating driverId merchant.minimumDriverRatesCount
 
 calculateAverageRating ::
@@ -75,8 +76,8 @@ calculateAverageRating personId minimumDriverRatesCount = do
     logTagInfo "PersonAPI" $ "New average rating for person " +|| personId ||+ " , rating is " +|| newAverage ||+ ""
     void $ QP.updateAverageRating personId newAverage
 
-buildRating :: MonadFlow m => Id DRide.Ride -> Id DP.Person -> Int -> Maybe Text -> m DRating.Rating
-buildRating rideId driverId ratingValue feedbackDetails = do
+buildRating :: MonadFlow m => Id DRide.Ride -> Id DP.Person -> Int -> Maybe Text -> Maybe Bool -> m DRating.Rating
+buildRating rideId driverId ratingValue feedbackDetails wasOfferedAssistance = do
   id <- Id <$> L.generateGUID
   now <- getCurrentTime
   let createdAt = now
