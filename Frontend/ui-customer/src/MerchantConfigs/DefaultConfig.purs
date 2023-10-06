@@ -136,4 +136,15 @@ config =
       auto : true,
       cabs : false
     }
+  , mapConfig : 
+      { locateOnMapConfig : 
+          { dottedLineConfig : 
+              { visible : true
+              , range : 100
+              , color : "#323643"
+              }
+          }
+      , labelTextSize : 30
+      , animationDuration : 400
+      }
   }

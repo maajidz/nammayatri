@@ -52,6 +52,7 @@ commonConfig =
         , callOptions : ["ANONYMOUS"]
         , autoVariantEnabled : true
         , showNearByDrivers : false
+        , enableWhatsappOTP : []
         , navigationAppConfig : {
             android : {  
               query : "google.navigation:q=%f,%f"
@@ -75,9 +76,9 @@ commonConfig =
                     , color : "#323643"
                     }
                 }
+            , labelTextSize : 30
             , animationDuration : 400
             }
-        , enableWhatsappOTP : ["BD"]
         , customerTip : {
             auto : true,
             cabs : false

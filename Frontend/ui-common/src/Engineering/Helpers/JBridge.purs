@@ -36,7 +36,7 @@ import Foreign.Generic (decodeJSON)
 import Presto.Core.Utils.Encoding (defaultDecode, defaultEncode)
 import Data.Either (Either(..))
 import Engineering.Helpers.Commons (screenHeight, screenWidth, parseFloat)
-import Effect.Uncurried (EffectFn3, EffectFn2, EffectFn1, runEffectFn1, EffectFn5)
+import Effect.Uncurried (EffectFn3, EffectFn2, EffectFn1, runEffectFn1, EffectFn6)
 import Data.Maybe (Maybe(..))
 -- import LoaderOverlay.Handler as UI
 -- import Effect.Aff (launchAff)
@@ -77,7 +77,7 @@ import Foreign.Class (encode)
 foreign import showLoaderImpl      :: String -> Effect Unit
 -- foreign import readFile'      :: String -> Effect String
 -- foreign import showLoader'      :: String -> Effect Unit
-foreign import locateOnMap :: EffectFn5 Boolean Number Number String (Array Location) Unit
+foreign import locateOnMap :: EffectFn6 Boolean Number Number String (Array Location) LocateOnMapConfig Unit
 
 foreign import exitLocateOnMap :: String -> Unit
 foreign import shareTextMessage :: String -> String -> Unit
@@ -249,6 +249,10 @@ type LottieAnimationConfig = {
   , maxProgress :: Number
 }
 
+type LocateOnMapConfig = {
+    labelId :: String
+}
+
 lottieAnimationConfig :: LottieAnimationConfig
 lottieAnimationConfig = {
     rawJson : ""
@@ -258,6 +262,11 @@ lottieAnimationConfig = {
   , scaleType : "DEFAULT"
   , minProgress : 0.0
   , maxProgress : 1.0
+}
+
+locateOnMapConfig :: LocateOnMapConfig
+locateOnMapConfig = {
+    labelId : ""
 }
 
 -- -- keyStoreEntryPresent :: String -> Flow Boolean

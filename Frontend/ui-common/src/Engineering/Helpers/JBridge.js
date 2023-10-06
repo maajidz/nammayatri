@@ -1532,11 +1532,15 @@ export const showKeyboard = function(id){
     JBridge.showKeyboard(id); // imeOptions is set to IME_ACTION_SEARCH and IME_ACTION_DONE
 }
 
-export const locateOnMap = function (str, lat, lon, geoJson, coodinates) {
+export const locateOnMap = function (str, lat, lon, geoJson, coodinates, config) {
   try {
-    return JBridge.locateOnMap(str, lat, lon, geoJson, JSON.stringify(coodinates));
+    return JBridge.locateOnMap(str, lat, lon, geoJson, JSON.stringify(coodinates), JSON.stringify(config));
   } catch (err) {
-    return JBridge.locateOnMap(str, lat, lon);
+    try {
+      return JBridge.locateOnMap(str, lat, lon, geoJson, JSON.stringify(coodinates));
+    } catch (err) {
+      return JBridge.locateOnMap(str, lat, lon);
+    }
   }
 };
 

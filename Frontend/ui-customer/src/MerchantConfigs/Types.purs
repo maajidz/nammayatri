@@ -1,6 +1,4 @@
 module MerchantConfig.Types where
-import Prelude
-import Styles.Types (FontType)
 
 type AppConfig =
   {
@@ -58,6 +56,7 @@ type AppConfig =
   , notifyRideConfirmationConfig :: NotifyRideConfirmationConfig
   , estimateAndQuoteConfig :: EstimateAndQuoteConfig
   , customerTip :: CustomerTip
+  , mapConfig :: MapConfig
   } 
 
 type NotifyRideConfirmationConfig = {
@@ -163,4 +162,20 @@ type EstimateAndQuoteConfig = {
 type CustomerTip = {
   auto :: Boolean,
   cabs :: Boolean
+}
+
+type MapConfig = {
+  locateOnMapConfig :: LocateOnMapConfig,
+  labelTextSize :: Int,
+  animationDuration :: Int
+}
+
+type LocateOnMapConfig = {
+  dottedLineConfig :: DottedLineConfig
+}
+
+type DottedLineConfig = {
+  visible :: Boolean,
+  range :: Int,
+  color :: String
 }
