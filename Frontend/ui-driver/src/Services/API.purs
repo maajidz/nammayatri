@@ -2654,7 +2654,6 @@ instance encodePostRideFeedbackResp :: Encode PostRideFeedbackResp where encode 
 
 ---------------------------------------------------------------------------------------------------------------
 
-
 newtype GenerateReferralCodeReq = GenerateReferralCodeReq {}
 
 newtype GenerateReferralCodeRes = GenerateReferralCodeRes {
@@ -2865,3 +2864,59 @@ instance standardEncodeClearDuesResp :: StandardEncode ClearDuesResp where stand
 instance showClearDuesResp :: Show ClearDuesResp where show = genericShow
 instance decodeClearDuesResp :: Decode ClearDuesResp where decode = defaultDecode
 instance encodeClearDuesResp :: Encode ClearDuesResp where encode = defaultEncode
+---------------------------------------- driverProfilePicture api ---------------------------------------------
+newtype DriverProfilePictureReq = DriverProfilePictureReq  
+ {
+    image :: String,
+    fileType :: String,
+    reqContentType :: String,
+    brisqueFeatures :: Array Number
+ }
+
+newtype DriverProfilePictureResp =  DriverProfilePictureResp  ApiSuccessResult
+
+
+instance makeDriverProfilePictureReq :: RestEndpoint DriverProfilePictureReq DriverProfilePictureResp where
+  makeRequest reqBody headers = defaultMakeRequest POST (EP.putProfilePicture "") headers reqBody Nothing
+  decodeResponse = decodeJSON
+  encodeRequest req = standardEncode req
+
+
+derive instance genericDriverProfilePictureReq :: Generic DriverProfilePictureReq _
+derive instance newtypeDriverProfilePictureReq :: Newtype DriverProfilePictureReq _
+instance standardEncodeDriverProfilePictureReq :: StandardEncode DriverProfilePictureReq where standardEncode (DriverProfilePictureReq reqBody) = standardEncode reqBody
+instance showDriverProfilePictureReq :: Show DriverProfilePictureReq where show = genericShow
+instance decodeDriverProfilePictureReq :: Decode DriverProfilePictureReq where decode = defaultDecode
+instance encodeDriverProfilePictureReq :: Encode DriverProfilePictureReq where encode = defaultEncode
+
+derive instance genericDriverProfilePictureResp :: Generic DriverProfilePictureResp _
+derive instance newtypeDriverProfilePictureResp :: Newtype DriverProfilePictureResp _
+instance standardEncodeDriverProfilePictureResp :: StandardEncode DriverProfilePictureResp where standardEncode (DriverProfilePictureResp id) = standardEncode id
+instance showDriverProfilePictureResp :: Show DriverProfilePictureResp where show = genericShow
+instance decodeDriverProfilePictureResp :: Decode DriverProfilePictureResp  where decode = defaultDecode
+instance encodeDriverProfilePictureResp :: Encode DriverProfilePictureResp where encode = defaultEncode
+
+------------------------------------------------------- getImageFromUrl ------------------------------------------------------------------
+
+data ImageFromUrlReq = ImageFromUrlReq String
+
+newtype ImageFromUrlResp = ImageFromUrlResp String
+
+
+instance makeImageFromUrlReq :: RestEndpoint ImageFromUrlReq ImageFromUrlResp where
+    makeRequest reqBody@(ImageFromUrlReq req) headers = defaultMakeRequest GET req headers reqBody Nothing
+    decodeResponse = decodeJSON
+    encodeRequest req = defaultEncode req
+
+derive instance genericImageFromUrlReq :: Generic ImageFromUrlReq _
+instance showImageFromUrlReq :: Show ImageFromUrlReq where show = genericShow
+instance standardEncodeImageFromUrlReq :: StandardEncode ImageFromUrlReq where standardEncode (ImageFromUrlReq req) = standardEncode req
+instance decodeImageFromUrlReq :: Decode ImageFromUrlReq where decode = defaultDecode
+instance encodeImageFromUrlReq :: Encode ImageFromUrlReq where encode = defaultEncode
+
+derive instance genericImageFromUrlResp :: Generic ImageFromUrlResp _
+derive instance newtypeImageFromUrlResp :: Newtype ImageFromUrlResp _
+instance standardEncodeImageFromUrlResp :: StandardEncode ImageFromUrlResp where standardEncode (ImageFromUrlResp req) = standardEncode req
+instance showImageFromUrlResp :: Show ImageFromUrlResp where show = genericShow
+instance decodeImageFromUrlResp :: Decode ImageFromUrlResp where decode = defaultDecode
+instance encodeImageFromUrlResp :: Encode ImageFromUrlResp where encode = defaultEncode

@@ -31,8 +31,8 @@ initData = {
   data:  {
     driverName : "",
     driverVehicleType : "",
-    driverRating : Just 2.0,
-    base64Image : "",
+    driverRating : Nothing,
+    profileUrl : Nothing,
     drivingLicenseNo : "",
     driverMobile : Just "",
     vehicleRegNumber : "",
@@ -83,7 +83,14 @@ initData = {
       , cancellationRate : 0
       , totalRidesAssigned : 0
       , totalDistanceTravelled : ""
-      }
+      },
+    profileImageData : {
+      demoImage : "",
+      addProfilePopUp :false,
+      verificationStatus : true,
+      selfieView : Nothing,
+      buttonLoader : false
+    }
     },
 
   props: {

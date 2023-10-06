@@ -940,5 +940,19 @@ const englishStrings = {
   ECONOMICAL : "Economical",
   SPACIOUS : "Spacious",
   COMFY : "Comfy",
-  PEOPLE : "people"
+  PEOPLE : "people",
+  CLICK_TO_ADD_PROFILE_PICTURE : "Click here to add your profile\n photo to your account!",
+  ADD_PROFILE_PHOTO : "Add Profile Photo",
+  TAKE_PHOTO : "Take Photo",
+  TAKE_SELFIE : "Take Selfie",
+  YOUR_PHOTO_WILL_HELP_US_TO_VERIFY_IDENTITY : "Your photo helps us verify your identity and make Namma Yatri a safer experience for everyone.",
+  CONFIRM_SELFIE : "Confirm Selfie",
+  RETAKE_SELFIE : "Retake Selfie",
+  CONFIRM_AND_UPLOAD : "Confirm and Upload",
+  SELFIE_VERIFIED : "Selfie Verified  ✅",
+  PLEASE_RETAKE_SELFIE : "Please retake selfie with face inside marked area",
+  PROFILE_PICTURE_ADDED_SUCCESSFULLY : "Profile Picture Added Successfully",
+  PROFILE_PICTURE_UPDATED_SUCCESSFULLY : "Profile Picture Updated Successfully",
+  UPDATE_PROFILE_PHOTO : "Update Profile Photo",
+  FACE_NOT_DETECTED : "Face not detected"
 } 

@@ -932,5 +932,19 @@ const bengaliStrings = {
 	ECONOMICAL : "অর্থনৈতিক",
 	SPACIOUS : "প্রশস্ত",
 	COMFY : "আরামদায়ক",
-	PEOPLE : "মানুষ"
+	PEOPLE : "মানুষ",
+	CLICK_TO_ADD_PROFILE_PICTURE : "আপনার অ্যাকাউন্টে আপনার প্রোফাইল ফটো যোগ \nকরতে এখানে ক্লিক করুন!",
+	ADD_PROFILE_PHOTO : "প্রোফাইল ফটো যোগ করুন",
+	TAKE_PHOTO : "ছবি তোল",
+	TAKE_SELFIE : "সেলফি তুলুন",
+	YOUR_PHOTO_WILL_HELP_US_TO_VERIFY_IDENTITY : "আপনার ছবি আমাদেরকে আপনার পরিচয় যাচাই করতে সাহায্য করে এবং নম্মা যাত্রীকে সবার জন্য একটি নিরাপদ অভিজ্ঞতা করে তোলে।",
+	CONFIRM_SELFIE : "সেলফি নিশ্চিত করুন",
+	RETAKE_SELFIE : "আবার সেলফি তুলুন",
+	CONFIRM_AND_UPLOAD : "নিশ্চিত করুন এবং আপলোড করুন",
+	SELFIE_VERIFIED : "সেলফি যাচাই করা হয়েছে ✅",
+	PLEASE_RETAKE_SELFIE : "অনুগ্রহ করে চিহ্নিত এলাকার ভিতরে মুখ দিয়ে সেলফি তুলুন",
+	PROFILE_PICTURE_ADDED_SUCCESSFULLY : "প্রোফাইল ছবি সফলভাবে যোগ করা হয়েছে",
+	PROFILE_PICTURE_UPDATED_SUCCESSFULLY : "প্রোফাইল ছবি সফলভাবে আপডেট করা হয়েছে",
+	UPDATE_PROFILE_PHOTO : "প্রোফাইল ফটো আপডেট করুন",
+	FACE_NOT_DETECTED : "মুখ শনাক্ত হয়নি"
 }

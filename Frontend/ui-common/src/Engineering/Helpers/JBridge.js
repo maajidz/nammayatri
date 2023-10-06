@@ -2028,3 +2028,21 @@ export const getVideoID = function (url) {
     console.log("error in getVideoID " + e);
   }
 }
+
+export const capturePhoto = function () {
+  if (JBridge.capturePhoto){
+    return JBridge.capturePhoto();
+  }
+};
+
+export const unbindCamera = () => {
+  if (JBridge.unbindCamera) {
+    return JBridge.unbindCamera();
+  }
+}
+
+export const showCameraX = function (id) {
+  if (JBridge.showCameraX){
+    return JBridge.showCameraX(id);
+  }
+};

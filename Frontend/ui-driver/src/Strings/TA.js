@@ -911,5 +911,19 @@ const tamilStrings = {
   ECONOMICAL: "பொருளாதாரம்",
   SPACIOUS: "விசாலமான",
   COMFY: "வசதியான",
-  PEOPLE: "மக்கள்"
+  PEOPLE: "மக்கள்",
+  CLICK_TO_ADD_PROFILE_PICTURE : "உங்கள் சுயவிவரப் புகைப்படத்தை சேர்க்க இங்கே கிளிக் செய்யவும்!",
+  ADD_PROFILE_PHOTO : "சுயவிவரப் புகைப்படத்தைச் சேர்க்கவும்",
+  TAKE_PHOTO : "புகைப்படம் எடு",
+  TAKE_SELFIE : "செல்ஃபி எடு",
+  YOUR_PHOTO_WILL_HELP_US_TO_VERIFY_IDENTITY : "உங்கள் அடையாளத்தைச் சரிபார்த்து, நம்ம யாத்ரியை அனைவருக்கும் பாதுகாப்பான அனுபவமாக மாற்ற உங்கள் புகைப்படம் எங்களுக்கு உதவுகிறது",
+  CONFIRM_SELFIE : "செல்ஃபியை உறுதிப்படுத்தவும்",
+  RETAKE_SELFIE : "மீண்டும் செல்ஃபி எடு",
+  CONFIRM_AND_UPLOAD : "உறுதிப்படுத்தி பதிவேற்றவும்",
+  SELFIE_VERIFIED : "செல்ஃபி சரிபார்க்கப்பட்டது ✅",
+  PLEASE_RETAKE_SELFIE : "குறிக்கப்பட்ட பகுதிக்குள் முகத்துடன் செல்ஃபி எடுக்கவும்",
+  PROFILE_PICTURE_ADDED_SUCCESSFULLY : "சுயவிவரப் படம் வெற்றிகரமாக சேர்க்கப்பட்டது",
+  PROFILE_PICTURE_UPDATED_SUCCESSFULLY : "சுயவிவரப் படம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது",
+  UPDATE_PROFILE_PHOTO : "சுயவிவரப் புகைப்படத்தைப் புதுப்பிக்கவும்",
+  FACE_NOT_DETECTED : "முகம் கண்டறியப்படவில்லை"
 }

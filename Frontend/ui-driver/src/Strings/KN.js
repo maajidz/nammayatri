@@ -912,5 +912,19 @@ const kannadaStrings = {
   ECONOMICAL : "ಆರ್ಥಿಕ",
 	SPACIOUS : "ವಿಶಾಲವಾದ",
 	COMFY : "ಆರಾಮದಾಯಕ",
-	PEOPLE : "ಜನರು"
+	PEOPLE : "ಜನರು",
+  CLICK_TO_ADD_PROFILE_PICTURE : "ನಿಮ್ಮ ಖಾತೆಗೆ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಫೋಟೋ ಸೇರಿಸಲು ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ!",
+  ADD_PROFILE_PHOTO : "ಪ್ರೊಫೈಲ್ ಫೋಟೋ ಸೇರಿಸಿ",
+  TAKE_PHOTO : "ಫೋಟೋ ತೆಗೆಯಿರಿ",
+  TAKE_SELFIE : "ಸೆಲ್ಫಿ ತೆಗೆದುಕೊಳ್ಳಿ",
+  YOUR_PHOTO_WILL_HELP_US_TO_VERIFY_IDENTITY : "ನಿಮ್ಮ ಗುರುತನ್ನು ಪರಿಶೀಲಿಸಲು ಮತ್ತು ನಮ್ಮ ಯಾತ್ರಿಯನ್ನು ಎಲ್ಲರಿಗೂ ಸುರಕ್ಷಿತ ಅನುಭವ ವನ್ನಾಗಿ ಮಾಡಲು ನಿಮ್ಮ ಫೋಟೋ ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
+  CONFIRM_SELFIE : "ಸೆಲ್ಫಿಯನ್ನು ದೃಢೀಕರಿಸಿ",
+  RETAKE_SELFIE : "ಸೆಲ್ಫಿ ರೀಟೇಕ್ ಮಾಡಿ",
+  CONFIRM_AND_UPLOAD : "ದೃಢೀಕರಿಸಿ ಮತ್ತು ಅಪ್ಲೋಡ್ ಮಾಡಿ",
+  SELFIE_VERIFIED : "ಸೆಲ್ಫಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ ✅",
+  PLEASE_RETAKE_SELFIE : "ಗುರುತಿಸಲಾದ ಪ್ರದೇಶದೊಳಗೆ ಮುಖದೊಂದಿಗೆ ಸೆಲ್ಫಿ ತೆಗೆದುಕೊಳ್ಳಿ",
+  PROFILE_PICTURE_ADDED_SUCCESSFULLY : "ಪ್ರೊಫೈಲ್ ಚಿತ್ರವನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ",
+  PROFILE_PICTURE_UPDATED_SUCCESSFULLY : "ಪ್ರೊಫೈಲ್ ಚಿತ್ರವನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ",
+  UPDATE_PROFILE_PHOTO : "ಪ್ರೊಫೈಲ್ ಫೋಟೋವನ್ನು ನವೀಕರಿಸಿ",
+  FACE_NOT_DETECTED : "ಮುಖ ಪತ್ತೆಯಾಗಿಲ್ಲ"
 }

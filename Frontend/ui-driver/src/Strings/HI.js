@@ -940,5 +940,19 @@ const hindiStrings = {
   ECONOMICAL : "किफ़ायती",
 	SPACIOUS : "विशाल",
 	COMFY : "आरामदायक",
-	PEOPLE : "लोग"
+	PEOPLE : "लोग",
+  CLICK_TO_ADD_PROFILE_PICTURE : "अपने खाते में अपनी प्रोफ़ाइल फ़ोटो\n ऐड करने के लिए यहां क्लिक करें!",
+  ADD_PROFILE_PHOTO : "प्रोफ़ाइल फ़ोटो ऐड करे",
+  TAKE_PHOTO : "फोटो लें",
+  TAKE_SELFIE : "सेल्फी लें",
+  YOUR_PHOTO_WILL_HELP_US_TO_VERIFY_IDENTITY : "आपकी फोटो हमें आपकी पहचान वेरीफाई करने और नम्मा यात्री को सभी के लिए एक सुरक्षित अनुभव बनाने में मदद करती है।",
+  CONFIRM_SELFIE : "सेल्फी कन्फर्म करें",
+  RETAKE_SELFIE : "सेल्फी को रीटेक करें",
+  CONFIRM_AND_UPLOAD : "कंफर्म करें और अपलोड करें",
+  SELFIE_VERIFIED : "सेल्फी वेरीफाइड ✅",
+  PLEASE_RETAKE_SELFIE : "कृपया चिह्नित क्षेत्र के अंदर चेहरा लेकर फिर से सेल्फ़ी लें",
+  PROFILE_PICTURE_ADDED_SUCCESSFULLY : "प्रोफ़ाइल फ़ोटो सफलतापूर्वक जोड़ा गया",
+  PROFILE_PICTURE_UPDATED_SUCCESSFULLY : "प्रोफ़ाइल फ़ोटो सफलतापूर्वक अपडेट किया गया",
+  UPDATE_PROFILE_PHOTO : "प्रोफ़ाइल फ़ोटो अपडेट करें",
+  FACE_NOT_DETECTED : "चेहरे का पता नहीं चला"
 }

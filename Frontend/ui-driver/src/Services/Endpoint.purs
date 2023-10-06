@@ -234,3 +234,6 @@ paymentEntityDetails id = (getBaseUrl "") <> "/driver/v2/payments/history/" <> i
 
 cleardues :: String -> String 
 cleardues _ = (getBaseUrl "") <> "/driver/cleardues"
+
+putProfilePicture :: String -> String 
+putProfilePicture _ = (getBaseUrl "") <> "/driver/profile/photo"

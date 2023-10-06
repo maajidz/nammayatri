@@ -237,7 +237,9 @@ foreign import clearChatMessages :: Effect Unit
 foreign import getLocationPermissionStatus :: Fn1 Unit String 
 foreign import getVideoID :: String -> String
 foreign import setYoutubePlayer :: YoutubeData -> String -> String -> Unit
-
+foreign import capturePhoto :: Unit -> Effect Unit
+foreign import showCameraX :: String -> Effect Unit
+foreign import unbindCamera :: Unit -> Effect Unit
 
 type LottieAnimationConfig = {
     rawJson :: String

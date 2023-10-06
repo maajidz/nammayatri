@@ -6,7 +6,7 @@ import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.WINDOW_SERVICE;
-
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,7 +16,17 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.Face;
+import com.google.common.util.concurrent.ListenableFuture;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -38,9 +48,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -49,7 +59,14 @@ import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
-
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.lifecycle.LifecycleOwner;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -59,6 +76,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerFullScreenListener;
@@ -67,17 +86,16 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFram
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView;
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.ui.DefaultPlayerUiController;
 import com.theartofdev.edmodo.cropper.CropImage;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,17 +106,19 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
 import in.juspay.hyper.core.BridgeComponents;
 import in.juspay.hyper.core.ExecutorManager;
 import in.juspay.hyper.core.JuspayLogger;
 import in.juspay.mobility.app.AudioRecorder;
 import in.juspay.mobility.app.CheckPermissionOverlay;
+import in.juspay.mobility.app.ImageProperties;
 import in.juspay.mobility.app.LocationUpdateService;
 import in.juspay.mobility.app.LocationUpdateWorker;
+import in.juspay.mobility.app.MobilityAppBridge;
 import in.juspay.mobility.app.NotificationUtils;
 import in.juspay.mobility.app.OverlaySheetService;
 import in.juspay.mobility.app.TranslatorMLKit;
@@ -106,6 +126,12 @@ import in.juspay.mobility.app.Utils;
 import in.juspay.mobility.app.callbacks.CallBack;
 import in.juspay.mobility.common.MobilityCommonBridge;
 import in.juspay.mobility.driver.mediaPlayer.DefaultMediaPlayerControl;
+import android.content.ContentValues;
+import android.graphics.BitmapShader;
+import android.graphics.Shader;
+import android.graphics.Matrix;
+import android.widget.Button;
+import java.util.concurrent.ExecutionException;
 
 public class MobilityDriverBridge extends MobilityCommonBridge {
 
@@ -114,6 +140,7 @@ public class MobilityDriverBridge extends MobilityCommonBridge {
     // Constants
     private static final int IMAGE_CAPTURE_REQ_CODE = 101;
     private static final int IMAGE_PERMISSION_REQ_CODE = 4997;
+    private static final int IMAGE_PERMISSION_REQ_CODE_PROFILE = 1243;
 
     // Media Utils
     public static YouTubePlayerView youTubePlayerView;
@@ -131,6 +158,10 @@ public class MobilityDriverBridge extends MobilityCommonBridge {
     private String storeImageUploadCallBack = null;
     private CallBack callBack;
     private LocationUpdateService.UpdateTimeCallback locationCallback;
+    private ImageCapture imageCapture;
+    private Button bCapture;
+    public static Runnable cameraPermissionCallback;
+    private ProcessCameraProvider cameraProvider;
 
     public MobilityDriverBridge(BridgeComponents bridgeComponents) {
         super(bridgeComponents);
@@ -473,16 +504,27 @@ public class MobilityDriverBridge extends MobilityCommonBridge {
     public void renderBase64ImageFile(String base64Image, String id, boolean fitCenter, String imgScaleType) {
         ExecutorManager.runOnMainThread(() -> {
             try {
-                if (!base64Image.equals("") && id != null && bridgeComponents.getActivity() != null) {
+                Context context = bridgeComponents.getContext();
+                Activity activity = bridgeComponents.getActivity();
+                if (!base64Image.equals("") && id != null && activity != null && context != null) {
                     LinearLayout layout = bridgeComponents.getActivity().findViewById(Integer.parseInt(id));
                     if (layout != null){
                         byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
                         Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                        decodedByte = cropImageTo1To1Ratio(bridgeComponents.getContext(), decodedByte);
                         ImageView imageView = new ImageView(bridgeComponents.getContext());
-                        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(layout.getWidth(),layout.getHeight());
-                        imageView.setLayoutParams(layoutParams);
                         imageView.setImageBitmap(decodedByte);
-                        imageView.setScaleType(getScaleTypes(imgScaleType));
+                        if (imgScaleType.equals("CIRCULAR")){
+                            BitmapDrawable bitmapDrawable = new BitmapDrawable(context.getResources(), decodedByte);
+                            Drawable circularDrawable = createCircularDrawable(bitmapDrawable);
+                            imageView.setImageDrawable(circularDrawable);
+                            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                            imageView.setRotation(270);
+                        }else {
+                            imageView.setScaleType(getScaleTypes(imgScaleType));
+                        }
+                        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                        imageView.setLayoutParams(layoutParams);
                         imageView.setAdjustViewBounds(true);
                         imageView.setClipToOutline(true);
                         layout.removeAllViews();
@@ -1119,7 +1161,19 @@ public class MobilityDriverBridge extends MobilityCommonBridge {
                 break;
             case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
-                    new Thread(() -> Utils.encodeImageToBase64(data, bridgeComponents.getContext())).start();
+                    try{
+                        CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                        Uri fileUri = result.getUri();
+                        String path = "";
+                        InputStream imageStream = bridgeComponents.getContext().getContentResolver().openInputStream(fileUri);
+                        Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+                        new Thread(() -> {
+                            ImageProperties imageProperties = Utils.encodeImageToBase64(path, bridgeComponents.getContext(), bitmap);
+                            callImageUploadCallBack(imageProperties.getBase64Image(), imageProperties.getImageName(), imageProperties.getImagePath());
+                        }).start();
+                    }catch (Exception e){
+                        Log.e(LOG_TAG, e.toString());
+                    }
                 } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                     CropImage.ActivityResult result = CropImage.getActivityResult(data);
                     Log.e(OVERRIDE, result.getError().toString());
@@ -1131,9 +1185,9 @@ public class MobilityDriverBridge extends MobilityCommonBridge {
 
     @Override
     public boolean onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
+        Context context = bridgeComponents.getContext();
         switch (requestCode) {
             case IMAGE_PERMISSION_REQ_CODE:
-                Context context = bridgeComponents.getContext();
                 if ((ActivityCompat.checkSelfPermission(context, CAMERA) == PackageManager.PERMISSION_GRANTED)) {
                     if (bridgeComponents.getActivity() != null) {
                         Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -1183,10 +1237,206 @@ public class MobilityDriverBridge extends MobilityCommonBridge {
                     Toast.makeText(bridgeComponents.getContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case IMAGE_PERMISSION_REQ_CODE_PROFILE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (cameraPermissionCallback != null) {
+                        cameraPermissionCallback.run();
+                        cameraPermissionCallback = null;
+                    }
+                } else {
+                    Toast.makeText(context, R.string.need_permission_to_access_the_camera, Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
         return super.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
-    //endregion
+
+    @JavascriptInterface
+    public void showCameraX(String id) {
+        Activity activity = bridgeComponents.getActivity();
+        Context context = bridgeComponents.getContext();
+        LinearLayout layout = activity.findViewById(Integer.parseInt(id));
+        if (layout != null) {
+            activity.runOnUiThread(() -> {
+                if (isCameraPermissionGranted()) {
+                    PreviewView previewView = new PreviewView(context);
+                    LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+                    previewView.setLayoutParams(linearLayoutParams);
+                    ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(context);
+                    cameraProviderFuture.addListener(() -> {
+                        try {
+                            cameraProvider = cameraProviderFuture.get();
+                            cameraProvider.unbindAll();
+                            CameraSelector cameraSelector = new CameraSelector.Builder()
+                                    .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
+                                    .build();
+                            Preview preview = new Preview.Builder()
+                                    .build();
+                            preview.setSurfaceProvider(previewView.getSurfaceProvider());
+                            imageCapture = new ImageCapture.Builder()
+                                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                                    .build();
+                            ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                    .build();
+                            imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(activity), image -> {
+                                Log.d("TAG", "analyze: got the frame at: " + image.getImageInfo().getTimestamp());
+                                image.close();
+                            });
+                            cameraProvider.bindToLifecycle((LifecycleOwner) activity, cameraSelector, preview, imageCapture);
+                        } catch (ExecutionException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }, ContextCompat.getMainExecutor(activity));
+                    layout.removeAllViews();
+                    layout.addView(previewView);
+                } else {
+                    requestCameraPermission(() -> showCameraX(id));
+                }
+            });
+        }
+    }
+
+    @JavascriptInterface
+    public void capturePhoto() {
+        Activity activity = bridgeComponents.getActivity();
+        Context context = bridgeComponents.getContext();
+        long timestamp = System.currentTimeMillis();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timestamp);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+        imageCapture.takePicture(
+                new ImageCapture.OutputFileOptions.Builder(context.getContentResolver(), MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues).build(),
+                ContextCompat.getMainExecutor(activity),
+                new ImageCapture.OnImageSavedCallback() {
+                    @Override
+                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                        try {
+                            Uri imageUri = outputFileResults.getSavedUri();
+                            Bitmap bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri));
+                            bitmap = cropImageTo1To1Ratio(bridgeComponents.getContext(), bitmap);
+                            ImageProperties imageProperties = Utils.encodeImageToBase64("", bridgeComponents.getContext(), bitmap);
+                            new File(imageUri.toString()).delete(); //deleting the captured image from location
+                            runFaceContourDetection(
+                                    imageUri,
+                                    (() -> callImageUploadCallBack(imageProperties.getBase64Image(),imageProperties.getImageName(),imageProperties.getImagePath())),
+                                    (() -> callImageUploadCallBack(imageProperties.getBase64Image(),"FAILED",imageProperties.getImagePath()))
+                            );
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    @Override
+                    public void onError(@NonNull ImageCaptureException exception) {
+                        MobilityAppBridge.firebaseLogEvent("image_capture_exception");
+                        exception.printStackTrace();
+                    }
+                }
+        );
+    }
+
+    private Drawable createCircularDrawable(BitmapDrawable bitmapDrawable) {
+        Context context = bridgeComponents.getContext();
+        Bitmap bitmap = bitmapDrawable.getBitmap();
+        Bitmap circularBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(circularBitmap);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        Matrix matrix = new Matrix();
+        matrix.setTranslate((bitmap.getWidth() - canvas.getWidth()) / 2f, (bitmap.getHeight() - canvas.getHeight()) / 2f);
+        shader.setLocalMatrix(matrix);
+        paint.setShader(shader);
+        float radius = Math.min(bitmap.getWidth(), bitmap.getHeight()) / 2f;
+        canvas.drawCircle(canvas.getWidth() / 2f, canvas.getHeight() / 2f, radius, paint);
+        return new BitmapDrawable(context.getResources(), circularBitmap);
+    }
+
+    private boolean isCameraPermissionGranted() {
+        Context context = bridgeComponents.getContext();
+        int cameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA);
+        int storagePermission = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P){
+            return (cameraPermission == PackageManager.PERMISSION_GRANTED) && (storagePermission == PackageManager.PERMISSION_GRANTED);
+        }
+        return cameraPermission == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestCameraPermission(Runnable callback) {
+        Activity activity = bridgeComponents.getActivity();
+        if (activity == null) return;
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P){
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, IMAGE_PERMISSION_REQ_CODE_PROFILE);
+        }else {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, IMAGE_PERMISSION_REQ_CODE_PROFILE);
+        }
+        cameraPermissionCallback = callback;
+    }
+
+
+    private void runFaceContourDetection(Uri imageUri, Runnable success, Runnable failure) throws IOException {
+        Context context = bridgeComponents.getContext();
+        InputImage image = InputImage.fromFilePath(context, imageUri);
+        FaceDetectorOptions options =
+                new FaceDetectorOptions.Builder()
+                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+                        .build();
+
+        FaceDetector detector = FaceDetection.getClient(options);
+        detector.process(image)
+                .addOnSuccessListener(
+                        new OnSuccessListener<List<Face>>() {
+                            @Override
+                            public void onSuccess(List<Face> faces) {
+                                if (faces.size() == 0) {
+                                    if (failure != null) failure.run(); // need to check for one face only
+                                }else {
+                                    if (success != null) success.run();
+                                    //found face
+                                }
+                                if (cameraProvider != null) cameraProvider.unbindAll();
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Task failed with an exception
+                                if (cameraProvider != null) cameraProvider.unbindAll();
+                                e.printStackTrace();
+                            }
+                        });
+
+    }
+
+    public Bitmap cropImageTo1To1Ratio(Context context, Bitmap originalBitmap) {
+        try {
+            // Determine the crop area for a 1:1 ratio
+            int width = originalBitmap.getWidth();
+            int height = originalBitmap.getHeight();
+            int cropSize = Math.min(width, height);
+            int left = (width - cropSize) / 2;
+            int top = (height - cropSize) / 2;
+
+            // Create a cropped Bitmap
+            Bitmap croppedBitmap = Bitmap.createBitmap(originalBitmap, left, top, cropSize, cropSize);
+
+            // Optionally, rotate the image based on its rotation degrees if needed
+            Matrix matrix = new Matrix();
+            matrix.postRotate(0);
+            return Bitmap.createBitmap(croppedBitmap, 0, 0, croppedBitmap.getWidth(), croppedBitmap.getHeight(), matrix, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @JavascriptInterface
+    public void unbindCamera () {
+        if (cameraProvider != null) cameraProvider.unbindAll();
+    }
+    // endRegion
 }
 
 

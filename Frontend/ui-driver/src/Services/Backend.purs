@@ -1106,3 +1106,25 @@ cleardues _ = do
     withAPIResult (EP.cleardues "") unwrapResponse $ callAPI headers (ClearDuesReq "")
     where
         unwrapResponse (x) = x
+--------------------------------------------------------------- AddProfilePicture Function -------------------------------
+
+addProfilePicture :: String -> String -> Flow GlobalState (Either ErrorResponse DriverProfilePictureResp)
+addProfilePicture image fileType = do
+    headers <- getHeaders "" false
+    withAPIResult (EP.putProfilePicture "") unwrapResponse $ callAPI headers $ makeReq image fileType
+    where
+        makeReq :: String -> String -> DriverProfilePictureReq 
+        makeReq image fileType = DriverProfilePictureReq {
+            "image" : image,
+            "fileType" : fileType,
+            "reqContentType" : "image/jpeg",
+            "brisqueFeatures" : []
+        }
+        unwrapResponse (x) = x
+
+getImageFromUrl :: String -> Flow GlobalState (Either ErrorResponse ImageFromUrlResp)
+getImageFromUrl url = do
+    headers <- getHeaders "" false
+    withAPIResult url unwrapResponse $ callAPI headers (ImageFromUrlReq url)
+    where
+        unwrapResponse (x) = x

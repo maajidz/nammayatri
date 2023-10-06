@@ -25,10 +25,11 @@ import Components.PrimaryButton as PrimaryButton
 import Components.PrimaryButton as PrimaryButtonController
 import Components.PrimaryEditText as PrimaryEditText
 import Components.PrimaryEditText.Controller as PrimaryEditTextController
+import Components.ValidateProfilePicture as ValidateProfilePicture
 import Data.Array ((!!), union, drop, filter, elem, length, foldl, any)
 import Data.Int (fromString)
 import Data.Lens.Getter ((^.))
-import Data.Maybe (fromMaybe, Maybe(..), isJust)
+import Data.Maybe (fromMaybe, Maybe(..), isJust, isNothing)
 import Data.String as DS
 import Data.String.CodeUnits (charAt)
 import Debug (spy)
@@ -37,7 +38,7 @@ import Engineering.Helpers.Commons (getNewIDWithTag,setText)
 import Engineering.Helpers.Commons (getNewIDWithTag)
 import Engineering.Helpers.LogEvent (logEvent)
 import Helpers.Utils (getTime, getCurrentUTC, differenceBetweenTwoUTC, launchAppSettings, generateQR, downloadQR)
-import JBridge (firebaseLogEvent, goBackPrevWebPage, toast, showDialer, hideKeyboardOnNavigation, shareImageMessage)
+import JBridge (firebaseLogEvent, goBackPrevWebPage, toast, showDialer, hideKeyboardOnNavigation, shareImageMessage, unbindCamera, capturePhoto, showCameraX, renderBase64Image)
 import Language.Strings (getString)
 import Language.Types as STR
 import Log (trackAppActionClick, trackAppEndScreen, trackAppScreenRender, trackAppBackPress, trackAppTextInput, trackAppScreenEvent)
@@ -46,7 +47,7 @@ import Prelude (class Show, pure, unit, ($), discard, bind, (==), map, not, (/=)
 import PrestoDOM (Eval, continue, continueWithCmd, exit)
 import PrestoDOM.Types.Core (class Loggable, toPropValue)
 import Screens (ScreenName(..), getScreen)
-import Screens.DriverProfileScreen.ScreenData (MenuOptions(..)) as Data
+import Screens.DriverProfileScreen.ScreenData as Data
 import Screens.DriverProfileScreen.ScreenData (MenuOptions(LIVE_STATS_DASHBOARD), Listtype(..), MenuOptions(..))
 import Screens.DriverProfileScreen.Transformer (getAnalyticsData)
 import Screens.Types (DriverProfileScreenState, VehicleP, DriverProfileScreenType(..), UpdateType(..), EditRc(..), VehicleDetails(..))
@@ -167,9 +168,14 @@ instance loggableAction :: Loggable Action where
     InAppKeyboardModalOtp (InAppKeyboardModal.OnClickDone text) -> trackAppActionClick appId (getScreen DRIVER_DETAILS_SCREEN) "in_app_otp_modal" "on_click_done"
     InAppKeyboardModalOtp (InAppKeyboardModal.OnClickResendOtp) -> trackAppActionClick appId (getScreen DRIVER_DETAILS_SCREEN) "in_app_otp_modal" "on_click_done"
     _ -> pure unit
+    AddProfilePictureModalAction val -> trackAppScreenEvent appId (getScreen DRIVER_PROFILE_SCREEN) "in_screen" "add_profile_picture_modal_action"
+    ValidateProfilePicturePopUpAction val -> trackAppScreenEvent appId (getScreen DRIVER_PROFILE_SCREEN) "in_screen" "validate_profile_picture_popup_action"
+    CallBackImageUpload image imageName imagePath -> trackAppScreenEvent appId (getScreen DRIVER_PROFILE_SCREEN) "in_screen" "call_back_image_upload"
+    RenderBase64Image -> trackAppScreenEvent appId (getScreen DRIVER_PROFILE_SCREEN) "in_screen" "render_base_64_image"
+    RenderProfileImage image id -> trackAppScreenEvent appId (getScreen DRIVER_PROFILE_SCREEN) "in_screen" "render_profile_image"
+    _ -> trackAppActionClick appId (getScreen DRIVER_PROFILE_SCREEN) "in_screen" "on_click_done"
 
-data ScreenOutput = GoToDriverDetailsScreen DriverProfileScreenState
-                    | GoToVehicleDetailsScreen DriverProfileScreenState
+data ScreenOutput =  GoToVehicleDetailsScreen DriverProfileScreenState
                     | GoToBookingOptions DriverProfileScreenState
                     | GoToSelectLanguageScreen DriverProfileScreenState
                     | GoToHelpAndSupportScreen DriverProfileScreenState
@@ -192,6 +198,7 @@ data ScreenOutput = GoToDriverDetailsScreen DriverProfileScreenState
                     | AddingRC DriverProfileScreenState
                     | UpdateLanguages DriverProfileScreenState (Array String)
                     | SubscriptionScreen
+                    | DriverProfilePicture String String DriverProfileScreenState
 
 data Action = BackPressed
             | NoAction
@@ -245,10 +252,57 @@ data Action = BackPressed
             | LeftKeyAction
             | DownloadQR PrimaryButtonController.Action
             | ShareQR PrimaryButtonController.Action
+            | AddProfilePictureModalAction PopUpModal.Action
+            | ValidateProfilePicturePopUpAction ValidateProfilePicture.Action
+            | CallBackImageUpload String String String
+            | RenderBase64Image
+            | RenderProfileImage String String 
+            | ChangeProfile
+            | OnAnimationEnd
 
 eval :: Action -> DriverProfileScreenState -> Eval Action ScreenOutput DriverProfileScreenState
 
-eval AfterRender state = continue state
+
+eval (CallBackImageUpload image imageName imagePath) state = do
+  let newState = state { data { profileImageData { buttonLoader = true}}}
+  if imageName == "FAILED" then continueWithCmd newState{data { profileImageData {verificationStatus = false, selfieView = Just false}}} [pure (RenderProfileImage image "ValidateProfileImage")]
+  else if (image /= "") then  continueWithCmd newState{data { profileImageData {verificationStatus = true , demoImage = image, selfieView = Just false}}} [pure (RenderProfileImage image "ValidateProfileImage")]
+  else  continue newState
+
+eval ChangeProfile state = continue state {data {profileImageData { addProfilePopUp = true}}}
+                                          
+eval (ValidateProfilePicturePopUpAction (ValidateProfilePicture.BackPressed)) state = continue state {data {profileImageData {selfieView = Nothing}}}
+
+eval (ValidateProfilePicturePopUpAction (ValidateProfilePicture.PictureClick)) state = do
+  void $ pure $ capturePhoto unit
+  continue state { data { profileImageData { buttonLoader = true}}}
+
+eval (ValidateProfilePicturePopUpAction (ValidateProfilePicture.Retake (PrimaryButtonController.OnClick))) state = do
+  void $ pure $ showCameraX $ getNewIDWithTag "CameraX"
+  continue state {data {profileImageData = Data.initData.data.profileImageData {selfieView = Just true}}}
+
+eval (ValidateProfilePicturePopUpAction (ValidateProfilePicture.AfterRender)) state = do
+ continueWithCmd state [do pure (RenderProfileImage state.data.profileImageData.demoImage "ValidateProfileImage")]
+
+eval (ValidateProfilePicturePopUpAction (ValidateProfilePicture.PrimaryButtonActionController (PrimaryButtonController.OnClick))) state =  
+  exit $ DriverProfilePicture state.data.profileImageData.demoImage "Image" state { data { profileImageData { selfieView = Nothing , addProfilePopUp = false}}} 
+
+eval (RenderProfileImage image id) state = do
+  continueWithCmd state [do 
+    _ <- renderBase64Image image (getNewIDWithTag id) true "CIRCULAR"
+    pure NoAction]
+
+eval (AddProfilePictureModalAction (PopUpModal.OnButton2Click)) state = 
+    continueWithCmd state {data {profileImageData = Data.initData.data.profileImageData {addProfilePopUp = false, selfieView = Just true, buttonLoader = false}}} [ do
+    void $ pure $ showCameraX $ getNewIDWithTag "CameraX"
+    pure NoAction
+  ]
+
+eval (AddProfilePictureModalAction (PopUpModal.OnButton1Click)) state = continue state {data {profileImageData { addProfilePopUp = false}}}
+
+eval OnAnimationEnd state = do
+  if isNothing state.data.profileImageData.selfieView then void $ pure $ unbindCamera unit else pure unit
+  continue state
 
 eval (PrimaryEditTextAC (PrimaryEditTextController.TextChanged id val)) state = do
   case state.props.detailsUpdationType of
@@ -274,6 +328,8 @@ eval BackPressed state = if state.props.logoutModalView then continue $ state { 
                                 else if state.props.updateLanguages then continue state{props{updateLanguages = false}}
                                 else if isJust state.props.detailsUpdationType then continue state{props{detailsUpdationType = Nothing}}
                                 else if state.props.openSettings then continue state{props{openSettings = false}}
+                                else if state.data.profileImageData.addProfilePopUp then continue state{data {profileImageData{addProfilePopUp = false}}}
+                                else if isJust state.data.profileImageData.selfieView then continue state{data {profileImageData{selfieView = Nothing }}}
                                 else exit GoBack
 
 
@@ -300,7 +356,6 @@ eval (UpdateValue value) state = do
 
 eval (OptionClick optionIndex) state = do
   case optionIndex of
-    Data.DRIVER_PRESONAL_DETAILS -> exit $ GoToDriverDetailsScreen state
     Data.DRIVER_VEHICLE_DETAILS -> exit $ GoToVehicleDetailsScreen state
     Data.DRIVER_BANK_DETAILS -> continue state
     Data.DRIVER_BOOKING_OPTIONS -> exit $ GoToBookingOptions state
@@ -313,6 +368,7 @@ eval (OptionClick optionIndex) state = do
       _ <- pure $ launchAppSettings unit
       continue state
     LIVE_STATS_DASHBOARD -> continue state {props {showLiveDashboard = true}}
+    _ -> continue state
 
 eval (UpiQrRendered id) state = do
   continueWithCmd state [ do
@@ -342,6 +398,10 @@ eval (PopUpModalAction (PopUpModal.OnButton2Click)) state = exit $ GoToLogout
 
 eval (GetDriverInfoResponse (SA.GetDriverInfoResp driverProfileResp)) state = do
   let (SA.Vehicle linkedVehicle) = (fromMaybe dummyVehicleObject driverProfileResp.linkedVehicle)
+  void $ case driverProfileResp.mediaUrl, driverProfileResp.aadhaarCardPhoto of
+    Just _ , _ -> pure $ renderBase64Image (getValueToLocalStore DRIVER_PROFILE_IMAGE) (getNewIDWithTag "DriverImage1") false "CIRCULAR"
+    Nothing , Just val -> pure $ renderBase64Image val (getNewIDWithTag "DriverImage1") false "CIRCULAR"
+    _ , _ -> pure $ pure unit
   continue (state {data = state.data {driverName = driverProfileResp.firstName,
                                       driverVehicleType = linkedVehicle.variant,
                                       driverRating = driverProfileResp.rating,
@@ -354,7 +414,9 @@ eval (GetDriverInfoResponse (SA.GetDriverInfoResp driverProfileResp)) state = do
                                       driverAlternateNumber = driverProfileResp.alternateNumber ,
                                       driverGender = driverProfileResp.gender,
                                       payerVpa = fromMaybe "" driverProfileResp.payerVpa,
-                                      autoPayStatus = getAutopayStatus driverProfileResp.autoPayStatus
+                                      autoPayStatus = getAutopayStatus driverProfileResp.autoPayStatus,
+                                      profileUrl = driverProfileResp.mediaUrl,
+                                      profileImg = driverProfileResp.aadhaarCardPhoto
                                       }})
 
 eval (GetRcsDataResponse  (SA.GetAllRcDataResp rcDataArray)) state = do
