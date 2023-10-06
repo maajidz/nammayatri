@@ -38,6 +38,7 @@ data AllocatorJobType
   | CalculateDriverFees
   | OrderAndNotificationStatusUpdate
   | SendOverlay
+  | BadDebtCalculation
   deriving (Generic, FromDhall, Eq, Ord, Show, Read, FromJSON, ToJSON)
 
 genSingletons [''AllocatorJobType]
@@ -54,6 +55,7 @@ instance JobProcessor AllocatorJobType where
   restoreAnyJobInfo SCalculateDriverFees jobData = AnyJobInfo <$> restoreJobInfo SCalculateDriverFees jobData
   restoreAnyJobInfo SOrderAndNotificationStatusUpdate jobData = AnyJobInfo <$> restoreJobInfo SOrderAndNotificationStatusUpdate jobData
   restoreAnyJobInfo SSendOverlay jobData = AnyJobInfo <$> restoreJobInfo SSendOverlay jobData
+  restoreAnyJobInfo SBadDebtCalculation jobData = AnyJobInfo <$> restoreJobInfo SBadDebtCalculation jobData
 
 data SendSearchRequestToDriverJobData = SendSearchRequestToDriverJobData
   { searchTryId :: Id DST.SearchTry,
@@ -154,3 +156,12 @@ data SendOverlayJobData = SendOverlayJobData
 instance JobInfoProcessor 'SendOverlay
 
 type instance JobContent 'SendOverlay = SendOverlayJobData
+
+newtype BadDebtCalculationJobData = BadDebtCalculationJobData
+  { merchantId :: Id DM.Merchant
+  }
+  deriving (Generic, Show, Eq, FromJSON, ToJSON)
+
+instance JobInfoProcessor 'BadDebtCalculation
+
+type instance JobContent 'BadDebtCalculation = BadDebtCalculationJobData

@@ -117,6 +117,9 @@ instance FromTType' BeamTC.TransporterConfig TransporterConfig where
             updateOrderStatusBatchSize,
             orderAndNotificationStatusCheckTime = secondsToNominalDiffTime orderAndNotificationStatusCheckTime,
             orderAndNotificationStatusCheckTimeLimit = secondsToNominalDiffTime orderAndNotificationStatusCheckTimeLimit,
+            badDebtRescheduleTime = secondsToNominalDiffTime badDebtRescheduleTime,
+            badDebtSechulerTime = secondsToNominalDiffTime badDebtSechulerTime,
+            badDebtTimeThreshold = secondsToNominalDiffTime badDebtTimeThreshold,
             ..
           }
     where
@@ -194,5 +197,9 @@ instance ToTType' BeamTC.TransporterConfig TransporterConfig where
         BeamTC.isAvoidToll = isAvoidToll,
         BeamTC.specialZoneBookingOtpExpiry = specialZoneBookingOtpExpiry,
         BeamTC.updateNotificationStatusBatchSize = updateNotificationStatusBatchSize,
-        BeamTC.updateOrderStatusBatchSize = updateOrderStatusBatchSize
+        BeamTC.updateOrderStatusBatchSize = updateOrderStatusBatchSize,
+        BeamTC.badDebtRescheduleTime = nominalDiffTimeToSeconds badDebtRescheduleTime,
+        BeamTC.badDebtSechulerTime = nominalDiffTimeToSeconds badDebtSechulerTime,
+        BeamTC.badDebtBatchSize = badDebtBatchSize,
+        BeamTC.badDebtTimeThreshold = nominalDiffTimeToSeconds badDebtTimeThreshold
       }

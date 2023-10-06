@@ -433,7 +433,9 @@ createMandateInvoiceAndOrder driverId merchantId plan = do
             billNumber = Nothing,
             feeWithoutDiscount = Nothing,
             schedulerTryCount = 0,
-            collectedAt = Nothing
+            collectedAt = Nothing,
+            badDebtDeclarationDate = Nothing,
+            badDebtRecoveryDate = Nothing
           }
     calculateDues driverFees = sum $ map (\dueInvoice -> roundToHalf (fromIntegral dueInvoice.govtCharges + dueInvoice.platformFee.fee + dueInvoice.platformFee.cgst + dueInvoice.platformFee.sgst)) driverFees
     checkIfInvoiceIsReusable invoice newDriverFees = do
