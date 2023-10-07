@@ -142,6 +142,23 @@ findAllRidesBookingsByRideId (Id merchantId) rideIds = do
 findOneByBookingId :: MonadFlow m => Id Booking -> m (Maybe Ride)
 findOneByBookingId (Id bookingId) = findAllWithOptionsKV [Se.Is BeamR.bookingId $ Se.Eq bookingId] (Se.Desc BeamR.createdAt) (Just 1) Nothing <&> listToMaybe
 
+findRidesWithinDates :: MonadFlow m => Id Person -> Maybe Ride.RideStatus -> Maybe Day -> Maybe Day -> m [Ride]
+findRidesWithinDates (Id driverId) mbRideStatus mbFromDay mbToDay =
+  findAllWithOptionsKV
+    [ Se.And
+        [ Se.Is BeamR.driverId $ Se.Eq driverId,
+          Se.Is BeamR.status $ Se.Eq (fromJust mbRideStatus),
+          Se.Is BeamR.updatedAt $ Se.GreaterThanOrEq (minDayTime (fromJust mbFromDay)),
+          Se.Is BeamR.updatedAt $ Se.LessThanOrEq (maxDayTime (fromJust mbToDay))
+        ]
+    ]
+    (Se.Asc BeamR.updatedAt)
+    Nothing
+    Nothing
+  where
+    minDayTime date = UTCTime (addDays (-1) date) 66600
+    maxDayTime date = UTCTime date 66600
+
 findAllByDriverId :: MonadFlow m => Id Person -> Maybe Integer -> Maybe Integer -> Maybe Bool -> Maybe Ride.RideStatus -> Maybe Day -> m [(Ride, Booking)]
 findAllByDriverId (Id driverId) mbLimit mbOffset mbOnlyActive mbRideStatus mbDay = do
   let limitVal = maybe 10 fromInteger mbLimit

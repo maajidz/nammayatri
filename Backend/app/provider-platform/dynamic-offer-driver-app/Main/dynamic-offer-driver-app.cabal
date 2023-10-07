@@ -76,6 +76,7 @@ library
       API.UI.Registration
       API.UI.Ride
       API.UI.RideRoute
+      API.UI.RideSummary
       API.UI.Route
       API.UI.Transporter
       API.UI.Vehicle
@@ -162,6 +163,7 @@ library
       Domain.Action.UI.Ride.StartRide
       Domain.Action.UI.Ride.StartRide.Internal
       Domain.Action.UI.RideRoute
+      Domain.Action.UI.RideSummary
       Domain.Action.UI.Route
       Domain.Action.UI.Transporter
       Domain.Action.UI.Vehicle
