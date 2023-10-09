@@ -85,6 +85,7 @@ instance loggableAction :: Loggable Action where
           trackAppEndScreen appId (getScreen TRIP_DETAILS_SCREEN)
     PaymentHistoryModelAC act -> pure unit
     OpenPaymentHistory -> pure unit
+    _ -> pure unit
 
 data ScreenOutput = GoBack
                     | RideHistoryScreen RideHistoryScreenState
@@ -109,6 +110,9 @@ data Action = Dummy
             | IndividualRideCardAction IndividualRideCardController.Action
             | RideHistoryAPIResponseAction (Array RidesInfo)
             | Loader
+            | OnPageScrollStateChange Int
+            | OnPageScrolled String
+            | OnPageSelected Int
             | Scroll String
             | ErrorModalActionController ErrorModalController.Action
             | NoAction
