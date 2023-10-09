@@ -315,7 +315,7 @@ barGraphView push state =
 
 barView :: forall w. (Action -> Effect Unit) -> Int -> Number -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w 
 barView push index length state = 
-  let selectedIndex = state.data.selectedBarIndex
+  let selectedIndex = state.props.selectedBarIndex
   in
   linearLayout
   [ height $ WRAP_CONTENT
@@ -333,7 +333,7 @@ barView push index length state =
     ][  linearLayout
       [ height $ V (ceil length)
       , width $ V 30
-      , background if selectedIndex < 0 || selectedIndex == index then Color.green900 else Color.red600
+      , background if selectedIndex < 0 || selectedIndex == index then Color.green900 else Color.green200
       , cornerRadius 4.0
       , onClick push $ const $ BarViewSelected index
       ][]
@@ -555,6 +555,7 @@ transactionView push state =
     [ width MATCH_PARENT
     , height WRAP_CONTENT
     , orientation VERTICAL
+    , margin $ MarginTop 24
     ] [ linearLayout 
           [ width MATCH_PARENT
           , height WRAP_CONTENT
@@ -565,13 +566,72 @@ transactionView push state =
             , weight 1.0
             , color Color.black800     
             ] <> FontStyle.h2 TypoGraphy      
-          , textView $ [
-              text "2010"
-            , color Color.black700     
-            ] <> FontStyle.subHeading1 TypoGraphy  
-              ]    
+          , calendarView push state
+            ]    
           , historyView push state
     ]
+
+calendarView :: forall w. (Action -> Effect Unit) -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w
+calendarView push state =
+  linearLayout
+        [ height WRAP_CONTENT
+        , width WRAP_CONTENT
+        , background Color.white900
+        , gravity CENTER
+        , margin $ MarginLeft 24
+        , cornerRadius 100.0
+        ]
+        [ linearLayout
+          [ height WRAP_CONTENT
+          , width WRAP_CONTENT
+          , orientation HORIZONTAL
+          , gravity CENTER_VERTICAL
+          -- , onClick push (const ShowDatePicker)
+          ][ linearLayout
+            [ height $ V 34
+            , width $ V 34
+            , gravity CENTER
+            ]
+            [ imageView
+                [ height $ V 24
+                , width $ V 24
+                -- , imageWithFallback if state.props.showDatePicker then "ny_ic_chevron_down_blue,https://assets.juspay.in/nammayatri/images/driver/ny_ic_chevron_down_blue.png" else "ny_ic_calendar_blue,https://assets.juspay.in/nammayatri/images/driver/ny_ic_calendar_blue.png"
+                , imageWithFallback  "ny_ic_calendar_blue,https://assets.juspay.in/nammayatri/images/driver/ny_ic_calendar_blue.png"
+                ]
+            ]
+          , textView
+            $ [ width WRAP_CONTENT
+              , height WRAP_CONTENT
+              -- , text $ if state.datePickerState.activeIndex == (tripDatesCount - 1) then getString TODAY else runFn1 getFormattedDate state.datePickerState.selectedItem.utcDate
+              , text $ getString TODAY
+              , color Color.black800
+              , margin $ MarginRight 12
+              ]
+            <> FontStyle.body1 LanguageStyle
+          ]
+        , linearLayout 
+          [ height MATCH_PARENT
+          , width WRAP_CONTENT
+          , orientation HORIZONTAL
+          , gravity CENTER
+          , padding $ Padding 5 5 5 5
+          -- , onClick push $ const OpenPaymentHistory
+          , visibility $ if getMerchant FunctionCall == YATRISATHI then VISIBLE else GONE
+          ][  textView
+              $ [ height WRAP_CONTENT
+                , width WRAP_CONTENT
+                , text $ getString VIEW_PAYMENT_HISTORY
+                , color Color.blue900
+                , margin $ MarginRight 5
+                ]
+              <> FontStyle.tags LanguageStyle
+            , imageView
+              [ height $ V 8
+              , width $ V 10
+              , imageWithFallback "ny_ic_right_arrow_blue,https://assets.juspay.in/nammayatri/images/driver/ny_ic_right_arrow_blue.png"
+              ]
+          ]
+        ]
 
 historyView :: forall w . (Action -> Effect Unit) -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w
 historyView push state = 
@@ -661,6 +721,13 @@ historyViewItem item state =
         , color Color.black700  
         , margin $ MarginTop 4
         ] <> FontStyle.captions TypoGraphy 
+      , linearLayout
+        [ height WRAP_CONTENT
+        , width WRAP_CONTENT
+        , background $ Color.grey900
+        , cornerRadius 26.0
+        , visibility if state.props.subView == ST.EARNINGS_VIEW then VISIBLE else GONE
+        ] (map(\name  -> (tagview name)) state.data.tagImages) 
       ]
     , linearLayout
       [ height WRAP_CONTENT
@@ -687,6 +754,13 @@ historyViewItem item state =
     ]
     , separatorView
   ]
+tagview :: String -> forall w. PrestoDOM (Effect Unit) w 
+tagview name = imageView
+          [ width (V 16)
+          , height (V 16)
+          , imageWithFallback $ name <> "," <> (getCommonAssetStoreLink FunctionCall) <> "/" <> name <> ".png"
+          , margin $ Margin 4 4 4 3
+          ]
 
 useCoinsView :: forall w . (Action -> Effect Unit) -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w
 useCoinsView push state = 

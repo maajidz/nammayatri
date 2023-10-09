@@ -96,12 +96,13 @@ initData = {
       }
     ],
     weeklyEarningData : [50.0,20.0,30.0,1.0,50.0,60.0,10.0],
-    selectedBarIndex : -1
+    tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"]
   }
   , props : {
     subView : EARNINGS_VIEW,
     selectedPlanIndex : 0,
-    selectedPlanQuantity : 0
+    selectedPlanQuantity : 0,
+    selectedBarIndex : -1
   }
   , datePickerState : {
     activeIndex : tripDatesCount - 1 -- based on no of dates we are showing

@@ -120,9 +120,9 @@ eval BackPressed state = exit GoBack
 
 eval (PrimaryButtonActionController PrimaryButtonController.OnClick) state = continue state
 
-eval (ChangeTab subView') state = continue state{props{subView = subView'}}
+eval (ChangeTab subView') state = continue state{props{subView = subView', selectedBarIndex = -1}}
 
-eval (BarViewSelected index) state = continue state{data{selectedBarIndex = index}}
+eval (BarViewSelected index) state = continue state{props{selectedBarIndex = index}}
 
 
 
@@ -175,6 +175,7 @@ eval (BarViewSelected index) state = continue state{data{selectedBarIndex = inde
 
 eval (RideHistoryAPIResponseAction rideList) state = do
   let coinHistoryItemsList = (coinHistoryItemsListTransformer rideList)
+  -- let tagImagesList = (tagImagesListTransformer rideList)
   continue $ state {data{earningHistoryItems = coinHistoryItemsList}}
 
 -- eval (Scroll value) state = do
@@ -226,6 +227,7 @@ coinHistoryItemsListTransformer list = (map (\(RidesInfo ride) -> {
   event : Nothing 
 }) list) 
 
+-- tagImagesListTransformer :: Array RidesInfo -> Array String
 
 -- rideHistoryListTransformer :: Array RidesInfo -> Array ItemState
 -- rideHistoryListTransformer list = (map (\(RidesInfo ride) ->

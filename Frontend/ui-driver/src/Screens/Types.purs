@@ -1752,12 +1752,13 @@ type DriverEarningsScreenData = {
   usageHistoryItems :: Array CoinHistoryItem,
   planItems :: Array CoinPlanItem,
   weeklyEarningData :: Array Number,
-  selectedBarIndex :: Int
+  tagImages :: Array String
 }
 type DriverEarningsScreenProps = {
   subView :: DriverEarningsSubView,
   selectedPlanIndex :: Int,
-  selectedPlanQuantity :: Int
+  selectedPlanQuantity :: Int,
+  selectedBarIndex :: Int
 }
 
 data DriverEarningsSubView = EARNINGS_VIEW | YATRI_COINS_VIEW | USE_COINS_VIEW
