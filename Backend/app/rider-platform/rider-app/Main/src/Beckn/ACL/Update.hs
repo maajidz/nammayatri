@@ -20,7 +20,9 @@ module Beckn.ACL.Update
 where
 
 import qualified Beckn.ACL.Common as Common
+import Beckn.Types.Core.Taxi.Common.Location
 import qualified Beckn.Types.Core.Taxi.Update as Update
+import qualified Beckn.Types.Core.Taxi.Update.UpdateEvent.EditLocationEvent as EditLocationU
 import qualified Beckn.Types.Core.Taxi.Update.UpdateEvent.PaymentCompletedEvent as PaymentCompletedU
 import Control.Lens ((%~))
 import qualified Data.Text as T
@@ -35,15 +37,26 @@ import Kernel.Types.Common
 import Kernel.Types.Id
 import Kernel.Utils.Common
 
-data UpdateBuildReq = PaymentCompletedBuildReq
-  { bppBookingId :: Id DBooking.BPPBooking,
-    bppRideId :: Id DRide.BPPRide,
-    paymentMethodInfo :: DMPM.PaymentMethodInfo,
-    bppId :: Text,
-    bppUrl :: BaseUrl,
-    transactionId :: Text,
-    merchant :: DM.Merchant
-  }
+data UpdateBuildReq
+  = PaymentCompletedBuildReq
+      { bppBookingId :: Id DBooking.BPPBooking,
+        bppRideId :: Id DRide.BPPRide,
+        paymentMethodInfo :: DMPM.PaymentMethodInfo,
+        bppId :: Text,
+        bppUrl :: BaseUrl,
+        transactionId :: Text,
+        merchant :: DM.Merchant
+      }
+  | EditLocationBuildReq
+      { bppBookingId :: Id DBooking.BPPBooking,
+        bppRideId :: Id DRide.BPPRide,
+        origin :: Maybe Location,
+        destination :: Maybe Location,
+        bppId :: Text,
+        bppUrl :: BaseUrl,
+        transactionId :: Text,
+        merchant :: DM.Merchant
+      }
 
 buildUpdateReq ::
   (MonadFlow m, HasFlowEnv m r '["nwAddress" ::: BaseUrl]) =>
@@ -74,5 +87,17 @@ mkUpdateMessage req@PaymentCompletedBuildReq {} = do
           fulfillment =
             PaymentCompletedU.FulfillmentInfo
               { id = req.bppRideId.getId
+              }
+        }
+mkUpdateMessage req@EditLocationBuildReq {..} = do
+  Update.UpdateMessage $
+    Update.EditLocation
+      EditLocationU.EditLocationEvent
+        { id = req.bppBookingId.getId,
+          update_target = "fulfillment.state.code,fufillment.start,fufillment.end",
+          fulfillment =
+            EditLocationU.FulfillmentInfo
+              { id = req.bppRideId.getId,
+                ..
               }
         }

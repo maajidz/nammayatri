@@ -25,9 +25,9 @@ import qualified Database.PostgreSQL.Simple.FromField as DPSF
 import Kernel.Prelude
 import Kernel.Types.Base64
 import Kernel.Types.Beckn.Context as Context
+import Kernel.Types.Common hiding (id)
 import Kernel.Types.Geofencing (GeoRestriction)
 import qualified Kernel.Types.Geofencing as Geo
-import Kernel.Utils.Common (Seconds)
 import Tools.Beam.UtilsTH
 
 fromFieldEnum' ::
@@ -65,7 +65,9 @@ data MerchantT f = MerchantT
     timeDiffFromUtc :: B.C f Seconds,
     isAvoidToll :: B.C f Bool,
     aadhaarVerificationTryLimit :: B.C f Int,
-    aadhaarKeyExpiryTime :: B.C f Seconds
+    aadhaarKeyExpiryTime :: B.C f Seconds,
+    editPickupDistanceThreshold :: B.C f HighPrecMeters,
+    driverDistanceThresholdFromPickup :: B.C f HighPrecMeters
   }
   deriving (Generic, B.Beamable)
 

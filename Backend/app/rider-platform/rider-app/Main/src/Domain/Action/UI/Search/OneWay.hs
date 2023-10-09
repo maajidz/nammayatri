@@ -26,7 +26,6 @@ import Domain.Action.UI.HotSpot
 import qualified Domain.Action.UI.Search.Common as DSearch
 import Domain.Types.HotSpot
 import Domain.Types.HotSpotConfig
-import qualified Domain.Types.LocationMapping as DLM
 import Domain.Types.Merchant
 import qualified Domain.Types.Merchant as DM
 import qualified Domain.Types.Person as Person
@@ -51,7 +50,6 @@ import qualified Storage.CachedQueries.MerchantConfig as QMC
 import qualified Storage.CachedQueries.Person.PersonFlowStatus as QPFS
 import qualified Storage.CachedQueries.SavedLocation as CSavedLocation
 import Storage.Queries.Geometry
-import qualified Storage.Queries.LocationMapping as QLM
 import qualified Storage.Queries.Person as QP
 import qualified Storage.Queries.Person.PersonDisability as PD
 import qualified Storage.Queries.SearchRequest as QSearchRequest

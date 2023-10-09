@@ -14,6 +14,7 @@
 
 module Tools.Notifications where
 
+import qualified Beckn.Types.Core.Taxi.Common.Location as Common
 import qualified Data.Text as T
 import Domain.Types.Booking (Booking)
 import qualified Domain.Types.BookingCancellationReason as SBCR
@@ -21,16 +22,25 @@ import Domain.Types.Merchant
 import Domain.Types.Message.Message as Message
 import Domain.Types.Person as Person
 import Domain.Types.RegistrationToken as RegToken
+import qualified Domain.Types.Ride as DRide
 import Domain.Types.SearchRequestForDriver
 import Domain.Types.SearchTry
 import EulerHS.Prelude
 import qualified Kernel.External.Notification.FCM.Flow as FCM
 import Kernel.External.Notification.FCM.Types as FCM
+import Kernel.Prelude hiding (unwords)
 import Kernel.Types.Error
 import Kernel.Types.Id
 import Kernel.Utils.Common
 import qualified Lib.Payment.Domain.Types.PaymentOrder as DOrder
 import Storage.CachedQueries.Merchant.TransporterConfig
+
+data EditLocationReq = EditLocationReq
+  { rideId :: Id DRide.Ride,
+    origin :: Maybe Common.Location,
+    destination :: Maybe Common.Location
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema, Show)
 
 notifyOnNewSearchRequestAvailable ::
   ( CacheFlow m r,
@@ -623,3 +633,34 @@ sendOverlay merchantId personId mbDeviceToken mbTitle description imageUrl okBut
         }
     title = FCMNotificationTitle $ fromMaybe "Title" mbTitle -- if nothing then anyways fcmShowNotification is false
     body = FCMNotificationBody $ fromMaybe "Description" description
+
+notifyPickupOrDropLocationChange ::
+  ( CacheFlow m r,
+    EsqDBFlow m r
+  ) =>
+  Id Merchant ->
+  Id Person ->
+  Maybe FCM.FCMRecipientToken ->
+  EditLocationReq ->
+  m ()
+notifyPickupOrDropLocationChange merchantId personId mbDeviceToken entityData = do
+  transporterConfig <- findByMerchantId merchantId >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantId.getId)
+  FCM.notifyPersonWithPriority transporterConfig.fcmConfig (Just FCM.HIGH) False notificationData $ FCMNotificationRecipient personId.getId mbDeviceToken
+  where
+    notifType = FCM.EDIT_LOCATION
+    notificationData =
+      FCM.FCMData
+        { fcmNotificationType = notifType,
+          fcmShowNotification = FCM.SHOW,
+          fcmEntityType = FCM.EditLocation,
+          fcmEntityIds = entityData.rideId.getId,
+          fcmEntityData = Just entityData,
+          fcmNotificationJSON = FCM.createAndroidNotification title body notifType,
+          fcmOverlayNotificationJSON = Nothing
+        }
+    title = FCMNotificationTitle "Pickup and/or drop location has been changed by the customer"
+    body =
+      FCMNotificationBody $
+        unwords
+          [ "Customer has changed pickup or drop location. Please check the app for more details"
+          ]

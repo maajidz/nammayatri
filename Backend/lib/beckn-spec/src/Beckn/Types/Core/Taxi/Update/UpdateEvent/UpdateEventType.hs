@@ -19,12 +19,14 @@ import Kernel.Prelude
 
 data UpdateEventType
   = PAYMENT_COMPLETED
+  | EDIT_LOCATION
   deriving (Show, Eq, Ord, Read, Generic, ToSchema)
 
 -- Generic instances for type with single value will not work
 instance FromJSON UpdateEventType where
   parseJSON (String "PAYMENT_COMPLETED") = pure PAYMENT_COMPLETED
-  parseJSON (String _) = parseFail "Expected \"PAYMENT_COMPLETED\""
+  parseJSON (String "EDIT_LOCATION") = pure EDIT_LOCATION
+  parseJSON (String _) = parseFail "Expected \"PAYMENT_COMPLETED\" or \"EDIT_LOCATION\""
   parseJSON e = typeMismatch "String" e
 
 instance ToJSON UpdateEventType where
