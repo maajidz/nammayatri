@@ -73,8 +73,6 @@ data PaymentStatusResp
 
 createOrderService ::
   ( EncFlow m r,
-    EsqDBReplicaFlow m r,
-    EsqDBFlow m r,
     BeamFlow m
   ) =>
   Id Merchant ->
@@ -164,8 +162,6 @@ buildSDKPayloadDetails req order = do
 
 buildPaymentOrder ::
   ( EncFlow m r,
-    EsqDBReplicaFlow m r,
-    EsqDBFlow m r,
     BeamFlow m
   ) =>
   Id Merchant ->
@@ -212,8 +208,6 @@ buildPaymentOrder merchantId personId req resp = do
 
 orderStatusService ::
   ( EncFlow m r,
-    EsqDBReplicaFlow m r,
-    EsqDBFlow m r,
     BeamFlow m
   ) =>
   Id Person ->
@@ -286,10 +280,7 @@ data OrderTxn = OrderTxn
   }
 
 updateOrderTransaction ::
-  ( EsqDBReplicaFlow m r,
-    EsqDBFlow m r,
-    BeamFlow m
-  ) =>
+  BeamFlow m =>
   DOrder.PaymentOrder ->
   OrderTxn ->
   Maybe Text ->
@@ -357,10 +348,7 @@ buildPaymentTransaction order OrderTxn {..} respDump = do
 -- webhook ----------------------------------------------------------
 
 juspayWebhookService ::
-  ( EsqDBReplicaFlow m r,
-    EsqDBFlow m r,
-    BeamFlow m
-  ) =>
+  BeamFlow m =>
   Payment.OrderStatusResp ->
   Text ->
   m AckResponse
@@ -414,8 +402,6 @@ createNotificationService req notificationCall = do
 
 createExecutionService ::
   ( EncFlow m r,
-    EsqDBReplicaFlow m r,
-    EsqDBFlow m r,
     BeamFlow m
   ) =>
   (Payment.MandateExecutionReq, Text) ->
