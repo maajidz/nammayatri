@@ -1217,7 +1217,7 @@ type LocationListItemState = {
   , locationScore :: Maybe Number
 }
 
-type SuggestedDestinations = Map SourceGeoHash Suggestions
+type SuggestionsMap = Map SourceGeoHash Suggestions
 type SourceGeoHash = String
 type DestinationGeoHash = String
 
@@ -1241,7 +1241,7 @@ type Trip = {
   , isSpecialZone :: Boolean
 }
 type SuggestionsData =  {
-    suggestionsMap :: SuggestedDestinations
+    suggestionsMap :: SuggestionsMap
 }
 
 data LocationItemType = RECENTS | PREDICTION | SAVED_LOCATION | SUGGESTED_DESTINATIONS

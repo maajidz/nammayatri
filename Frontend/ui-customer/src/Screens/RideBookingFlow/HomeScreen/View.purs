@@ -296,6 +296,7 @@ view push state =
                     , id (getNewIDWithTag "CustomerHomeScreenMap")
                     , visibility if state.props.isSrcServiceable then VISIBLE else GONE
                     ][]
+                    ]
                 , imageView
                     [ width  MATCH_PARENT
                     , height  MATCH_PARENT
@@ -369,7 +370,7 @@ view push state =
             , if state.props.showDisabilityPopUp &&  (getValueToLocalStore DISABILITY_UPDATED == "true") then disabilityPopUpView push state else emptyTextView state
             ]
         ]
-    ] 
+    
     ]
 
 rideCompletedCardView ::  forall w . (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w

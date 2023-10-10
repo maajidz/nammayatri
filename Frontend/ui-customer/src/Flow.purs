@@ -80,7 +80,7 @@ import Screens.ReferralScreen.ScreenData as ReferralScreen
 import Screens.RideBookingFlow.HomeScreen.Config (specialLocationIcons, specialLocationConfig, updateRouteMarkerConfig, getTipViewData, setTipViewData)
 import Screens.SavedLocationScreen.Controller (getSavedLocationForAddNewAddressScreen)
 import Screens.SelectLanguageScreen.ScreenData as SelectLanguageScreenData
-import Screens.Types (CardType(..), AddNewAddressScreenState(..), SearchResultType(..), CurrentLocationDetails(..), CurrentLocationDetailsWithDistance(..), DeleteStatus(..), HomeScreenState, LocItemType(..), PopupType(..), SearchLocationModelType(..), Stage(..), LocationListItemState, LocationItemType(..), NewContacts, NotifyFlowEventType(..), FlowStatusData(..), ErrorType(..), ZoneType(..), TipViewData(..),TripDetailsGoBackType(..), Location, DisabilityT(..), Suggestions(..),SuggestedDestinations(..),Address(..), PermissionScreenStage(..))
+import Screens.Types (CardType(..), AddNewAddressScreenState(..), SearchResultType(..), CurrentLocationDetails(..), CurrentLocationDetailsWithDistance(..), DeleteStatus(..), HomeScreenState, LocItemType(..), PopupType(..), SearchLocationModelType(..), Stage(..), LocationListItemState, LocationItemType(..), NewContacts, NotifyFlowEventType(..), FlowStatusData(..), ErrorType(..), ZoneType(..), TipViewData(..),TripDetailsGoBackType(..), Location, DisabilityT(..), Suggestions(..),SuggestionsMap(..),Address(..), PermissionScreenStage(..), UpdatePopupType(..))
 import Screens.Types (Gender(..)) as Gender
 import Services.API (AddressGeometry(..), BookingLocationAPIEntity(..), CancelEstimateRes(..), ConfirmRes(..), ContactDetails(..), DeleteSavedLocationReq(..), FlowStatus(..), FlowStatusRes(..), GatesInfo(..), Geometry(..), GetDriverLocationResp(..), GetEmergContactsReq(..), GetEmergContactsResp(..), GetPlaceNameResp(..), GetProfileRes(..), LatLong(..), LocationS(..), LogOutReq(..), LogOutRes(..), PlaceName(..), ResendOTPResp(..), RideAPIEntity(..), RideBookingAPIDetails(..), RideBookingDetails(..), RideBookingListRes(..), RideBookingRes(..), Route(..), SavedLocationReq(..), SavedLocationsListRes(..), SearchLocationResp(..), SearchRes(..), ServiceabilityRes(..), SpecialLocation(..), TriggerOTPResp(..), UserSosRes(..), VerifyTokenResp(..), ServiceabilityResDestination(..), SelectEstimateRes(..), UpdateProfileReq(..), OnCallRes(..), Snapped(..), AddressComponents(..), FareBreakupAPIEntity(..), GetDisabilityListResp(..), Disability(..))
 import Services.API (AuthType(..), AddressGeometry(..), BookingLocationAPIEntity(..), CancelEstimateRes(..), ConfirmRes(..), ContactDetails(..), DeleteSavedLocationReq(..), FlowStatus(..), FlowStatusRes(..), GatesInfo(..), Geometry(..), GetDriverLocationResp(..), GetEmergContactsReq(..), GetEmergContactsResp(..), GetPlaceNameResp(..), GetProfileRes(..), LatLong(..), LocationS(..), LogOutReq(..), LogOutRes(..), PlaceName(..), ResendOTPResp(..), RideAPIEntity(..), RideBookingAPIDetails(..), RideBookingDetails(..), RideBookingListRes(..), RideBookingRes(..), Route(..), SavedLocationReq(..), SavedLocationsListRes(..), SearchLocationResp(..), SearchRes(..), ServiceabilityRes(..), SpecialLocation(..), TriggerOTPResp(..), UserSosRes(..), VerifyTokenResp(..), ServiceabilityResDestination(..), TriggerSignatureOTPResp(..), User(..), OnCallRes(..))
@@ -885,9 +885,6 @@ homeScreenFlow = do
       let recentLists = if state.props.isSource == Just true then sortedtWithDistance else state.data.destinationSuggestions
       let filteredRecentsList = filterRecentSearches recentLists predictionList
       let filteredPredictionList = differenceOfLocationLists predictionList filteredRecentsList
-      _ <- pure $ spy "filteredPredictionList zxc" filteredPredictionList 
-      _ <- pure $ spy "filteredRecentsList zxc" filteredRecentsList 
-
       modifyScreenState $ HomeScreenStateType (\homeScreen -> state{data{locationList =
         map
         (\item -> do
@@ -2184,7 +2181,7 @@ saveToRecents item lat lon serviceability = do
   (GlobalState currentState) <- getState
   recentPredictionsObject <- lift $ lift $ getObjFromLocal currentState.homeScreen
   if serviceability then do
-    modifyScreenState $ HomeScreenStateType (\homeScreen -> homeScreen{ data { recentSearchs { predictionArray = addToRecentSearches item{lat = Just lat, lon = Just lon} recentPredictionsObject.predictionArray}}
+    modifyScreenState $ HomeScreenStateType (\homeScreen -> homeScreen{ data { recentSearchs { predictionArray = addToRecentSearches item{lat = Just lat, lon = Just lon, locationScore = Just 0.0} recentPredictionsObject.predictionArray}}
                                                                       })
     (GlobalState modifiedState) <- getState
     _ <- pure $ saveObject "RECENT_SEARCHES" modifiedState.homeScreen.data.recentSearchs
@@ -2204,7 +2201,7 @@ setSuggestionsMapInLocal item lat lon serviceability state= do
       _ <- pure $ setSuggestionsMap updatedMap
       pure unit
 
-getSuggestionsMapFromLocal :: LazyCheck -> SuggestedDestinations 
+getSuggestionsMapFromLocal :: LazyCheck -> SuggestionsMap 
 getSuggestionsMapFromLocal lazycheck = case (fetchSuggestionsFromLocal "SUGGESTIONS_MAP") of 
                     Right a -> a
                     Left err -> Map.empty
@@ -2228,7 +2225,7 @@ fetchAndModifyLocationLists savedLocationResp = do
         sortedList = Arr.take 30 (Arr.reverse (Arr.sortWith (\d -> fromMaybe 0.0 d.locationScore) arrWithNeighbors))
         suggestedDestinationsArr = (differenceOfLocationLists sortedList savedLocationWithHomeOrWorkTag)
         recentSearchesWithoutSuggested =  (differenceOfLocationLists (recents) suggestedDestinationsArr)
-        sugestedFinalList =  suggestedDestinationsArr <> (Arr.take (30 - (length suggestedDestinationsArr)) recentSearchesWithoutSuggested)
+        sugestedFinalList =  suggestedDestinationsArr <> (Arr.take (suggestionsConfig.locationsToBeStored - (length suggestedDestinationsArr)) recentSearchesWithoutSuggested)
         updatedList = (map (\item ->  item { postfixImageUrl = if not (checkPrediction item savedLocationsWithOtherTag) then "ny_ic_fav_red,https://assets.juspay.in/nammayatri/images/user/ny_ic_fav_red.png"
                                                                         else "ny_ic_fav,https://assets.juspay.in/nammayatri/images/user/ny_ic_fav.png" }) (sugestedFinalList))
     

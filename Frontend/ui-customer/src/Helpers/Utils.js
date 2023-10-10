@@ -533,12 +533,10 @@ export const getSuggestedDestinationsJsonFromLocal = function (key){
             return stringifiedMap;
 }
 
-export const getDifferenceBetweenDates = function (date1){
-  return function (date2){
-      const oneDay = 24 * 60 * 60 * 1000; // Milliseconds in a day
-      const diff = Math.floor((new Date(date1) - new Date(date2))/oneDay);
-      console.log("Difference of Dates -> ", diff);
-      return diff;
+export const getDifferenceBetweenDates = function (date1) {
+  return function (date2) {
+    const diffInSeconds = Math.floor((new Date(date1) - new Date(date2)) / 1000);
+    return diffInSeconds;
   }
 }
 
