@@ -11,9 +11,12 @@
 
  the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Lib.Payment.Storage.Queries.PaymentOrder where
 
+import Kernel.Beam.Functions
+import Kernel.External.Encryption
 import qualified Kernel.External.Payment.Interface as Payment
 import Kernel.Prelude
 import Kernel.Storage.Esqueleto hiding (findById)
@@ -21,7 +24,8 @@ import qualified Kernel.Storage.Esqueleto as Esq
 import Kernel.Types.Id
 import Kernel.Utils.Common (getCurrentTime)
 import qualified Lib.Payment.Domain.Types.PaymentOrder as DOrder
-import Lib.Payment.Storage.Tabular.PaymentOrder
+import qualified Lib.Payment.Storage.Beam.PaymentOrder as BeamPO
+import Lib.Payment.Storage.Tabular.PaymentOrder hiding (parsePaymentLinks)
 
 findById :: Transactionable m => Id DOrder.PaymentOrder -> m (Maybe DOrder.PaymentOrder)
 findById = Esq.findById
@@ -82,3 +86,41 @@ updateStatus orderId paymentServiceOrderId status = do
         PaymentOrderUpdatedAt =. val now
       ]
     where_ $ tbl ^. PaymentOrderId ==. val orderId.getId
+
+instance FromTType' BeamPO.PaymentOrder DOrder.PaymentOrder where
+  fromTType' orderT@BeamPO.PaymentOrderT {..} = do
+    paymentLinks <- parsePaymentLinks orderT
+    pure $
+      Just
+        DOrder.PaymentOrder
+          { id = Id id,
+            shortId = ShortId shortId,
+            personId = Id personId,
+            merchantId = Id merchantId,
+            clientAuthToken = case (clientAuthTokenEncrypted, clientAuthTokenHash) of
+              (Just encryptedToken, Just hash) -> Just $ EncryptedHashed (Encrypted encryptedToken) hash
+              (_, _) -> Nothing,
+            ..
+          }
+    where
+      parsePaymentLinks :: MonadThrow m => BeamPO.PaymentOrder -> m Payment.PaymentLinks
+      parsePaymentLinks paymentOrder = do
+        web <- parseBaseUrl `mapM` paymentOrder.webPaymentLink
+        iframe <- parseBaseUrl `mapM` paymentOrder.iframePaymentLink
+        mobile <- parseBaseUrl `mapM` paymentOrder.mobilePaymentLink
+        pure Payment.PaymentLinks {..}
+
+instance ToTType' BeamPO.PaymentOrder DOrder.PaymentOrder where
+  toTType' DOrder.PaymentOrder {..} =
+    BeamPO.PaymentOrderT
+      { id = getId id,
+        shortId = getShortId shortId,
+        personId = personId.getId,
+        merchantId = merchantId.getId,
+        webPaymentLink = showBaseUrl <$> paymentLinks.web,
+        iframePaymentLink = showBaseUrl <$> paymentLinks.iframe,
+        mobilePaymentLink = showBaseUrl <$> paymentLinks.mobile,
+        clientAuthTokenEncrypted = clientAuthToken <&> unEncrypted . (.encrypted),
+        clientAuthTokenHash = clientAuthToken <&> (.hash),
+        ..
+      }

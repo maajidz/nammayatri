@@ -11,15 +11,18 @@
 
  the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Lib.Payment.Storage.Queries.PaymentTransaction where
 
+import Kernel.Beam.Functions
 import Kernel.Prelude
 import Kernel.Storage.Esqueleto as Esq
 import Kernel.Types.Id
 import Kernel.Utils.Common (getCurrentTime)
 import Lib.Payment.Domain.Types.PaymentOrder (PaymentOrder)
 import Lib.Payment.Domain.Types.PaymentTransaction as DTransaction
+import qualified Lib.Payment.Storage.Beam.PaymentTransaction as BeamPT
 import Lib.Payment.Storage.Tabular.PaymentTransaction
 
 create :: PaymentTransaction -> SqlDB ()
@@ -75,3 +78,23 @@ findNewTransactionByOrderId orderId =
         &&. transaction ^. PaymentTransactionOrderId ==. val (toKey orderId)
     limit 1
     return transaction
+
+instance FromTType' BeamPT.PaymentTransaction PaymentTransaction where
+  fromTType' BeamPT.PaymentTransactionT {..} = do
+    pure $
+      Just
+        PaymentTransaction
+          { id = Id id,
+            orderId = Id orderId,
+            merchantId = Id merchantId,
+            ..
+          }
+
+instance ToTType' BeamPT.PaymentTransaction PaymentTransaction where
+  toTType' PaymentTransaction {..} =
+    BeamPT.PaymentTransactionT
+      { id = getId id,
+        orderId = getId orderId,
+        merchantId = merchantId.getId,
+        ..
+      }

@@ -2359,15 +2359,16 @@
         "prometheus-haskell": "prometheus-haskell_2"
       },
       "locked": {
-        "lastModified": 1697015887,
-        "narHash": "sha256-NkLAKXaydfYNmSURt2GRDsIdSUxxsU9GnL9G/WpcifU=",
+        "lastModified": 1696932875,
+        "narHash": "sha256-9269DM2odo4g/LBUibvrpIBGISmARQTN18LefyjnGe4=",
         "owner": "nammayatri",
         "repo": "shared-kernel",
-        "rev": "72378f38f807c6b8af901e44b38c361ec1b979b5",
+        "rev": "132d5f3e9c761e27414972eef503ce562a0eb48e",
         "type": "github"
       },
       "original": {
         "owner": "nammayatri",
+        "ref": "backend/refactor/beam-instances-for-payment",
         "repo": "shared-kernel",
         "type": "github"
       }
