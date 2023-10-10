@@ -1166,7 +1166,7 @@ infoTileView state config =
                         , width $ V 13
                         , imageWithFallback if ((fromMaybe 0.0 state.data.analyticsData.rating) - item < -0.50) then "ny_ic_star_inactive,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_inactive.png" 
                                               else if ((fromMaybe 0.0 state.data.analyticsData.rating) - item >= 0.00) then "ny_ic_star_active,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_active.png"
-                                              else "ny_ic_star_half_active,https://assets.juspay.in/nammayatri/images/common/ny_ic_star_half_active.png"
+                                              else "ny_ic_star_half_active," <> (getCommonAssetStoreLink FunctionCall) <> "ny_ic_star_half_active.png"
                         ]
                     ]) [1.0, 2.0, 3.0, 4.0, 5.0])
           ]
