@@ -5,6 +5,7 @@ module SharedLogic.Allocator.Jobs.Overlay.SendOverlay where
 import qualified Data.Text as T
 import Data.Time hiding (getCurrentTime)
 import qualified Domain.Types.DriverFee as DDF
+import qualified Domain.Types.DriverInformation as DTDI
 import qualified Domain.Types.Merchant as DM
 import qualified Domain.Types.Merchant.Overlay as DOverlay
 import Domain.Types.Merchant.TransporterConfig
@@ -73,8 +74,18 @@ sendOverlayToDriver (Job {id, jobInfo}) = withLogTag ("JobId-" <> id.getId) do
         DOverlay.InvoiceGenerated _ -> do
           manualDues <- getManualDues driverId
           sendOverlay driver overlayKey udf1 manualDues
-        DOverlay.FreeTrialDaysLeft _ -> sendOverlay driver overlayKey udf1 0
+        DOverlay.FreeTrialDaysLeft _ -> do
+          driverInfo <- QDI.findById driverId >>= fromMaybeM (PersonDoesNotExist driverId.getId)
+          currUdf1 <- getCurrentAutoPayStatusUDF driverInfo
+          when (currUdf1 == udf1) $ sendOverlay driver overlayKey udf1 0
         _ -> pure ()
+
+    getCurrentAutoPayStatusUDF driverInfo = do
+      case driverInfo.autoPayStatus of
+        Nothing -> return $ Just "PLAN_NOT_SELECTED"
+        Just DTDI.ACTIVE -> return $ Just ""
+        Just DTDI.PENDING -> return $ Just ""
+        _ -> return $ Just "AUTOPAY_NOT_SET"
 
     getManualDues driverId = do
       pendingDriverFees <- QDF.findAllOverdueDriverFeeByDriverId driverId
