@@ -16,6 +16,7 @@ import EulerHS.Types as ET
 import Kafka.Producer as KafkaProd
 import Kafka.Producer as Producer
 import qualified Kernel.Beam.Types as KBT
+import qualified "dynamic-offer-driver-app" Storage.Beam.BecknRequest as BR
 import System.Timeout (timeout)
 import Types.DBSync
 import Types.Event as Event
@@ -100,7 +101,7 @@ runCreateCommands cmds streamKey = do
     |::| runCreateInKafkaAndDb dbConf streamKey ("FeedbackForm" :: Text) [(obj, val, entryId, FeedbackFormObject obj) | (CreateDBCommand entryId _ _ _ _ (FeedbackFormObject obj), val) <- cmds]
     |::| runCreateInKafkaAndDb dbConf streamKey ("Feedback" :: Text) [(obj, val, entryId, FeedbackObject obj) | (CreateDBCommand entryId _ _ _ _ (FeedbackObject obj), val) <- cmds]
     |::| runCreateInKafkaAndDb dbConf streamKey ("FeedbackBadge" :: Text) [(obj, val, entryId, FeedbackBadgeObject obj) | (CreateDBCommand entryId _ _ _ _ (FeedbackBadgeObject obj), val) <- cmds]
-    |::| runCreate dbConf streamKey ("BecknRequest" :: Text) [(obj, val, entryId, BecknRequestObject obj) | (CreateDBCommand entryId _ _ _ _ (BecknRequestObject obj), val) <- cmds]
+    |::| runCreateInKafkaWithTopicNameAndDb dbConf streamKey ("BecknRequest" :: Text) [(obj, mkBecknRequestTopicName obj, val, entryId, BR.mkBecknRequestKafka obj) | (CreateDBCommand entryId _ _ _ _ (BecknRequestObject obj), val) <- cmds] -- put BecknRequestKafka to Kafka, not DBCreateObject
     |::| runCreateInKafkaAndDb dbConf streamKey ("RegistryMapFallback" :: Text) [(obj, val, entryId, RegistryMapFallbackObject obj) | (CreateDBCommand entryId _ _ _ _ (RegistryMapFallbackObject obj), val) <- cmds]
     |::| runCreateInKafkaAndDb dbConf streamKey ("DriverGoHomeRequest" :: Text) [(obj, val, entryId, DriverGoHomeRequestObject obj) | (CreateDBCommand entryId _ _ _ _ (DriverGoHomeRequestObject obj), val) <- cmds]
     |::| runCreateInKafkaAndDb dbConf streamKey ("DriverHomeLocation" :: Text) [(obj, val, entryId, DriverHomeLocationObject obj) | (CreateDBCommand entryId _ _ _ _ (DriverHomeLocationObject obj), val) <- cmds]
@@ -108,15 +109,15 @@ runCreateCommands cmds streamKey = do
   where
     -- functions for moving drainer data to kafka
     runCreate dbConf _ model object = do
-      let dbObjects = map (\(dbObject, _, _, _) -> dbObject) object
-          byteStream = map (\(_, bts, _, _) -> bts) object
-          entryIds = map (\(_, _, entryId, _) -> entryId) object
+      let dbObjects = map (\(dbObject, _, _, _, _) -> dbObject) object
+          byteStream = map (\(_, _, bts, _, _) -> bts) object
+          entryIds = map (\(_, _, _, entryId, _) -> entryId) object
           cmdsToErrorQueue = map ("command" :: String,) byteStream
       Env {..} <- ask
       maxRetries <- EL.runIO getMaxRetries
       if null object || model `elem` _dontEnableDbTables then pure [Right []] else runCreateWithRecursion dbConf model dbObjects cmdsToErrorQueue entryIds 0 maxRetries False
     -- If KAFKA_PUSH is false then entry will be there in DB Else Create entry in Kafka only.
-    runCreateInKafka dbConf streamKey' model object = do
+    runCreateInKafkaWithTopicName dbConf streamKey' model object = do
       isPushToKafka' <- EL.runIO isPushToKafka
       if not isPushToKafka'
         then runCreate dbConf streamKey' model object
@@ -124,10 +125,10 @@ runCreateCommands cmds streamKey = do
           if null object
             then pure [Right []]
             else do
-              let dataObjects = map (\(_, _, _, dataObject) -> dataObject) object
-                  entryIds = map (\(_, _, entryId', _) -> entryId') object
+              let kafkaObjects = map (\(_, topicName, _, _, kafkaObject) -> (kafkaObject, topicName)) object
+                  entryIds = map (\(_, _, _, entryId', _) -> entryId') object
               Env {..} <- ask
-              res <- EL.runIO $ streamDriverDrainerCreates _kafkaConnection dataObjects streamKey'
+              res <- EL.runIO $ streamDriverDrainerCreates _kafkaConnection kafkaObjects streamKey'
               either
                 ( \_ -> do
                     void $ publishDBSyncMetric Event.KafkaPushFailure
@@ -136,8 +137,7 @@ runCreateCommands cmds streamKey = do
                 )
                 (\_ -> pure [Right entryIds])
                 res
-    -- Create entry in DB if KAFKA_PUSH key is set to false. Else creates in both.
-    runCreateInKafkaAndDb dbConf streamKey' model object = do
+    runCreateInKafkaWithTopicNameAndDb dbConf streamKey' model object = do
       isPushToKafka' <- EL.runIO isPushToKafka
       if not isPushToKafka'
         then runCreate dbConf streamKey' model object
@@ -145,11 +145,15 @@ runCreateCommands cmds streamKey = do
           if null object
             then pure [Right []]
             else do
-              let entryIds = map (\(_, _, entryId, _) -> entryId) object
-              kResults <- runCreateInKafka dbConf streamKey' model object
+              let entryIds = map (\(_, _, _, entryId, _) -> entryId) object
+              kResults <- runCreateInKafkaWithTopicName dbConf streamKey' model object
               case kResults of
                 [Right _] -> runCreate dbConf streamKey' model object
                 _ -> pure [Left entryIds]
+    -- Create entry in DB if KAFKA_PUSH key is set to false. Else creates in both.
+    runCreateInKafkaAndDb dbConf streamKey' model objects =
+      runCreateInKafkaWithTopicNameAndDb dbConf streamKey' model $
+        objects <&> (\(obj, val, entryId, dbCreateObj) -> (obj, driverDrainerTopicName, val, entryId, dbCreateObj))
 
     runCreateWithRecursion dbConf model dbObjects cmdsToErrorQueue entryIds index maxRetries ignoreDuplicates = do
       res <- CDB.createMultiSqlWoReturning dbConf dbObjects ignoreDuplicates
@@ -176,10 +180,12 @@ runCreateCommands cmds streamKey = do
           EL.logError ("Create failed: " :: Text) (show cmdsToErrorQueue <> "\n Error: " <> show x :: Text)
           pure [Left entryIds]
 
-streamDriverDrainerCreates :: ToJSON a => Producer.KafkaProducer -> [a] -> Text -> IO (Either Text ())
-streamDriverDrainerCreates producer dbObject streamKey = do
-  let topicName = "driver-drainer"
-  mapM_ (KafkaProd.produceMessage producer . message topicName) dbObject
+streamDriverDrainerCreates :: ToJSON kafkaObject => Producer.KafkaProducer -> [(kafkaObject, TopicName)] -> Text -> IO (Either Text ())
+streamDriverDrainerCreates producer kafkaObject streamKey = do
+  forM_ kafkaObject $ \obj -> do
+    mbErr <- KafkaProd.produceMessage producer . message $ obj
+    whenJust mbErr $ \err -> do
+      putStrLn ("produceMessage er: " <> show err :: Text)
   flushResult <- timeout (5 * 60 * 1000000) $ prodPush producer
   case flushResult of
     Just _ -> do
@@ -188,10 +194,17 @@ streamDriverDrainerCreates producer dbObject streamKey = do
   where
     prodPush producer' = KafkaProd.flushProducer producer' >> pure True
 
-    message topicName event =
+    message (event, topicName) =
       ProducerRecord
-        { prTopic = TopicName topicName,
+        { prTopic = topicName,
           prPartition = UnassignedPartition,
           prKey = Just $ TE.encodeUtf8 streamKey,
           prValue = Just . LBS.toStrict $ encode event
         }
+
+driverDrainerTopicName :: TopicName
+driverDrainerTopicName = TopicName "driver-drainer"
+
+mkBecknRequestTopicName :: BR.BecknRequest -> TopicName
+mkBecknRequestTopicName becknRequest = do
+  TopicName $ "driver-beckn-request" <> "_" <> show (BR.countTopicNumber becknRequest.timeStamp)

@@ -43,14 +43,14 @@ let hedisClusterCfg =
       }
 
 let consumerProperties =
-      { groupId = "person-stats-compute"
+      { groupId = "rider-beckn-request-compute"
       , brockers = [ "localhost:29092" ]
       , autoCommit = None Integer
       , kafkaCompression = common.kafkaCompression.LZ4
       }
 
 let kafkaConsumerCfg =
-      { topicNames = [ "rider-app-events-updates" ], consumerProperties }
+      { topicNames = [ "rider-beckn-request" ], consumerProperties }
 
 let availabilityTimeWindowOption =
       { period = +7, periodType = common.periodType.Days }
@@ -80,7 +80,7 @@ in  { hedisCfg
     , httpClientOptions = common.httpClientOptions
     , loggerConfig =
             common.loggerConfig
-        //  { logFilePath = "/tmp/kafka-consumers-person-stats.log"
+        //  { logFilePath = "/tmp/kafka-consumers-rider-beckn-request.log"
             , logRawSql = False
             }
     , enableRedisLatencyLogging = True

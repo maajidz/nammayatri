@@ -26,6 +26,7 @@ library
       Consumer.AvailabilityTime.Storage.Queries
       Consumer.AvailabilityTime.Storage.Tables
       Consumer.AvailabilityTime.Types
+      Consumer.BecknRequest.Processor
       Consumer.BroadcastMessage.Processor
       Consumer.CustomerStats.Processor
       Consumer.Flow
@@ -73,6 +74,7 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , beckn-services
     , bytestring
     , containers
     , dynamic-offer-driver-app
@@ -144,6 +146,7 @@ executable kafka-consumers-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , beckn-services
     , bytestring
     , containers
     , errors

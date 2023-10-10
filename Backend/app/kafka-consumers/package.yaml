@@ -75,6 +75,7 @@ dependencies:
   - esqueleto
   - template-haskell
   - sessionizer-metrics
+  - beckn-services
 
 ghc-options:
   - -Wall
