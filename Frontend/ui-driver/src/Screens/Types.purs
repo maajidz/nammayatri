@@ -1775,7 +1775,8 @@ type CoinHistoryItem = {
   timestamp :: String,
   coins :: Maybe Int,
   earnings ::  Maybe Int,
-  status :: Maybe String 
+  status :: Maybe String,
+  tagImages :: Array String
 }
 
 type CoinPlanItem = {

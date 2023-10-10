@@ -27,7 +27,7 @@ import Components.IndividualRideCard.Controller as IndividualRideCardController
 import Components.PaymentHistoryListItem as PaymentHistoryModelItem
 import Components.PaymentHistoryModel as PaymentHistoryModel
 import Components.PrimaryButton as PrimaryButton
-import Data.Array (union, (!!), filter, length)
+import Data.Array (union, (!!), filter, length, (:))
 import Data.Int (ceil)
 import Data.Int (fromString, toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
@@ -50,6 +50,7 @@ import Screens.Types
 import Services.API (RidesInfo(..), Status(..))
 import Storage (KeyStore(..), getValueToLocalNativeStore, setValueToLocalNativeStore)
 import Styles.Colors as Color
+import Debug (spy)
 
 instance showAction :: Show Action where
   show _ = ""
@@ -174,8 +175,8 @@ eval (BarViewSelected index) state = continue state{props{selectedBarIndex = ind
 --   exit $ LoaderOutput state{loaderButtonVisibility = false}
 
 eval (RideHistoryAPIResponseAction rideList) state = do
+  _ <- pure $ spy "Aryan -> Ride List" rideList
   let coinHistoryItemsList = (coinHistoryItemsListTransformer rideList)
-  -- let tagImagesList = (tagImagesListTransformer rideList)
   continue $ state {data{earningHistoryItems = coinHistoryItemsList}}
 
 -- eval (Scroll value) state = do
@@ -224,11 +225,23 @@ coinHistoryItemsListTransformer list = (map (\(RidesInfo ride) -> {
                     _ -> fromMaybe ride.estimatedBaseFare ride.computedFare),
   status : Just ride.status, 
   coins :  Nothing,
-  event : Nothing 
+  event : Nothing,
+  tagImages : getTagImages (RidesInfo ride) []
 }) list) 
 
--- tagImagesListTransformer :: Array RidesInfo -> Array String
-
+getTagImages :: RidesInfo -> Array String -> Array String
+getTagImages (RidesInfo ride) list = do
+  let a = case ride.customerExtraFee of
+            Just _ -> ("ny_ic_tip_ride_tag" : list)
+            Nothing -> list
+      b = case ride.disabilityTag of
+          Just _ -> "ny_ic_disability_tag" : list
+          Nothing -> list
+      c = case ride.specialLocationTag of
+          Just _ -> "ny_ic_special_location_tag" : list
+          Nothing -> list
+  (a <> b <> c)
+  
 -- rideHistoryListTransformer :: Array RidesInfo -> Array ItemState
 -- rideHistoryListTransformer list = (map (\(RidesInfo ride) ->
 --   let accessibilityTag = (getDisabilityType ride.disabilityTag)

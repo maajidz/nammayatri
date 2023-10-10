@@ -30,28 +30,32 @@ initData = {
       timestamp : "31/5/2022 7:45pm",
       coins : Just 1,
       earnings : Just 150,
-      status : Just "COMPLETED"
+      status : Just "COMPLETED",
+      tagImages : []
     }, {
       event : Just "Ride CANCELLED",
       destination : Just "Kempagowda Airport",
       timestamp : "31/5/2022 7:45pm",
       coins : Just (-2),
       earnings : Nothing,
-      status : Just "CANCELLED"
+      status : Just "CANCELLED",
+      tagImages : []
     }, {
       event : Just "Ride COMPLETED",
       destination : Just "Kempagowda Airport",
       timestamp : "31/5/2022 7:45pm",
       coins : Just 1,
       earnings : Just 85,
-      status : Just "COMPLETED"
+      status : Just "COMPLETED",
+      tagImages : []
     }, {
       event : Just "Ride CANCELLED",
       destination : Just "Kempagowda Airport",
       timestamp : "31/5/2022 7:45pm",
       coins : Just (-2),
       earnings : Just 200,
-      status : Just "CANCELLED"
+      status : Just "CANCELLED",
+      tagImages : []
     }
     ],
     earningHistoryItems : [{
@@ -60,28 +64,32 @@ initData = {
       timestamp : "31/5/2022 7:45pm",
       coins : Just 1,
       earnings : Just 150,
-      status : Just "COMPLETED"
+      status : Just "COMPLETED",
+      tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"]
     }, {
       event : Just "Ride CANCELLED",
       destination : Just "Kempagowda Airport",
       timestamp : "31/5/2022 7:45pm",
       coins : Just (-2),
       earnings : Nothing,
-      status : Just "CANCELLED"
+      status : Just "CANCELLED",
+      tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"]
     }, {
       event : Just "Ride COMPLETED",
       destination : Just "Kempagowda Airport",
       timestamp : "31/5/2022 7:45pm",
       coins : Just 1,
       earnings : Just 85,
-      status : Just "COMPLETED"
+      status : Just "COMPLETED",
+      tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"]
     }, {
       event : Just "Ride CANCELLED",
       destination : Just "Kempagowda Airport",
       timestamp : "31/5/2022 7:45pm",
       coins : Just (-2),
       earnings : Just 200,
-      status : Just "CANCELLED"
+      status : Just "CANCELLED",
+      tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"]
     }
     ],
     usageHistoryItems : [],

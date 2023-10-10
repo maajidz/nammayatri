@@ -727,7 +727,7 @@ historyViewItem item state =
         , background $ Color.grey900
         , cornerRadius 26.0
         , visibility if state.props.subView == ST.EARNINGS_VIEW then VISIBLE else GONE
-        ] (map(\name  -> (tagview name)) state.data.tagImages) 
+        ] (map(\name  -> (tagview name)) item.tagImages) 
       ]
     , linearLayout
       [ height WRAP_CONTENT
