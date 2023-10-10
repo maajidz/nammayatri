@@ -708,6 +708,16 @@ type HomeScreenStateProps =
   , canSendSuggestion :: Boolean
   , sheetState :: BottomSheetState
   , showDisabilityPopUp :: Boolean
+  , isHomescreenExpanded :: Boolean
+  , isRepeatRide :: Boolean
+  , currSlideIndex :: Number
+  , suggestionsListExpanded :: Boolean
+  , homescreenHeaderExpanded :: Boolean
+  , repeatRideTimer :: String
+  , repeatRideTimerId :: String
+  , homeScrollTimerId :: String
+  , homeScrollTimer :: String
+  , homescreenSheetState :: BottomSheetState
   }
 
 type RouteEndPoints = {

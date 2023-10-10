@@ -186,6 +186,7 @@ export const decodeError = function (er) {
   };
 
 export const toString = function (attr) {
+console.log("toString " + attr);
 return JSON.stringify(attr);
 };
 

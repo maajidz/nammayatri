@@ -134,6 +134,7 @@ initData = {
     },
     props: {
       rideRequestFlow : false
+    , isHomescreenExpanded : false
     , isSearchLocation : NoView
     , currentStage : HomeScreen
     , showCallPopUp : false
@@ -226,6 +227,15 @@ initData = {
     , canSendSuggestion : true
     , sheetState : COLLAPSED
     , showDisabilityPopUp : false
+    , isRepeatRide : false
+    , currSlideIndex : 0.0
+    , suggestionsListExpanded : false
+    , homescreenHeaderExpanded : false
+    , repeatRideTimer : ""
+    , repeatRideTimerId : ""
+    , homeScrollTimerId : ""
+    , homeScrollTimer : ""
+    , homescreenSheetState : COLLAPSED
     }
 }
 
