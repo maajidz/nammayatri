@@ -1052,7 +1052,7 @@ eval (SearchLocationModelActionController (SearchLocationModelController.Primary
   _ <- pure $ performHapticFeedback unit
   _ <- pure $ exitLocateOnMap ""
   let newState = state{props{isSource = Just false, sourceSelectedOnMap = if (state.props.isSource == Just true) then true else state.props.sourceSelectedOnMap, isSearchLocation = SearchLocation, currentStage = SearchLocationModel, locateOnMap = false}}
-  updateAndExit newState $ LocationSelected (fromMaybe dummyListItem state.data.selectedLocationListItem) false newState
+  updateAndExit newState $ LocationSelected (fromMaybe dummyListItem (if state.props.isSource == Just false then state.data.selectedLocationListItem else Nothing)) (if state.props.isSource == Just false then true else false) newState
 
 eval (PrimaryButtonActionController (PrimaryButtonController.OnClick)) state = do
     _ <- pure $ spy "state homeScreen" state
@@ -1352,10 +1352,10 @@ eval (SearchLocationModelActionController (SearchLocationModelController.Primary
                     _,_,_                                 -> continue state
 
 eval (SearchLocationModelActionController (SearchLocationModelController.DebounceCallBack searchString isSource)) state = do
-  if (STR.length searchString > 2) && (isSource == fromMaybe true state.props.isSource) then
+  if (STR.length searchString > 2) && (isSource == fromMaybe true state.props.isSource) then do 
     validateSearchInput state searchString
-  else
-    continue state{data{ locationList = state.data.recentSearchs.predictionArray }}
+  else do
+    continue state
 
 eval (SearchLocationModelActionController (SearchLocationModelController.SourceChanged input)) state = do
   let
@@ -1390,7 +1390,7 @@ eval (SearchLocationModelActionController (SearchLocationModelController.Destina
 eval (SearchLocationModelActionController (SearchLocationModelController.EditTextFocusChanged textType)) state = do
   _ <- pure $ spy "searchLocationModal" textType
   if textType == "D" then
-    continueWithCmd state { props { isSource = Just false }}
+    continueWithCmd state { props { isSource = Just false},data{ locationList = if state.props.isSource == Just false then state.data.locationList else state.data.destinationSuggestions } }
       [ do
           if state.props.isSearchLocation /= LocateOnMap then do
             _ <- (pure $ setText (getNewIDWithTag "DestinationEditText") state.data.destination)
@@ -1399,7 +1399,7 @@ eval (SearchLocationModelActionController (SearchLocationModelController.EditTex
             pure $ NoAction
       ]
   else
-    continueWithCmd state { props { isSource = Just true}}
+    continueWithCmd state { props { isSource = Just true}, data{ locationList = if state.props.isSource == Just true then state.data.locationList else state.data.recentSearchs.predictionArray } }
       [ do
           if state.props.isSearchLocation /= LocateOnMap && state.props.isSource == Just true then do
             _ <- (pure $ setText (getNewIDWithTag "SourceEditText") state.data.source)
@@ -2071,6 +2071,9 @@ dummyListItem = {
   , locationItemType : Nothing
   , distance : Nothing
   , showDistance : Just false
+  , frequencyCount : Just 0
+  , recencyDate : Just ""
+  , locationScore : Just 0.0
 }
 
 tagClickEvent :: CardType -> (Maybe LocationListItemState) -> HomeScreenState -> Eval Action ScreenOutput HomeScreenState

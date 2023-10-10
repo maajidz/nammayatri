@@ -29,6 +29,7 @@ import Foreign.Object (empty)
 import MerchantConfig.DefaultConfig as DC
 import Screens.MyRidesScreen.ScreenData (dummyBookingDetails)
 import PrestoDOM (BottomSheetState(..))
+import Data.Map as Map 
 
 initData :: HomeScreenState
 initData = {
@@ -47,6 +48,9 @@ initData = {
     , locationList : []
     , savedLocations : []
     , recentSearchs : { predictionArray : []}
+    , destinationSuggestions : []
+    , tripSuggestions: []
+    , suggestionsData : { suggestionsMap: Map.empty }
     , previousCurrentLocations : {pastCurrentLocations:[]}
     , selectList : []
     , quoteListModelState : []
@@ -371,7 +375,8 @@ dummyLocationName = PlaceName {
     "lon" : 0.0
   },
   "plusCode" : Nothing,
-  "addressComponents" : []
+  "addressComponents" : [],
+  "placeId" : Just ""
 }
 
 specialLocation :: SpecialLocation
