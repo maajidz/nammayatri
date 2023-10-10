@@ -241,6 +241,15 @@ window.getMerchantConfig = function () {
       "title" : "",
       "imageUrl" : ""
   }
+  , "suggestedTripsAndLocationConfig" : {
+      "geohashLimitForMap" : 60,
+      "geohashPrecision" : 7,
+      "locationsToBeShown" : 5,
+      "tripsToBeShown" : 5,
+      "locationsToBeStored" : 30,
+      "tripsToBeStored" : 30,
+      "frequencyWeight" : 0.7
+  }
   , "showDeleteAccount" : true
   , "fontName" : "PlusJakartaSans"
   , "fontKannada" : "NotoSansKannada"

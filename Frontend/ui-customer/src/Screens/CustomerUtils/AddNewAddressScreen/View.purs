@@ -444,6 +444,9 @@ bottomBtnsData state =
     , distance : Nothing
     , showDistance : Just false
     , actualDistance : 0
+    , frequencyCount : Just 0
+    , recencyDate : Just ""
+    , locationScore : Just 0.0
     }
   , { prefixImageUrl : "ny_ic_current_location," <> (getAssetStoreLink FunctionCall) <> "ny_ic_current_location.png"
     , title :  (getString USE_CURRENT_LOCATION)
@@ -469,6 +472,10 @@ bottomBtnsData state =
     , distance : Nothing
     , showDistance : Just false
     , actualDistance : 0
+    , frequencyCount : Just 0
+  , recencyDate : Just ""
+  , locationScore : Just 0.0
+
     }
 
   ]

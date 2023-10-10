@@ -91,6 +91,10 @@ dummy_data = [
     , distance : Nothing
     , showDistance : Just false
     , actualDistance : 0
+    , frequencyCount : Just 0
+    , recencyDate : Just ""
+    , locationScore : Just 0.0
+
     }
   , { prefixImageUrl : "ny_ic_recent_search," <> (getAssetStoreLink FunctionCall) <> "ny_ic_recent_search.png"
     , postfixImageUrl : "ny_ic_fav," <> (getAssetStoreLink FunctionCall) <> "ny_ic_fav.png"
@@ -116,6 +120,10 @@ dummy_data = [
     , distance : Nothing
     , showDistance : Just false
     , actualDistance : 0
+    , frequencyCount : Just 0
+    , recencyDate : Just ""
+    , locationScore : Just 0.0
+
     }
   , { prefixImageUrl : "ny_ic_loc_grey," <> (getAssetStoreLink FunctionCall) <> "ny_ic_loc_grey.png"
     , postfixImageUrl : "ny_ic_fav," <> (getAssetStoreLink FunctionCall) <> "ny_ic_fav.png"
@@ -141,5 +149,9 @@ dummy_data = [
     , distance : Nothing
     , showDistance : Just false
     , actualDistance : 0
+    , frequencyCount : Just 0
+    , recencyDate : Just ""
+    , locationScore : Just 0.0
+
     }
 ]

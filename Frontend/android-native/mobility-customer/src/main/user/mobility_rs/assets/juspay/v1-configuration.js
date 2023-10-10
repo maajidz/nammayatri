@@ -155,6 +155,15 @@ window.getMerchantConfig = function () {
           "title": "Paytm",
           "imageUrl": "ny_ic_chevron_left_double,https://assets.juspay.in/beckn/mobilitypaytm/mobilitypaytmcommon/ny_ic_chevron_left_double.png"
       },
+      "suggestedTripsAndLocationConfig" : {
+        "geohashLimitForMap" : 60,
+        "geohashPrecision" : 7,
+        "locationsToBeShown" : 5,
+        "tripsToBeShown" : 5,
+        "locationsToBeStored" : 30,
+        "tripsToBeStored" : 30,
+        "frequencyWeight" : 0.7
+      },
       "showDeleteAccount": false,
       "showGenderBanner": true,
       "autoSelectBackground": "#53BB6F",
