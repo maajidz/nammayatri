@@ -36,6 +36,7 @@ import Kernel.Utils.Common
 import Lib.Payment.Domain.Types.Common
 import qualified Lib.Payment.Domain.Types.PaymentOrder as DOrder
 import qualified Lib.Payment.Domain.Types.PaymentTransaction as DTransaction
+import Lib.Payment.Storage.Beam.BeamFlow
 import qualified Lib.Payment.Storage.Queries.PaymentOrder as QOrder
 import qualified Lib.Payment.Storage.Queries.PaymentTransaction as QTransaction
 
@@ -73,7 +74,8 @@ data PaymentStatusResp
 createOrderService ::
   ( EncFlow m r,
     EsqDBReplicaFlow m r,
-    EsqDBFlow m r
+    EsqDBFlow m r,
+    BeamFlow m
   ) =>
   Id Merchant ->
   Id Person ->
@@ -86,14 +88,13 @@ createOrderService merchantId personId createOrderReq createOrderCall = do
     Nothing -> do
       createOrderResp <- createOrderCall createOrderReq -- api call
       paymentOrder <- buildPaymentOrder merchantId personId createOrderReq createOrderResp
-      Esq.runTransaction $
-        QOrder.create paymentOrder
+      QOrder.create paymentOrder
       return $ Just createOrderResp
     Just existingOrder -> do
       isOrderExpired <- maybe (pure True) checkIfExpired existingOrder.clientAuthTokenExpiry
       if isOrderExpired
         then do
-          Esq.runTransaction $ QOrder.updateStatusToExpired existingOrder.id
+          QOrder.updateStatusToExpired existingOrder.id
           return Nothing
         else do
           sdkPayload <- buildSDKPayload createOrderReq existingOrder
@@ -164,7 +165,8 @@ buildSDKPayloadDetails req order = do
 buildPaymentOrder ::
   ( EncFlow m r,
     EsqDBReplicaFlow m r,
-    EsqDBFlow m r
+    EsqDBFlow m r,
+    BeamFlow m
   ) =>
   Id Merchant ->
   Id Person ->
@@ -211,7 +213,8 @@ buildPaymentOrder merchantId personId req resp = do
 orderStatusService ::
   ( EncFlow m r,
     EsqDBReplicaFlow m r,
-    EsqDBFlow m r
+    EsqDBFlow m r,
+    BeamFlow m
   ) =>
   Id Person ->
   Id DOrder.PaymentOrder ->
@@ -284,7 +287,8 @@ data OrderTxn = OrderTxn
 
 updateOrderTransaction ::
   ( EsqDBReplicaFlow m r,
-    EsqDBFlow m r
+    EsqDBFlow m r,
+    BeamFlow m
   ) =>
   DOrder.PaymentOrder ->
   OrderTxn ->
@@ -303,9 +307,9 @@ updateOrderTransaction order resp respDump = do
   case mbTransaction of
     Nothing -> do
       transaction <- buildPaymentTransaction order resp respDump
-      Esq.runTransaction $ do
-        QTransaction.create transaction
-        when (order.status /= updOrder.status && order.status /= Payment.CHARGED) $ QOrder.updateStatusAndError updOrder errorMessage errorCode
+      -- Esq.runTransaction $ do
+      QTransaction.create transaction
+      when (order.status /= updOrder.status && order.status /= Payment.CHARGED) $ QOrder.updateStatusAndError updOrder errorMessage errorCode
     Just transaction -> do
       let updTransaction =
             transaction{statusId = resp.transactionStatusId,
@@ -325,10 +329,10 @@ updateOrderTransaction order resp respDump = do
                         mandateMaxAmount = resp.mandateMaxAmount,
                         juspayResponse = respDump
                        }
-      Esq.runTransaction $ do
-        -- Avoid updating status if already in CHARGED state to handle race conditions
-        when (transaction.status /= Payment.CHARGED) $ QTransaction.updateMultiple updTransaction
-        when (order.status /= updOrder.status && order.status /= Payment.CHARGED) $ QOrder.updateStatusAndError updOrder errorMessage errorCode
+
+      -- Avoid updating status if already in CHARGED state to handle race conditions
+      when (transaction.status /= Payment.CHARGED) $ QTransaction.updateMultiple updTransaction
+      when (order.status /= updOrder.status && order.status /= Payment.CHARGED) $ QOrder.updateStatusAndError updOrder errorMessage errorCode
 
 buildPaymentTransaction :: MonadFlow m => DOrder.PaymentOrder -> OrderTxn -> Maybe Text -> m DTransaction.PaymentTransaction
 buildPaymentTransaction order OrderTxn {..} respDump = do
@@ -354,7 +358,8 @@ buildPaymentTransaction order OrderTxn {..} respDump = do
 
 juspayWebhookService ::
   ( EsqDBReplicaFlow m r,
-    EsqDBFlow m r
+    EsqDBFlow m r,
+    BeamFlow m
   ) =>
   Payment.OrderStatusResp ->
   Text ->
@@ -410,7 +415,8 @@ createNotificationService req notificationCall = do
 createExecutionService ::
   ( EncFlow m r,
     EsqDBReplicaFlow m r,
-    EsqDBFlow m r
+    EsqDBFlow m r,
+    BeamFlow m
   ) =>
   (Payment.MandateExecutionReq, Text) ->
   Id Merchant ->
@@ -418,9 +424,9 @@ createExecutionService ::
   m Payment.MandateExecutionRes
 createExecutionService (request, orderId) merchantId executionCall = do
   executionOrder <- mkExecutionOrder request
-  Esq.runTransaction $ QOrder.create executionOrder
+  QOrder.create executionOrder
   executionResp <- executionCall request
-  Esq.runTransaction $ QOrder.updateStatus (Id orderId) executionResp.orderId executionResp.status
+  QOrder.updateStatus (Id orderId) executionResp.orderId executionResp.status
   return executionResp
   where
     mkExecutionOrder req = do

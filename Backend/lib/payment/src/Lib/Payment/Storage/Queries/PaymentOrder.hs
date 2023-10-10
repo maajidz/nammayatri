@@ -19,73 +19,56 @@ import Kernel.Beam.Functions
 import Kernel.External.Encryption
 import qualified Kernel.External.Payment.Interface as Payment
 import Kernel.Prelude
-import Kernel.Storage.Esqueleto hiding (findById)
-import qualified Kernel.Storage.Esqueleto as Esq
 import Kernel.Types.Id
 import Kernel.Utils.Common (getCurrentTime)
 import qualified Lib.Payment.Domain.Types.PaymentOrder as DOrder
+import Lib.Payment.Storage.Beam.BeamFlow
 import qualified Lib.Payment.Storage.Beam.PaymentOrder as BeamPO
-import Lib.Payment.Storage.Tabular.PaymentOrder hiding (parsePaymentLinks)
+import qualified Sequelize as Se
 
-findById :: Transactionable m => Id DOrder.PaymentOrder -> m (Maybe DOrder.PaymentOrder)
-findById = Esq.findById
+findById :: BeamFlow m => Id DOrder.PaymentOrder -> m (Maybe DOrder.PaymentOrder)
+findById (Id paymentOrder) = findOneWithKV [Se.Is BeamPO.id $ Se.Eq paymentOrder]
 
-findByShortId :: Transactionable m => ShortId DOrder.PaymentOrder -> m (Maybe DOrder.PaymentOrder)
-findByShortId shortId =
-  findOne $ do
-    order <- from $ table @PaymentOrderT
-    where_ $ order ^. PaymentOrderShortId ==. val (getShortId shortId)
-    return order
+findByShortId :: BeamFlow m => ShortId DOrder.PaymentOrder -> m (Maybe DOrder.PaymentOrder)
+findByShortId (ShortId shortId) = findOneWithKV [Se.Is BeamPO.shortId $ Se.Eq shortId]
 
-findLatestByPersonId :: Transactionable m => Text -> m (Maybe DOrder.PaymentOrder)
-findLatestByPersonId personId =
-  findOne $ do
-    order <- from $ table @PaymentOrderT
-    where_ $ order ^. PaymentOrderPersonId ==. val personId
-    orderBy [desc $ order ^. PaymentOrderCreatedAt]
-    limit 1
-    return order
+findLatestByPersonId :: BeamFlow m => Text -> m (Maybe DOrder.PaymentOrder)
+findLatestByPersonId personId = findAllWithOptionsKV [Se.Is BeamPO.personId $ Se.Eq personId] (Se.Desc BeamPO.createdAt) (Just 1) Nothing <&> listToMaybe
 
-create :: DOrder.PaymentOrder -> SqlDB ()
-create = Esq.create
+create :: BeamFlow m => DOrder.PaymentOrder -> m ()
+create = createWithKV
 
-updateStatusAndError :: DOrder.PaymentOrder -> Maybe Text -> Maybe Text -> SqlDB ()
+updateStatusAndError :: BeamFlow m => DOrder.PaymentOrder -> Maybe Text -> Maybe Text -> m ()
 updateStatusAndError order bankErrorMessage bankErrorCode = do
   now <- getCurrentTime
-  Esq.update $ \tbl -> do
-    set
-      tbl
-      [ PaymentOrderStatus =. val order.status,
-        PaymentOrderBankErrorMessage =. val bankErrorMessage,
-        PaymentOrderBankErrorCode =. val bankErrorCode,
-        PaymentOrderUpdatedAt =. val now
-      ]
-    where_ $ tbl ^. PaymentOrderId ==. val order.id.getId
+  updateWithKV
+    [ Se.Set BeamPO.status order.status,
+      Se.Set BeamPO.bankErrorMessage bankErrorMessage,
+      Se.Set BeamPO.bankErrorCode bankErrorCode,
+      Se.Set BeamPO.updatedAt now
+    ]
+    [Se.Is BeamPO.id $ Se.Eq $ getId order.id]
 
-updateStatusToExpired :: Id DOrder.PaymentOrder -> SqlDB ()
+updateStatusToExpired :: BeamFlow m => Id DOrder.PaymentOrder -> m ()
 updateStatusToExpired orderId = do
   now <- getCurrentTime
-  Esq.update $ \tbl -> do
-    set
-      tbl
-      [ PaymentOrderStatus =. val Payment.CLIENT_AUTH_TOKEN_EXPIRED,
-        PaymentOrderUpdatedAt =. val now
-      ]
-    where_ $ tbl ^. PaymentOrderId ==. val orderId.getId
+  updateWithKV
+    [ Se.Set BeamPO.status Payment.CLIENT_AUTH_TOKEN_EXPIRED,
+      Se.Set BeamPO.updatedAt now
+    ]
+    [Se.Is BeamPO.id $ Se.Eq $ getId orderId]
 
-updateStatus :: Id DOrder.PaymentOrder -> Text -> Payment.TransactionStatus -> SqlDB ()
+updateStatus :: BeamFlow m => Id DOrder.PaymentOrder -> Text -> Payment.TransactionStatus -> m ()
 updateStatus orderId paymentServiceOrderId status = do
   now <- getCurrentTime
   mOrder <- findById orderId
   let newStatus = maybe status (\order -> if order.status == Payment.CHARGED then order.status else status) mOrder -- don't change if status is already charged
-  Esq.update $ \tbl -> do
-    set
-      tbl
-      [ PaymentOrderStatus =. val newStatus,
-        PaymentOrderPaymentServiceOrderId =. val paymentServiceOrderId,
-        PaymentOrderUpdatedAt =. val now
-      ]
-    where_ $ tbl ^. PaymentOrderId ==. val orderId.getId
+  updateWithKV
+    [ Se.Set BeamPO.status newStatus,
+      Se.Set BeamPO.paymentServiceOrderId paymentServiceOrderId,
+      Se.Set BeamPO.updatedAt now
+    ]
+    [Se.Is BeamPO.id $ Se.Eq $ getId orderId]
 
 instance FromTType' BeamPO.PaymentOrder DOrder.PaymentOrder where
   fromTType' orderT@BeamPO.PaymentOrderT {..} = do
