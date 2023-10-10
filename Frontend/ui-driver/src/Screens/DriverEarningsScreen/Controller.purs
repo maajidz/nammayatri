@@ -47,10 +47,10 @@ import Resource.Constants (decodeAddress, tripDatesCount)
 import Components.PrimaryButton as PrimaryButtonController
 import Screens (ScreenName(..), getScreen)
 import Screens.Types
-import Services.API (RidesInfo(..), Status(..))
+import Services.API (RidesInfo(..), Status(..),  DriverProfileSummaryRes(..))
 import Storage (KeyStore(..), getValueToLocalNativeStore, setValueToLocalNativeStore)
 import Styles.Colors as Color
-import Debug (spy)
+import Debug
 
 instance showAction :: Show Action where
   show _ = ""
@@ -102,9 +102,10 @@ data Action = Dummy
             | BottomNavBarAction BottomNavBar.Action
             -- | IndividualRideCardAction IndividualRideCardController.Action
             | RideHistoryAPIResponseAction (Array RidesInfo)
+            | DriverSummary DriverProfileSummaryRes
             -- | Loader
             -- | Scroll String
-            -- | ErrorModalActionController ErrorModalController.Action
+            | ErrorModalActionController ErrorModalController.Action
             -- | NoAction
             | AfterRender
             -- | ScrollStateChanged ScrollState
@@ -125,7 +126,10 @@ eval (ChangeTab subView') state = continue state{props{subView = subView', selec
 
 eval (BarViewSelected index) state = continue state{props{selectedBarIndex = index}}
 
-
+eval (DriverSummary response) state = do
+  let (DriverProfileSummaryRes resp) = response
+  let anyRidesAssignedEver = if resp.totalRidesAssigned > 0 then true else false
+  continue state{data{anyRidesAssignedEver = anyRidesAssignedEver}}
 
 
 -- eval (OnFadeComplete _ ) state = if (not state.recievedResponse) then continue state else
@@ -175,7 +179,6 @@ eval (BarViewSelected index) state = continue state{props{selectedBarIndex = ind
 --   exit $ LoaderOutput state{loaderButtonVisibility = false}
 
 eval (RideHistoryAPIResponseAction rideList) state = do
-  _ <- pure $ spy "Aryan -> Ride List" rideList
   let coinHistoryItemsList = (coinHistoryItemsListTransformer rideList)
   continue $ state {data{earningHistoryItems = coinHistoryItemsList}}
 

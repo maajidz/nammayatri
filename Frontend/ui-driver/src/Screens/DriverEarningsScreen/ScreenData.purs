@@ -104,7 +104,8 @@ initData = {
       }
     ],
     weeklyEarningData : [50.0,20.0,30.0,1.0,50.0,60.0,10.0],
-    tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"]
+    tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"],
+    anyRidesAssignedEver : true
   }
   , props : {
     subView : EARNINGS_VIEW,

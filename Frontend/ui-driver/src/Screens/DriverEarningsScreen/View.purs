@@ -35,8 +35,9 @@ import Components.PaymentHistoryModel as PaymentHistoryModel
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Trans.Class (lift)
 import Control.Transformers.Back.Trans (runBackT)
-import Data.Array (length, (..), foldl)
+import Data.Array (length, (..), foldl, filter)
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Function.Uncurried (runFn1)
 import Data.Int (ceil, floor)
 import Data.Maybe 
@@ -46,8 +47,8 @@ import Effect.Aff (launchAff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (runEffectFn2, runEffectFn3)
 import Engineering.Helpers.BackTrack (liftFlowBT)
-import Engineering.Helpers.Commons (flowRunner, getDateFromObj, getFormattedDate, getNewIDWithTag)
-import Engineering.Helpers.Commons (safeMarginBottom, screenWidth)
+import Engineering.Helpers.Commons (flowRunner, getDateFromObj, getFormattedDate, getNewIDWithTag, screenHeight)
+import Engineering.Helpers.Commons (safeMarginBottom, screenWidth, liftFlow)
 import Font.Size as FontSize
 import Font.Style as FontStyle
 import Helpers.Utils (getcurrentdate, getPastDays, convertUTCtoISC)
@@ -56,7 +57,7 @@ import Language.Strings (getString)
 import Language.Types (STR(..))
 import Prelude (Unit, ($), (<$>), const, (==), (<<<), bind, pure, unit, discard, show, not, map, (&&), ($), (<$>), (<>), (<<<), (==), (/), (>), (-), (/=), (||), (*), max, (<), (+))
 import Presto.Core.Types.Language.Flow (doAff)
-import Services.API (GetRidesHistoryResp(..), Status(..))
+import Services.API (GetRidesHistoryResp(..), Status(..), DriverProfileSummaryRes(..))
 import PrestoDOM (scrollView, frameLayout, layoutGravity, Gravity(..), Length(..), Margin(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), afterRender, alignParentBottom, background, calendar, clickable, color, cornerRadius, fontSize, fontStyle, gravity, height, horizontalScrollView, id, imageView, imageWithFallback, linearLayout, margin, onAnimationEnd, onBackPressed, onClick, onRefresh, onScroll, onScrollStateChange, orientation, padding, relativeLayout, scrollBarX, scrollBarY, stroke, swipeRefreshLayout, text, textSize, textView, visibility, weight, width, alpha)
 import PrestoDOM.Animation as PrestoAnim
 import PrestoDOM.Elements.Keyed as Keyed
@@ -87,10 +88,14 @@ screen initialState =
     globalOnScroll "DriverEarningsScreen",
         ( \push -> do
             _ <- launchAff $ flowRunner defaultGlobalState $ runExceptT $ runBackT $ do
-              let date = if initialState.datePickerState.selectedItem.date == 0 then (spy "printing date" (getcurrentdate "")) else (convertUTCtoISC initialState.datePickerState.selectedItem.utcDate "YYYY-MM-DD" )
+              let date = if initialState.datePickerState.selectedItem.date == 0 then getcurrentdate "" else (convertUTCtoISC initialState.datePickerState.selectedItem.utcDate "YYYY-MM-DD" )
               (GetRidesHistoryResp rideHistoryResponse) <- Remote.getRideHistoryReqBT "100" "0" "false" "null" date
-              _ <- pure $ spy "printing rideHistoryResponse" rideHistoryResponse
               lift $ lift $ doAff do liftEffect $ push $ RideHistoryAPIResponseAction rideHistoryResponse.list
+              (summaryResponse) <- lift $ lift $ Remote.driverProfileSummary ""
+              case summaryResponse of 
+                Right (DriverProfileSummaryRes summaryResp) -> do
+                  lift $ lift $ doAff $ liftEffect $ push $ DriverSummary (DriverProfileSummaryRes summaryResp)
+                _ -> pure unit
             pure $ pure unit
         )
   ]
@@ -176,13 +181,13 @@ earningsView push state =
   linearLayout
     [ height MATCH_PARENT
     , width MATCH_PARENT
-    -- , background Color.white900
     , orientation VERTICAL
     , onBackPressed push (const BackPressed)
     , afterRender push (const AfterRender)
-    ] [ totalEarningsView push state
-      , transactionView push state
-    ]
+    ] (if state.data.anyRidesAssignedEver then 
+    [ totalEarningsView push state 
+    , transactionView push state
+    ] else [noRideHistoryView push state])
 
 yatriCoinsView :: forall w . (Action -> Effect Unit) -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w
 yatriCoinsView push state = 
@@ -311,7 +316,7 @@ barGraphView push state =
   , background Color.white900
   , orientation HORIZONTAL
   , gravity BOTTOM
-  ]  (DA.mapWithIndex(\ index item  ->  (barView push index item state)) (spy "printing max value" (getweeklyEarningData state.data.weeklyEarningData)))
+  ]  (DA.mapWithIndex(\ index item  ->  (barView push index item state)) (getweeklyEarningData state.data.weeklyEarningData))
 
 barView :: forall w. (Action -> Effect Unit) -> Int -> Number -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w 
 barView push index length state = 
@@ -656,7 +661,8 @@ historyView push state =
           , margin $ MarginRight 8
           ] <> FontStyle.paragraphText TypoGraphy      
         , textView $ [
-            text $ show (length state.data.earningHistoryItems)
+            -- text $ show (length state.data.earningHistoryItems)
+            text $ show (length (filter (\item -> item.status == Just "COMPLETED") state.data.earningHistoryItems))
           , color Color.black800 
           , weight 1.0
           , visibility if state.props.subView == ST.EARNINGS_VIEW then VISIBLE else GONE 
@@ -967,3 +973,14 @@ radioView isActive =
           ]
       ]
   ]
+
+noRideHistoryView :: forall w . (Action -> Effect Unit) -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w
+noRideHistoryView push state = 
+    linearLayout
+    [ height $ V (screenHeight unit)
+    , width MATCH_PARENT
+    -- , layoutGravity "center_vertical"
+    , gravity CENTER
+    , background Color.red
+    , padding (PaddingBottom safeMarginBottom)
+    ][  ErrorModal.view (push <<< ErrorModalActionController) (errorModalConfig state)]

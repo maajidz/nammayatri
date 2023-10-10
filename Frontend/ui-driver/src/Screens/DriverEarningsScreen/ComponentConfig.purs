@@ -69,3 +69,29 @@ genericHeaderConfig state = let
         visibility = GONE }
     }
   in genericHeaderConfig'
+
+
+errorModalConfig :: ST.DriverEarningsScreenState -> ErrorModal.Config 
+errorModalConfig state = let 
+  config = ErrorModal.config 
+  errorModalConfig' = config 
+    { imageConfig {
+        imageUrl = "ny_ic_no_rides_history," <> (getCommonAssetStoreLink FunctionCall) <> "ny_ic_no_rides_history.png"
+      , height = V 110
+      , width = V 124
+      , margin = (MarginBottom 61)
+      }
+    , errorConfig {
+        text = "No ride history available"
+      , margin = (MarginBottom 7)  
+      , color = Color.black900
+      }
+    , errorDescriptionConfig {
+        text = "You haven't completed a ride yet"
+      , color = Color.black700
+      }
+    , buttonConfig {
+      visibility  = GONE
+      }
+    }
+  in errorModalConfig' 

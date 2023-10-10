@@ -1752,7 +1752,8 @@ type DriverEarningsScreenData = {
   usageHistoryItems :: Array CoinHistoryItem,
   planItems :: Array CoinPlanItem,
   weeklyEarningData :: Array Number,
-  tagImages :: Array String
+  tagImages :: Array String,
+  anyRidesAssignedEver :: Boolean
 }
 type DriverEarningsScreenProps = {
   subView :: DriverEarningsSubView,
