@@ -15,14 +15,18 @@
 
 module Screens.HomeScreen.View where
 
+import Screens.RideBookingFlow.HomeScreen.Config
+
 import Accessor (_lat, _lon, _selectedQuotes, _fareProductType)
 import Animation (fadeOut, translateYAnimFromTop, scaleAnim, translateYAnimFromTopWithAlpha, fadeIn)
 import Animation.Config (Direction(..), translateFullYAnimWithDurationConfig, translateYAnimHomeConfig)
+import Animation.Config (zoomLevel)
 import Common.Types.App (LazyCheck(..))
 import Components.Banner.Controller as BannerConfig
 import Components.Banner.View as Banner
 import Components.ChatView as ChatView
 import Components.ChooseYourRide as ChooseYourRide
+import Components.CommonComponentConfig as CommonComponentConfig
 import Components.DriverInfoCard as DriverInfoCard
 import Components.EmergencyHelp as EmergencyHelp
 import Components.ErrorModal as ErrorModal
@@ -31,13 +35,13 @@ import Components.LocationListItem.View as LocationListItem
 import Components.LocationTagBar as LocationTagBar
 import Components.MenuButton as MenuButton
 import Components.PopUpModal as PopUpModal
-import Components.RideCompletedCard as RideCompletedCard
 import Components.PricingTutorialModel as PricingTutorialModel
 import Components.PrimaryButton as PrimaryButton
 import Components.QuoteListModel.View as QuoteListModel
 import Components.RateCard as RateCard
 import Components.RatingCard as RatingCard
 import Components.RequestInfoCard as RequestInfoCard
+import Components.RideCompletedCard as RideCompletedCard
 import Components.SaveFavouriteCard as SaveFavouriteCard
 import Components.SearchLocationModel as SearchLocationModel
 import Components.SelectListModal as CancelRidePopUp
@@ -47,22 +51,26 @@ import Control.Monad.Trans.Class (lift)
 import Control.Transformers.Back.Trans (runBackT)
 import Data.Array (any, length, mapWithIndex, null, (!!), head)
 import Data.Either (Either(..))
+import Data.Function.Uncurried (runFn1)
 import Data.Int (toNumber, fromString, ceil, floor)
 import Data.Lens ((^.))
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Number as NUM
+import Data.String as DS
 import Data.Time.Duration (Milliseconds(..))
 import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff)
 import Effect.Class (liftEffect)
+import Effect.Uncurried (runEffectFn6)
 import Engineering.Helpers.Commons (countDown, flowRunner, getNewIDWithTag, liftFlow, os, safeMarginBottom, safeMarginTop, screenHeight, isPreviousVersion, screenWidth, camelCaseToSentenceCase)
-import Engineering.Helpers.Utils (showAndHideLoader)
 import Engineering.Helpers.LogEvent (logEvent)
+import Engineering.Helpers.Utils (showAndHideLoader)
 import Font.Size as FontSize
 import Font.Style as FontStyle
+import Halogen.VDom.DOM.Prop (Prop)
 import Helpers.Utils (decodeError, fetchAndUpdateCurrentLocation, getCurrentLocationMarker, getLocationName, getNewTrackingId, getPreviousVersion, parseFloat, storeCallBackCustomer, storeCallBackLocateOnMap, storeOnResumeCallback, toString, getCommonAssetStoreLink, getAssetStoreLink, getAssetsBaseUrl, getSearchType)
-import JBridge (addMarker, animateCamera, drawRoute, enableMyLocation, firebaseLogEvent, getCurrentPosition, getHeightFromPercent, isCoordOnPath, isInternetAvailable, removeAllPolylines, removeMarker, requestKeyboardShow, showMap, startLottieProcess, toast, updateRoute, getExtendedPath, generateSessionId, initialWebViewSetUp, stopChatListenerService, startChatListenerService, startTimerWithTime, storeCallBackMessageUpdated, isMockLocation, storeCallBackOpenChatScreen, scrollOnResume, waitingCountdownTimer, lottieAnimationConfig, getLayoutBounds, startTimerWithTime)
+import JBridge (UpdateRouteMarker, addMarker, animateCamera, drawRoute, enableMyLocation, firebaseLogEvent, generateSessionId, getCurrentPosition, getExtendedPath, getHeightFromPercent, getLayoutBounds, initialWebViewSetUp, isCoordOnPath, isInternetAvailable, isMockLocation, lottieAnimationConfig, removeAllPolylines, removeMarker, requestKeyboardShow, scrollOnResume, showMap, startChatListenerService, startLottieProcess, startTimerWithTime, stopChatListenerService, storeCallBackMessageUpdated, storeCallBackOpenChatScreen, toast, updateRoute, waitingCountdownTimer, UpdateRouteConfig, Locations, MapRouteConfig)
 import Language.Strings (getString)
 import Language.Types (STR(..))
 import Log (printLog)
@@ -79,7 +87,6 @@ import Screens.AddNewAddressScreen.Controller as AddNewAddress
 import Screens.HomeScreen.Controller (Action(..), ScreenOutput, checkCurrentLocation, checkSavedLocations, dummySelectedQuotes, eval, flowWithoutOffers, getCurrentCustomerLocation)
 import Screens.HomeScreen.ScreenData as HomeScreenData
 import Screens.HomeScreen.Transformer (transformSavedLocations)
-import Screens.RideBookingFlow.HomeScreen.Config
 import Screens.Types (HomeScreenState, LocationListItemState, PopupType(..), SearchLocationModelType(..), Stage(..), CallType(..), ZoneType(..), SearchResultType(..))
 import Services.API (GetDriverLocationResp(..), GetQuotesRes(..), GetRouteResp(..), LatLong(..), RideAPIEntity(..), RideBookingRes(..), Route(..), SavedLocationsListRes(..), SearchReqLocationAPIEntity(..), SelectListRes(..), Snapped(..), GetPlaceNameResp(..), PlaceName(..))
 import Services.Backend (getDriverLocation, getQuotes, getRoute, makeGetRouteReq, rideBooking, selectList, driverTracking, rideTracking, walkCoordinates, walkCoordinate, getSavedLocationList)
@@ -87,14 +94,16 @@ import Services.Backend as Remote
 import Storage (KeyStore(..), getValueToLocalStore, isLocalStageOn, setValueToLocalStore, updateLocalStage)
 import Styles.Colors as Color
 import Types.App (GlobalState, defaultGlobalState)
-import Halogen.VDom.DOM.Prop (Prop)
-import Data.String as DS
-import Data.Function.Uncurried (runFn1)
-import Effect.Uncurried (runEffectFn6)
-import Components.CommonComponentConfig as CommonComponentConfig
-import Animation.Config (zoomLevel)
 
-
+updateRouteConfig :: Locations -> String -> String -> String -> MapRouteConfig -> Number -> UpdateRouteConfig
+updateRouteConfig json destMarker eta srcMarker specialLocation zoomLevel = {
+    json : json
+  , destMarker : destMarker
+  , eta : eta
+  , srcMarker : srcMarker
+  , specialLocation : specialLocation
+  , zoomLevel : zoomLevel
+}
 screen :: HomeScreenState -> Screen Action HomeScreenState ScreenOutput
 screen initialState =
   { initialState
@@ -2013,7 +2022,7 @@ driverLocationTracking push action driverArrivedAction updateState duration trac
                                                     specialLocationConfig "" sourceSpecialTagIcon
                                                   else
                                                     specialLocationConfig "" destSpecialTagIcon
-                        liftFlow $ runEffectFn6 updateRoute newPoints markers.destMarker (metersToKm locationResp.distance state) markers.srcMarker specialLocationTag zoomLevel
+                        liftFlow $ updateRoute (updateRouteConfig newPoints markers.destMarker (metersToKm locationResp.distance state) markers.srcMarker specialLocationTag zoomLevel)
                         _ <- doAff do liftEffect $ push $ updateState locationResp.eta locationResp.distance
                         void $ delay $ Milliseconds duration
                         driverLocationTracking push action driverArrivedAction updateState duration trackingId state routeState

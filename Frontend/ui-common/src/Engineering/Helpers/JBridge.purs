@@ -115,7 +115,7 @@ foreign import copyToClipboard :: String -> Unit
 foreign import drawRoute :: Locations -> String -> String -> Boolean -> String -> String -> Int -> String -> String -> String -> MapRouteConfig -> Effect Unit
 foreign import updateRouteMarker :: UpdateRouteMarker -> Effect Unit
 foreign import isCoordOnPath :: Locations -> Number -> Number -> Int -> Effect IsLocationOnPath
-foreign import updateRoute :: EffectFn6 Locations String String String MapRouteConfig Number Unit
+foreign import updateRoute :: UpdateRouteConfig -> Effect Unit
 -- -- foreign import drawActualRoute :: String -> String -> Locations -> Effect Int
 -- -- foreign import showAndDrawRoute :: String -> String -> String -> Locations -> Effect Int
 -- foreign import addMarkers :: Markers -> Effect Unit
@@ -363,6 +363,24 @@ setEnvInNativeSharedPrefKeys key val = liftFlow (setEnvInNativeSharedPrefKeysImp
 
 type Locations = {
     points :: Coordinates
+}
+
+type UpdateRouteConfig = {
+    json :: Locations
+  , destMarker :: String
+  , eta :: String
+  , srcMarker :: String
+  , specialLocation :: MapRouteConfig
+  , zoomLevel :: Number
+}
+
+updateRouteConfig = {
+    json : ""
+  , destMarker : ""
+  , eta : ""
+  , srcMarker : ""
+  , specialLocation : ""
+  , zoomLevel : 17.0
 }
 
 type MapRouteConfig = {

@@ -600,14 +600,12 @@ export const updateRouteMarker = function (data) {
   }
 }
 
-export const updateRoute = (data, destMarker, eta, srcMarker, specialLocation, zoomLevel) => {
-    if (window.JBridge.updateRoute) {
-      var json = JSON.stringify(data);
+export const updateRoute = (configObj) => {
+  if (window.JBridge.updateRoute) {
     try{
-        var payload = {"data":json, "destMarker": destMarker, "eta": eta, "srcMarker": srcMarker, "specialLocation": JSON.stringify(specialLocation), "zoomLevel": zoomLevel }
-        return window.JBridge.updateRoute(JSON.stringify(payload));
-    } catch(err){
-        return window.JBridge.updateRoute(json, destMarker, eta, srcMarker, JSON.stringify(specialLocation), zoomLevel);
+          return window.JBridge.updateRoute(JSON.stringify(configObj));
+      } catch(err){
+          return window.JBridge.updateRoute(configObj.json, configObj.destMarker, configObj.eta, configObj.srcMarker, JSON.stringify(configObj.specialLocation), configObj.zoomLevel);
     }
   }
 };

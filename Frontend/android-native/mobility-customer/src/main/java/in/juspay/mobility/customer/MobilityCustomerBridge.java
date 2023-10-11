@@ -338,7 +338,7 @@ public class MobilityCustomerBridge extends MobilityCommonBridge {
                     String eta = payload.optString("eta", "");
                     String src = payload.optString("srcMarker", "");
                     String specialLocation = payload.optString("specialLocation", "");
-                    float zoomLevel = payload.optFloat("zoomLevel", 17.0);
+                    float zoomLevel = (float)payload.optDouble("zoomLevel", 17.0);
                     ArrayList<LatLng> path = new ArrayList<>();
                     JSONObject jsonObject = new JSONObject(json);
                     JSONArray coordinates = jsonObject.getJSONArray("points");
@@ -537,7 +537,7 @@ public class MobilityCustomerBridge extends MobilityCommonBridge {
             String lon = payload.optString("lon", "0.0");
             String geoJson = payload.optString("geoJson", "");
             String points = payload.optString("points", "[]");
-            float zoomLevel = payload.optFloat("zoomLevel", 17.0);
+            float zoomLevel = (float)payload.optDouble("zoomLevel", 17.0);
 
             if (geoJson.equals("") || points.equals("[]")){
                 locateOnMap(goToCurrentLocation,lat,lon,zoomLevel);
