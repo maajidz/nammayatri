@@ -31,8 +31,6 @@ library
       Lib.Payment.Storage.Beam.PaymentTransaction
       Lib.Payment.Storage.Queries.PaymentOrder
       Lib.Payment.Storage.Queries.PaymentTransaction
-      Lib.Payment.Storage.Tabular.PaymentOrder
-      Lib.Payment.Storage.Tabular.PaymentTransaction
   other-modules:
       Paths_payment
   hs-source-dirs:

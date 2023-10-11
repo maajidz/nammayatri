@@ -17,12 +17,10 @@
 module Lib.Payment.Storage.Beam.PaymentOrder where
 
 import qualified Database.Beam as B
-import Database.Beam.MySQL ()
-import GHC.Generics (Generic)
 import Kernel.Beam.Lib.UtilsTH
 import Kernel.External.Encryption (DbHash)
 import qualified Kernel.External.Payment.Interface as Payment
-import Kernel.Prelude hiding (Generic)
+import Kernel.Prelude
 import Kernel.Types.Common hiding (id)
 import qualified Lib.Payment.Domain.Types.PaymentOrder ()
 
@@ -69,6 +67,6 @@ instance B.Table PaymentOrderT where
 
 type PaymentOrder = PaymentOrderT Identity
 
-$(enableKVPG ''PaymentOrderT ['id] [])
+$(enableKVPG ''PaymentOrderT ['id] [['shortId], ['personId]])
 
 $(mkTableInstancesGenericSchema ''PaymentOrderT "payment_order")

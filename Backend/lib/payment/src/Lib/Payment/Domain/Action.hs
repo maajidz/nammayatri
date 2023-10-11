@@ -298,7 +298,6 @@ updateOrderTransaction order resp respDump = do
   case mbTransaction of
     Nothing -> do
       transaction <- buildPaymentTransaction order resp respDump
-      -- Esq.runTransaction $ do
       QTransaction.create transaction
       when (order.status /= updOrder.status && order.status /= Payment.CHARGED) $ QOrder.updateStatusAndError updOrder errorMessage errorCode
     Just transaction -> do

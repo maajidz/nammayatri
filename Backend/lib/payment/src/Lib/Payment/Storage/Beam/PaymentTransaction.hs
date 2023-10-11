@@ -17,11 +17,9 @@
 module Lib.Payment.Storage.Beam.PaymentTransaction where
 
 import qualified Database.Beam as B
-import Database.Beam.MySQL ()
-import GHC.Generics (Generic)
 import Kernel.Beam.Lib.UtilsTH
 import qualified Kernel.External.Payment.Interface as Payment
-import Kernel.Prelude hiding (Generic)
+import Kernel.Prelude
 import Kernel.Types.Common hiding (id)
 
 data PaymentTransactionT f = PaymentTransactionT
@@ -61,6 +59,6 @@ instance B.Table PaymentTransactionT where
 
 type PaymentTransaction = PaymentTransactionT Identity
 
-$(enableKVPG ''PaymentTransactionT ['id] [])
+$(enableKVPG ''PaymentTransactionT ['id] [['txnUUID], ['orderId]])
 
 $(mkTableInstancesGenericSchema ''PaymentTransactionT "payment_transaction")
