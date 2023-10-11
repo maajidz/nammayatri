@@ -43,7 +43,9 @@ import Components.QuoteListModel.Controller as QuoteListModelController
 import Components.QuoteListModel.View (dummyQuoteList)
 import Components.RateCard as RateCard
 import Components.RatingCard as RatingCard
+import Components.RentalFareBreakupScreen.Controller as RentalFareBreakupController
 import Components.RequestInfoCard as RequestInfoCard
+import Components.RentalScheduleRide.Controller as RentalScheduleRideController
 import Components.SaveFavouriteCard as SaveFavouriteCardController
 import Components.SavedLocationCard.Controller as SavedLocationCardController
 import Components.SearchLocationModel.Controller as SearchLocationModelController
@@ -103,7 +105,7 @@ import Effect.Class (liftEffect)
 import Screens.HomeScreen.ScreenData as HomeScreenData
 import Types.App (defaultGlobalState)
 import Screens.RideBookingFlow.HomeScreen.Config (setTipViewData, reportIssueOptions)
-import Screens.Types (TipViewData(..) , TipViewProps(..), RateCardDetails, PermissionScreenStage(..))
+import Screens.Types (TipViewData(..) , TipViewProps(..), RateCardDetails, PermissionScreenStage(..), RentalStage(..))
 import Engineering.Helpers.Suggestions (getMessageFromKey, getSuggestionsfromKey)
 import PrestoDOM.Properties (sheetState) as PP
 import Screens.RideBookingFlow.HomeScreen.Config(reportIssueOptions)
@@ -515,6 +517,9 @@ data ScreenOutput = LogoutUser
                   | RetryFindingQuotes Boolean HomeScreenState
                   | ReportIssue HomeScreenState
                   | RideDetailsScreen HomeScreenState
+                  | RentalSlabScreen HomeScreenState
+                  | RentalFareBreakupScreen HomeScreenState
+                  | RentalScheduleRideScreen HomeScreenState
 
 data Action = NoAction
             | BackPressed
@@ -623,9 +628,39 @@ data Action = NoAction
             | DisabilityPopUpAC PopUpModal.Action
             | RideCompletedAC RideCompletedCard.Action
             | NotifyDriverStatusCountDown Int String String String
-
+            | RentalButtonAction PrimaryButtonController.Action
+            | RentalConfirmAndBookAction PrimaryButtonController.Action
+            | RentalFareBreakupActionController RentalFareBreakupController.Action
+            | RentalChooseVehicleAC ChooseVehicleController.Action
+            | RentalScheduleRideAction RentalScheduleRideController.Action
+            | RentalPackageAC
 
 eval :: Action -> HomeScreenState -> Eval Action ScreenOutput HomeScreenState
+
+eval (RentalScheduleRideAction (RentalScheduleRideController.GoBack)) state = do
+  updateAndExit (state) (RentalScheduleRideScreen state)
+
+eval (RentalChooseVehicleAC (ChooseVehicleController.OnSelect config)) state = do
+  -- let updatedState = state{props{rxtalFareBreakupScreen updatedState)
+  let updatedQuotes = map (\item -> item{activeIndex = config.index}) state.data.specialZoneQuoteList
+      newState = state{data{specialZoneQuoteList = updatedQuotes}}
+  continue newState{data{specialZoneSelectedQuote = Just config.id ,specialZoneSelectedVariant = Just config.vehicleVariant }}
+
+eval (RentalConfirmAndBookAction (PrimaryButtonController.OnClick)) state = do
+  let updatedState = state{props{rentalStage = RentalFareBreakup}}
+  updateAndExit (updatedState) (RentalFareBreakupScreen updatedState)
+
+eval (SearchLocationModelActionController (SearchLocationModelController.RentalScheduleAction)) state = do 
+  let updatedState = state{props{rentalStage = RentalScheduleRide}}
+  updateAndExit (updatedState) (RentalScheduleRideScreen updatedState)
+
+eval (RentalFareBreakupActionController (RentalFareBreakupController.GoBack)) state = do
+  _ <- pure $ performHapticFeedback unit
+  continueWithCmd state
+    [ do
+        _ <- pure $ hideKeyboardOnNavigation true
+        pure $ BackPressed
+    ]
 
 eval SearchForSelectedLocation state = do
   let currentStage = if state.props.searchAfterEstimate then TryAgain else FindingEstimate
@@ -815,6 +850,10 @@ eval BackPressed state = do
   _ <- pure $ toggleBtnLoader "" false
   case state.props.currentStage of
     SearchLocationModel -> do
+                            _ <- case state.props.rentalStage of
+                              RentalSearchLocation -> continue state{props{rentalStage = NotRental}}
+                              RentalSlab -> continue state{props{rentalStage = RentalSearchLocation}}
+                              _ -> continue state
                             if state.props.isSaveFavourite then continueWithCmd state [pure $ (SaveFavouriteCardAction (SaveFavouriteCardController.OnClose))]
                               else do
                                 if state.props.isSearchLocation == LocateOnMap then do
@@ -1052,8 +1091,46 @@ eval (SettingSideBarActionController (SettingSideBarController.LiveStatsDashboar
 eval (SearchLocationModelActionController (SearchLocationModelController.PrimaryButtonActionController PrimaryButtonController.OnClick)) state = do
   _ <- pure $ performHapticFeedback unit
   _ <- pure $ exitLocateOnMap ""
-  let newState = state{props{isSource = Just false, sourceSelectedOnMap = if (state.props.isSource == Just true) then true else state.props.sourceSelectedOnMap, isSearchLocation = SearchLocation, currentStage = SearchLocationModel, locateOnMap = false}}
-  updateAndExit newState $ LocationSelected (fromMaybe dummyListItem state.data.selectedLocationListItem) false newState
+  let updatedState = state{data{
+    specialZoneQuoteList = if(state.props.rentalStage == RentalSearchLocation) then [ {
+            activeIndex: 0
+          , basePrice: 254
+          , capacity: "Economical, 4 people"
+          , id: "d1b6e3e0-6075-49f1-abb9-28bfb1a4b353"
+          , index: 0
+          , isBookingOption: false
+          , isCheckBox: false
+          , isEnabled: true
+          , isSelected: false
+          , maxPrice: 123
+          , price: "₹254"
+          , searchResultType: ChooseVehicleController.QUOTES
+          , showInfo: false
+          , vehicleImage: "ny_ic_taxi_side,https://assets.juspay.in/beckn/jatrisaathi/jatrisaathicommon/images/ny_ic_taxi_side.png"
+          , vehicleType: ""
+          , vehicleVariant: "TAXI"
+          },
+          {
+            activeIndex: 0
+          , basePrice: 292
+          , capacity: "Comfy, 4 people"
+          , id: "cd47110c-a5f4-41a7-bee8-724242850a2d"
+          , index: 1
+          , isBookingOption: false
+          , isCheckBox: false
+          , isEnabled: true
+          , isSelected: false
+          , maxPrice: 123
+          , price: "₹292"
+          , searchResultType: ChooseVehicleController.QUOTES
+          , showInfo: false
+          , vehicleImage: "ny_ic_sedan_ac_side,https://assets.juspay.in/beckn/jatrisaathi/jatrisaathicommon/images/ny_ic_sedan_ac_side.png"
+          , vehicleType: ""
+          , vehicleVariant: "TAXI_PLUS"
+          }
+        ] else []
+  }, props{sourceSelectedOnMap = if (state.props.isSource == Just true) then true else state.props.sourceSelectedOnMap, isSearchLocation = SearchLocation, currentStage = SearchLocationModel, locateOnMap = false, rentalStage = if(state.props.rentalStage /= NotRental) then RentalSlab else NotRental}}
+  if(state.props.rentalStage == RentalSearchLocation) then updateAndExit updatedState $ (RentalSlabScreen updatedState) else updateAndExit updatedState $ LocationSelected (fromMaybe dummyListItem state.data.selectedLocationListItem) false updatedState
 
 eval (PrimaryButtonActionController (PrimaryButtonController.OnClick)) state = do
     _ <- pure $ spy "state homeScreen" state
@@ -1061,15 +1138,15 @@ eval (PrimaryButtonActionController (PrimaryButtonController.OnClick)) state = d
       HomeScreen   -> do
         _ <- pure $ performHapticFeedback unit
         let _ = unsafePerformEffect $ logEvent state.data.logField "ny_user_where_to_btn"
-        exit $ UpdateSavedLocation state{props{isSource = Just false, isSearchLocation = SearchLocation, currentStage = SearchLocationModel}, data{source=(getString CURRENT_LOCATION)}}
+        exit $ UpdateSavedLocation state{props{isSource = Just false, isSearchLocation = SearchLocation, currentStage = SearchLocationModel, rentalStage = NotRental}, data{source=(getString CURRENT_LOCATION)}}
       ConfirmingLocation -> do
         _ <- pure $ performHapticFeedback unit
         _ <- pure $ exitLocateOnMap ""
         _ <- pure $ updateLocalStage FindingEstimate
         let _ = unsafePerformEffect $ logEvent state.data.logField "ny_user_confirm_pickup"
-        let updatedState = state{props{currentStage = FindingEstimate, locateOnMap = false}}
+        let updatedState = state{props{currentStage = if(state.props.rentalStage == RentalSearchLocation) then SearchLocationModel else FindingEstimate, locateOnMap = false, isSource = Nothing}}
         -- updateAndExit (updatedState) (UpdatedSource updatedState)
-        updateAndExit updatedState $  (UpdatedSource updatedState)
+        updateAndExit updatedState $ if(state.props.rentalStage == RentalSearchLocation) then (RentalSlabScreen updatedState) else (UpdatedSource updatedState)
       SettingPrice -> do
                         _ <- pure $ performHapticFeedback unit
                         _ <- pure $ updateLocalStage FindingQuotes
@@ -1077,6 +1154,14 @@ eval (PrimaryButtonActionController (PrimaryButtonController.OnClick)) state = d
                         updateAndExit (updatedState) (GetQuotes updatedState)
       _            -> continue state
 
+eval (RentalButtonAction (PrimaryButtonController.OnClick)) state = do
+  _ <- pure $ spy "state homeScreen" state
+  case state.props.currentStage of
+    _ -> do
+      _ <- pure $ performHapticFeedback unit
+      let _ = unsafePerformEffect $ logEvent state.data.logField "ny_ic_timer_clock"
+      let updatedState = state{props{rentalStage = RentalSearchLocation, isSource = Just false, isSearchLocation = SearchLocation, currentStage = ConfirmingLocation}, data{source=(getString CURRENT_LOCATION)}}
+      updateAndExit updatedState (UpdateSavedLocation updatedState)
 
 eval (RideCompletedAC (RideCompletedCard.SkipButtonActionController (PrimaryButtonController.OnClick))) state =
   case state.data.ratingViewState.issueFacedView of
@@ -1875,8 +1960,8 @@ eval (ChooseYourRideAction (ChooseYourRideController.PrimaryButtonActionControll
     exit $ ConfirmRide state{props{currentStage = ConfirmingRide}}
   else do
     _ <- pure $ updateLocalStage FindingQuotes
-    let updatedState = state{props{currentStage = FindingQuotes, searchExpire = (getSearchExpiryTime "LazyCheck")}}
-    updateAndExit (updatedState) (GetQuotes updatedState)
+    let updatedState = state{props{currentStage = if(state.props.rentalStage /= NotRental) then SearchLocationModel else FindingQuotes, searchExpire = (getSearchExpiryTime "LazyCheck"), rentalStage = if(state.props.rentalStage /= NotRental) then RentalFareBreakup else NotRental}}
+    updateAndExit (updatedState) if(state.props.rentalStage == RentalSlab) then (RentalFareBreakupScreen updatedState) else (GetQuotes updatedState)
 
 eval (ChooseYourRideAction ChooseYourRideController.NoAction) state =
   continue state{ props{ defaultPickUpPoint = "" } }
@@ -1894,6 +1979,8 @@ eval MapReadyAction state = continueWithCmd state [ do
 eval (TriggerPermissionFlow flowType) state = exit $ ExitToPermissionFlow flowType
 
 eval (GenderBannerModal (Banner.OnClick)) state = exit $ GoToMyProfile state true
+
+eval RentalPackageAC state = continue state{props{showRentalPackagePopup = true}}
 
 eval _ state = continue state
 

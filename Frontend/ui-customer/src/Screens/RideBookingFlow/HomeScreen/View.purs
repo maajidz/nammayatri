@@ -23,6 +23,8 @@ import Components.Banner.Controller as BannerConfig
 import Components.Banner.View as Banner
 import Components.ChatView as ChatView
 import Components.ChooseYourRide as ChooseYourRide
+import Components.ChooseVehicle.View as ChooseVehicle
+import Components.ChooseVehicle.Controller as ChooseVehicleController
 import Components.DriverInfoCard as DriverInfoCard
 import Components.EmergencyHelp as EmergencyHelp
 import Components.ErrorModal as ErrorModal
@@ -37,6 +39,8 @@ import Components.PrimaryButton as PrimaryButton
 import Components.QuoteListModel.View as QuoteListModel
 import Components.RateCard as RateCard
 import Components.RatingCard as RatingCard
+import Components.RentalFareBreakupScreen.View as RentalFareBreakupScreen
+import Components.RentalScheduleRide.View as RentalScheduleRideScreen
 import Components.RequestInfoCard as RequestInfoCard
 import Components.SaveFavouriteCard as SaveFavouriteCard
 import Components.SearchLocationModel as SearchLocationModel
@@ -80,7 +84,7 @@ import Screens.HomeScreen.Controller (Action(..), ScreenOutput, checkCurrentLoca
 import Screens.HomeScreen.ScreenData as HomeScreenData
 import Screens.HomeScreen.Transformer (transformSavedLocations)
 import Screens.RideBookingFlow.HomeScreen.Config
-import Screens.Types (HomeScreenState, LocationListItemState, PopupType(..), SearchLocationModelType(..), Stage(..), CallType(..), ZoneType(..), SearchResultType(..))
+import Screens.Types (RentalStage(..), HomeScreenState, LocationListItemState, PopupType(..), SearchLocationModelType(..), Stage(..), CallType(..), ZoneType(..), SearchResultType(..))
 import Services.API (GetDriverLocationResp(..), GetQuotesRes(..), GetRouteResp(..), LatLong(..), RideAPIEntity(..), RideBookingRes(..), Route(..), SavedLocationsListRes(..), SearchReqLocationAPIEntity(..), SelectListRes(..), Snapped(..), GetPlaceNameResp(..), PlaceName(..))
 import Services.Backend (getDriverLocation, getQuotes, getRoute, makeGetRouteReq, rideBooking, selectList, driverTracking, rideTracking, walkCoordinates, walkCoordinate, getSavedLocationList)
 import Services.Backend as Remote
@@ -345,7 +349,7 @@ view push state =
             , if state.props.currentStage == ChatWithDriver then (chatView push state) else emptyTextView state
             , if ((state.props.currentStage /= RideRating) && (state.props.showlocUnserviceablePopUp || (state.props.isMockLocation && (getMerchant FunctionCall == NAMMAYATRI))) && state.props.currentStage == HomeScreen) then (sourceUnserviceableView push state) else emptyTextView state
             , if state.data.settingSideBar.opened /= SettingSideBar.CLOSED then settingSideBarView push state else emptyTextView state
-            , if (state.props.currentStage == SearchLocationModel || state.props.currentStage == FavouriteLocationModel) then searchLocationView push state else emptyTextView state
+            , if (state.props.rentalStage == RentalSlab) then emptyTextView state else if (state.props.currentStage == SearchLocationModel || state.props.currentStage == FavouriteLocationModel) then searchLocationView push state else emptyTextView state
             , if (any (_ == state.props.currentStage) [ FindingQuotes, QuoteList, TryAgain ]) then (quoteListModelView push state) else emptyTextView state
             , if (state.props.isCancelRide) then (cancelRidePopUpView push state) else emptyTextView state
             , if (state.props.isPopUp /= NoPopUp) then (logOutPopUpView push state) else emptyTextView state
@@ -366,6 +370,11 @@ view push state =
             -- , if state.props.zoneTimerExpired then zoneTimerExpiredView state push else emptyTextView state
             , if state.props.callSupportPopUp then callSupportPopUpView push state else emptyTextView state
             , if state.props.showDisabilityPopUp &&  (getValueToLocalStore DISABILITY_UPDATED == "true") then disabilityPopUpView push state else emptyTextView state
+            -- , if state.props.rentalStage /= NotRental then rentalScreensView push state else emptyTextView state
+            , if state.props.rentalStage == RentalSlab then rentalSlabScreenView push state else emptyTextView state
+            , if state.props.rentalStage == RentalSlab then rentalConfirmAndBookView push state else emptyTextView state
+            , if state.props.rentalStage == RentalFareBreakup then rentalFareBreakupView push state else emptyTextView state
+            , if state.props.showRentalPackagePopup then rentalPackageView push state else emptyTextView state
             ]
         ]
     ] 
@@ -381,6 +390,20 @@ rideCompletedCardView push state =
 disabilityPopUpView :: forall w . (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
 disabilityPopUpView push state = 
   PopUpModal.view (push <<< DisabilityPopUpAC) (CommonComponentConfig.accessibilityPopUpConfig state.data.disability)
+  
+rentalFareBreakupView :: forall w . (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+rentalFareBreakupView push state = 
+  linearLayout [
+    height MATCH_PARENT,
+    width MATCH_PARENT
+  ] [RentalFareBreakupScreen.view (push <<< RentalFareBreakupActionController) $ rentalFareBreakupScreenViewState state]
+
+-- rentalScheduleRideView :: forall w . (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+-- rentalScheduleRideView push state =
+--   linearLayout[
+--     height MATCH_PARENT,
+--     width MATCH_PARENT
+--   ] [RentalScheduleRideScreen.view push $ searchLocationModelViewState state]
 
 callSupportPopUpView :: forall w . (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
 callSupportPopUpView push state =
@@ -586,7 +609,7 @@ searchLocationView push state =
   [ height MATCH_PARENT
   , width MATCH_PARENT
   , background if state.props.currentStage == SearchLocationModel && state.props.isSearchLocation == LocateOnMap then Color.transparent else Color.grey800
-  ] [ if state.props.currentStage == SearchLocationModel then (searchLocationModelView push state) else emptyTextView state
+  ] [ if (state.props.currentStage == SearchLocationModel) then (searchLocationModelView push state) else emptyTextView state
     , if state.props.currentStage == FavouriteLocationModel then (favouriteLocationModel push state) else emptyTextView state
 ]
 
@@ -749,7 +772,7 @@ buttonLayout state push =
         , width MATCH_PARENT
         , alignParentBottom "true,-1"
         , orientation VERTICAL
-        , accessibility if state.props.currentStage == HomeScreen && (not (state.data.settingSideBar.opened /= SettingSideBar.CLOSED )) then DISABLE else DISABLE_DESCENDANT
+        , accessibility if state.props.currentStage == HomeScreen && (state.data.settingSideBar.opened == SettingSideBar.CLOSED ) then DISABLE else DISABLE_DESCENDANT
         ]
         [
           linearLayout
@@ -769,7 +792,9 @@ buttonLayout state push =
             , padding (PaddingTop 16)
             ]
             [ PrimaryButton.view (push <<< PrimaryButtonActionController) (whereToButtonConfig state)
+            , PrimaryButton.view (push <<< RentalButtonAction) (bookARentalButtonConfig state)
             , if (((state.data.savedLocations == []) && state.data.recentSearchs.predictionArray == [] && state.props.isBanner == false && (getValueToLocalStore DISABILITY_UPDATED == "true" && (not state.data.config.showDisabilityBanner ) ) ) || state.props.isSearchLocation == LocateOnMap) then emptyLayout state else recentSearchesAndFavourites state push
+            -- , if (((state.data.savedLocations == []) && state.data.recentSearchs.predictionArray == [] && state.props.isBanner == false) || state.props.isSearchLocation == LocateOnMap) then emptyLayout state else recentSearchesAndFavourites state push
             ]
         ]
 
@@ -879,7 +904,7 @@ settingSideBarView push state =
 homeScreenView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
 homeScreenView push state =
   PrestoAnim.animationSet
-    [ fadeOut (state.props.currentStage == SearchLocationModel)
+    [ fadeOut (state.props.currentStage == SearchLocationModel && state.props.rentalStage == NotRental)
     ]
     $ linearLayout
         [ height WRAP_CONTENT
@@ -1027,7 +1052,7 @@ rideRequestFlowView push state =
     [ height WRAP_CONTENT
     , width MATCH_PARENT
     , cornerRadii $ Corners 24.0 true true false false
-    , visibility if (any (_ == state.props.currentStage) [ SettingPrice, ConfirmingLocation, RideCompleted, FindingEstimate, ConfirmingRide, FindingQuotes, TryAgain, RideRating ]) then VISIBLE else GONE
+    , visibility if (any (_ == state.props.currentStage) [ SettingPrice, ConfirmingLocation, RideCompleted, FindingEstimate, ConfirmingRide, FindingQuotes, TryAgain, RideRating ] || state.props.rentalStage == RentalSlab) then VISIBLE else GONE
     , alignParentBottom "true,-1"
     ]
     [ -- TODO Add Animations
@@ -1534,7 +1559,7 @@ confirmPickUpLocationView push state =
     , disableClickFeedback true
     , background Color.transparent
     , accessibility DISABLE
-    , visibility if state.props.currentStage == ConfirmingLocation then VISIBLE else GONE
+    , visibility if state.props.currentStage == ConfirmingLocation || state.props.rentalStage == RentalSlab then VISIBLE else GONE
     , padding $ PaddingTop 16
     , cornerRadii $ Corners 24.0 true true false false
     , gravity CENTER
@@ -1687,6 +1712,86 @@ searchLocationModelView push state =
     , background if state.props.isRideServiceable then Color.transparent else Color.white900
     ]
     [ SearchLocationModel.view (push <<< SearchLocationModelActionController) $ searchLocationModelViewState state]
+
+------------------------- rentalSlabScreenView ----------------------------
+
+rentalSlabScreenView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+rentalSlabScreenView push state =
+  linearLayout 
+    [ height MATCH_PARENT
+    , width MATCH_PARENT
+    , orientation VERTICAL
+    -- , visibility (if state.props.rentalStage == RentalSlab then VISIBLE else GONE)
+    ] [ SearchLocationModel.view (push <<< SearchLocationModelActionController) $ searchLocationModelViewState state
+    ]
+    
+  
+rentalConfirmAndBookView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+rentalConfirmAndBookView push state = 
+  linearLayout [
+        height WRAP_CONTENT
+      , width MATCH_PARENT
+      , orientation VERTICAL
+      -- , background Color.transparent
+      , alignParentBottom "true,-1"
+      , visibility VISIBLE
+    ] [ linearLayout [ 
+        height WRAP_CONTENT
+      , width MATCH_PARENT
+      , margin (Margin 16 32 16 26)
+      , visibility if(state.props.rentalStage == RentalSlab) then VISIBLE else GONE
+      ] [ textView 
+          ([
+              text ("Select Package")
+          ] <> FontStyle.body1 TypoGraphy)
+        , imageView
+          [ imageWithFallback $ "ny_ic_info_blue," <> (getCommonAssetStoreLink FunctionCall) <> "ny_ic_info_blue.png"
+          , width $ V 18
+          , height $ V 18
+          -- , margin $ Margin 5 2 0 0
+          , onClick push $ const RentalPackageAC
+          ]
+      ]
+      , linearLayout [ 
+          height WRAP_CONTENT
+        , width MATCH_PARENT
+        , margin (Margin 16 16 16 26)
+        , visibility if(state.props.rentalStage == RentalSlab) then VISIBLE else GONE
+        ] [ textView 
+            ([
+                text ("Choose your rental ride")
+              , color Color.black800
+            ] <> FontStyle.h2 TypoGraphy)
+          ]
+      , linearLayout
+          [ height WRAP_CONTENT
+          , width MATCH_PARENT
+          , orientation VERTICAL
+          ]( mapWithIndex
+              ( \index item ->
+                  ChooseVehicle.view (push <<< RentalChooseVehicleAC) (item)
+              ) state.data.specialZoneQuoteList
+          )
+      -- , ChooseVehicle.view (push <<< RentalChooseVehicleAC) ({
+      --     activeIndex: 0
+      --   , basePrice: 254
+      --   , capacity: "Economical, 4 people"
+      --   , id: "d1b6e3e0-6075-49f1-abb9-28bfb1a4b353"
+      --   , index: 0
+      --   , isBookingOption: false
+      --   , isCheckBox: false
+      --   , isEnabled: true
+      --   , isSelected: false
+      --   , maxPrice: 123
+      --   , price: "₹254"
+      --   , searchResultType: ChooseVehicleController.QUOTES
+      --   , showInfo: false
+      --   , vehicleImage: "ny_ic_taxi_side,https://assets.juspay.in/beckn/jatrisaathi/jatrisaathicommon/images/ny_ic_taxi_side.png"
+      --   , vehicleType: ""
+      --   , vehicleVariant: "TAXI"})
+      , PrimaryButton.view (push <<< RentalConfirmAndBookAction) (primaryButtonConfirmAndBookConfig state)
+      -- , ChooseYourRide.view (push <<< ChooseYourRideAction) (chooseYourRideConfig state)
+    ]
 
 ------------------------ quoteListModelView ---------------------------
 quoteListModelView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
@@ -2263,3 +2368,24 @@ genderBanner push state =
 
 isAnyOverlayEnabled :: HomeScreenState -> Boolean
 isAnyOverlayEnabled state = ( state.data.settingSideBar.opened /= SettingSideBar.CLOSED || state.props.emergencyHelpModal || state.props.cancelSearchCallDriver || state.props.isCancelRide || state.props.isLocationTracking || state.props.callSupportPopUp || state.props.showCallPopUp || state.props.showRateCard || (state.props.showShareAppPopUp && ((getValueFromConfig "isShareAppEnabled") == "true")))
+
+------------------------ RentalScreensView ---------------------------
+rentalScreensView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM(Effect Unit) w
+rentalScreensView push state = 
+  linearLayout
+  [ height MATCH_PARENT
+  , width MATCH_PARENT
+  , orientation VERTICAL 
+  ] [ if state.props.rentalStage == RentalSlab then rentalSlabScreenView push state else emptyTextView state
+    , if state.props.rentalStage == RentalSlab then rentalConfirmAndBookView push state else emptyTextView state
+    , if state.props.rentalStage == RentalFareBreakup then rentalFareBreakupView push state else emptyTextView state
+    -- , if state.props.rentalStage == RentalScheduleRide then rentalScheduleRideView push state else emptyTextView state 
+  ]
+
+rentalPackageView ::  forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM(Effect Unit) w
+rentalPackageView push state =
+  linearLayout
+  [ height MATCH_PARENT
+  , width MATCH_PARENT
+  , orientation VERTICAL
+  ] [ PopUpModal.view (push <<< ShortDistanceActionController) (rentalPackageConfig state)]

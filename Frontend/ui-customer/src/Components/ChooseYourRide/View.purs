@@ -18,11 +18,12 @@ import Font.Style as FontStyle
 import JBridge (getLayoutBounds)
 import Language.Strings (getString)
 import Language.Types (STR(..))
-import Prelude (Unit, ($), (<>), const, pure, unit, not, show, (<<<), (==), (>=), (*), (+), (<=), (&&))
+import Prelude (Unit, ($), (<>), const, pure, unit, not, show, (<<<), (==), (>=), (*), (+), (<=), (&&), (||))
 import PrestoDOM (Gravity(..), Length(..), Margin(..), Orientation(..), Padding(..), PrestoDOM, Visibility(..), afterRender, background, clickable, color, cornerRadius, fontStyle, gravity, height, id, imageView, imageWithFallback, letterSpacing, lineHeight, linearLayout, margin, onClick, orientation, padding, scrollView, stroke, text, textSize, textView, visibility, weight, width, onAnimationEnd, disableClickFeedback)
 import PrestoDOM.Properties (cornerRadii)
 import PrestoDOM.Types.DomAttributes (Corners(..))
 import Styles.Colors as Color
+import Screens.Types (RentalStage(..))
 import MerchantConfig.Utils (getValueFromConfig)
 
 view :: forall w. (Action -> Effect Unit) -> Config -> PrestoDOM (Effect Unit) w
@@ -32,6 +33,7 @@ view push config =
   linearLayout
   [ width MATCH_PARENT
   , height WRAP_CONTENT
+  , margin $ MarginBottom if(config.rentalStage == RentalSlab) then 8 else 0
   , orientation VERTICAL
   , onAnimationEnd push (const NoAction)
   ][  linearLayout
@@ -39,7 +41,7 @@ view push config =
       , height WRAP_CONTENT
       , gravity RIGHT
       , margin $ MarginRight 15
-      , visibility if (isJust config.nearByDrivers) && (getValueFromConfig "showNearByDrivers") then VISIBLE else GONE
+      , visibility if config.rentalStage == RentalSlab then GONE else if (isJust config.nearByDrivers) && (getValueFromConfig "showNearByDrivers") then VISIBLE else GONE
       , disableClickFeedback true
       ][ textView
          [ width WRAP_CONTENT
@@ -62,25 +64,26 @@ view push config =
       , margin $ MarginTop 10
       , clickable true
       , padding $ PaddingTop 16
-      , stroke $ "1," <> Color.grey900
+      , stroke $ "1," <> if(config.rentalStage == RentalSlab) then Color.white900 else Color.grey900
       , gravity CENTER
       , cornerRadii $ Corners 24.0 true true false false
       ]
       [ textView (
           [ text (getString CHOOSE_YOUR_RIDE)
           , color Color.black800
-          , gravity CENTER_HORIZONTAL
+          , gravity if(config.rentalStage == RentalSlab) then LEFT else CENTER_HORIZONTAL
+          , margin $ MarginLeft if(config.rentalStage == RentalSlab) then 16 else 0
           , height WRAP_CONTENT
           , width MATCH_PARENT
           ] <> FontStyle.h1 TypoGraphy)
-      , estimatedTimeAndDistanceView push config
+      , if(config.rentalStage == RentalSlab) then textView[] else estimatedTimeAndDistanceView push config
       , textView $
           [ text $ getString TOLL_CHARGES_WILL_BE_EXTRA
           , color Color.black650
           , gravity CENTER_HORIZONTAL
           , height WRAP_CONTENT
           , width WRAP_CONTENT
-          , visibility if config.showTollExtraCharges then VISIBLE else GONE
+          , visibility if config.rentalStage == RentalSlab then GONE else if config.showTollExtraCharges then VISIBLE else GONE
           ] <> FontStyle.paragraphText TypoGraphy
       , quoteListView push config
       , PrimaryButton.view (push <<< PrimaryButtonActionController) (primaryButtonRequestRideConfig config)
@@ -94,6 +97,7 @@ estimatedTimeAndDistanceView push config =
     , height WRAP_CONTENT
     , gravity CENTER
     , margin $ MarginTop 4
+    -- , visibility if(config.rentalStage == NotRental) then GONE else VISIBLE
     ]
     [ textView $
         [ height WRAP_CONTENT

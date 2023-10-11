@@ -159,6 +159,9 @@ data HOME_SCREEN_OUTPUT = LOGOUT
                         | TRIGGER_PERMISSION_FLOW PermissionScreenStage
                         | REPORT_ISSUE HomeScreenState
                         | RIDE_DETAILS_SCREEN HomeScreenState
+                        | RENTAL_SLAB_SCREEN HomeScreenState
+                        | RENTAL_FARE_BREAKUP_SCREEN HomeScreenState
+                        | RENTAL_SCHEDULE_RIDE_SCREEN HomeScreenState
 
 data SELECT_LANGUAGE_SCREEN_OUTPUT = GO_TO_HOME_SCREEN | UPDATE_LANGUAGE SelectLanguageScreenState
 
@@ -197,3 +200,5 @@ data ScreenType =
   | EmergencyContactsScreenStateType (EmergencyContactsScreenState -> EmergencyContactsScreenState)
   | PermissionScreenStateType (PermissionScreenState -> PermissionScreenState)
   | AboutUsScreenStateType (AboutUsScreenState -> AboutUsScreenState)
+
+-- data RENTAL_SCREEN = 
