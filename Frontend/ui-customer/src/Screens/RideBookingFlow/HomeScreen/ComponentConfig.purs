@@ -343,7 +343,7 @@ reportIssuePopUpConfig state =
     reportIssueConfig = CancelRidePopUpConfig.config
     reportIssueConfig' =
       reportIssueConfig
-        { selectionOptions = reportIssueOptions state
+        { selectionOptions = if state.props.nightSafetyFlow then safetyIssueOptions "" else reportIssueOptions state
         , primaryButtonTextConfig
           { firstText = getString GO_BACK_
           , secondText = getString SUBMIT
@@ -1127,12 +1127,13 @@ rideCompletedCardConfig state = let
           issueFaced = state.data.ratingViewState.issueFacedView,
           selectedYesNoButton = state.data.ratingViewState.selectedYesNoButton,
           reportIssuePopUpConfig = reportIssuePopUpConfig state,
-          title = (getString DID_YOU_FACE_ANY_ISSUE),
-          subTitle = (getString WE_NOTICED_YOUR_RIDE_ENDED_AWAY),
+          title = if state.props.nightSafetyFlow then getString DID_YOU_HAVE_A_SAFE_JOURNEY else getString DID_YOU_FACE_ANY_ISSUE,
+          subTitle = if state.props.nightSafetyFlow then getString TRIP_WAS_SAFE_AND_WORRY_FREE else getString WE_NOTICED_YOUR_RIDE_ENDED_AWAY,
           option1Text = getString REPORT_ISSUE_,
           option2Text = getString GET_CALLBACK_FROM_US,
           yesText = getString YES,
-          noText = getString NO
+          noText = getString NO,
+          isNightRide = state.props.nightSafetyFlow
         },
         topCard {
           title =  getString RIDE_COMPLETED,
@@ -1151,7 +1152,7 @@ rideCompletedCardConfig state = let
           title = (getString RATE_YOUR_RIDE_WITH) <> state.data.rideRatingState.driverName,
           subTitle = (getString YOUR_FEEDBACK_HELPS_US),
           selectedRating = state.data.ratingViewState.selectedRating,
-          visible = true
+          visible = not state.data.ratingViewState.issueFacedView
         },
         primaryButtonConfig = skipButtonConfig state
       }
@@ -1226,3 +1227,21 @@ getFareUpdatedString diffInDist = do
                                                         "KN_IN" -> "ನಿಮ್ಮ ಸವಾರಿ " <> dist <> " ಕಿಮೀ ಉದ್ದವಾಗಿದೆ"
                                                         "ML_IN" -> "താങ്കളുടെ യാത്ര " <> dist <> " Km കൂടുതലായിരുന്നു"
                                                         _       -> "your ride was " <> dist <> " km longer")
+safetyIssueOptions :: String -> Array OptionButtonList 
+safetyIssueOptions dummy =
+  [ { reasonCode: "DRIVER_BEHAVED_INAPPROPRIATELY"
+    , description: getString DRIVER_BEHAVED_INAPPROPRIATELY
+    , textBoxRequired : false
+    , subtext : Nothing
+    }
+  , { reasonCode: "I_DID_NOT_FEEL_SAFE"
+    , description: getString I_DID_NOT_FEEL_SAFE
+    , textBoxRequired : false
+    , subtext : Nothing
+    }
+  , { reasonCode: "OTHER"
+    , description: getString OTHER
+    , textBoxRequired : false
+    , subtext : Nothing
+    }
+  ]

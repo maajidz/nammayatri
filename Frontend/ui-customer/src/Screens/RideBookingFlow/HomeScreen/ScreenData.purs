@@ -130,6 +130,7 @@ initData = {
     },
     props: {
       rideRequestFlow : false
+    , nightSafetyFlow : false
     , isSearchLocation : NoView
     , currentStage : HomeScreen
     , showCallPopUp : false
@@ -407,6 +408,7 @@ dummyRideBooking = RideBookingRes
   estimatedFare : 0,
   tripTerms : [],
   id : "",
+  hasNightIssue : Just true,
   updatedAt : "",
   bookingDetails : dummyRideBookingAPIDetails ,
   fromLocation :  dummyBookingDetails,

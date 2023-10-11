@@ -42,6 +42,7 @@ type AppConfig =
     ratingConfig :: RatingConfig,
     primaryButtonCornerRadius :: Number,
     cancelSearchTextColor :: String,
+    showNightSafety :: Boolean,
     cancelReasonConfig :: CancelReasonConfig,
     terminateBtnConfig :: TerminateBtnConfig,
     showDeleteAccount :: Boolean

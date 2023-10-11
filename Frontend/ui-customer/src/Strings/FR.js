@@ -507,5 +507,9 @@ export function getStringValue(key) {
    "PLEASE_ENABLE_LOCATION_PERMISSION" : "Veuillez activer les autorisations de localisation pour Namma Yatri depuis l'application des paramètres pour commencer à rechercher des trajets.",
    "AC_CAB" : "Cabine AC",
    "AC_SUV" : "SUV climatisé",
-   "RIDE_TYPE" : "Type de trajet"
+   "RIDE_TYPE" : "Type de trajet",
+    "DID_YOU_HAVE_A_SAFE_JOURNEY" : "Avez-vous fait un bon voyage ?",
+    "TRIP_WAS_SAFE_AND_WORRY_FREE" : "Nous aimerions nous assurer que votre voyage se déroule en toute sécurité et sans souci.",
+    "DRIVER_BEHAVED_INAPPROPRIATELY" : "Le conducteur s'est comporté de manière inappropriée",
+    "I_DID_NOT_FEEL_SAFE" : "je ne me sentais pas en sécurité"
   }

@@ -620,5 +620,10 @@ const hindiStrings = {
   "PLEASE_ENABLE_LOCATION_PERMISSION" : "कृपया सवारी की तलाश शुरू करने के लिए सेटिंग ऐप से नम्मा यात्री के लिए स्थान अनुमतियाँ सक्षम करें।",
   "AC_CAB" : "एसी कैब",
   "AC_SUV" : "एसी एसयूवी",
-  "RIDE_TYPE" : "सवारी का प्रकार"
+  "RIDE_TYPE" : "सवारी का प्रकार",
+  "DID_YOU_HAVE_A_SAFE_JOURNEY" : "क्या आपकी यात्रा सुरक्षित रही?",
+  "TRIP_WAS_SAFE_AND_WORRY_FREE" : "हम यह सुनिश्चित करना चाहेंगे कि आपकी यात्रा सुरक्षित और चिंता मुक्त हो।",
+  "DRIVER_BEHAVED_INAPPROPRIATELY" : "ड्राइवर ने अनुचित व्यवहार किया",
+  "I_DID_NOT_FEEL_SAFE" : "मैं सुरक्षित महसूस नहीं कर रहा था"
+
 }

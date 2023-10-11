@@ -52,6 +52,7 @@ commonConfig =
         , callOptions : ["ANONYMOUS"]
         , autoVariantEnabled : true
         , showNearByDrivers : false
+        , showNightSafety : false
         , navigationAppConfig : {
             android : {  
               query : "google.navigation:q=%f,%f"

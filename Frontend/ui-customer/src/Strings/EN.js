@@ -620,5 +620,9 @@ const englishStrings = {
   "PLEASE_ENABLE_LOCATION_PERMISSION" : "Please enable location permissions for Namma Yatri from the settings app to start looking for rides.",
   "AC_CAB" : "AC Cab",
   "AC_SUV" : "AC SUV",
-  "RIDE_TYPE" : "Ride Type"
+  "RIDE_TYPE" : "Ride Type",
+  "DID_YOU_HAVE_A_SAFE_JOURNEY" : "Did you have a safe journey?",
+  "TRIP_WAS_SAFE_AND_WORRY_FREE" : "We would like to ensure that your trip was safe and worry free.",
+  "DRIVER_BEHAVED_INAPPROPRIATELY" : "The driver behaved inappropriately",
+  "I_DID_NOT_FEEL_SAFE" : "I did not feel safe"
 }

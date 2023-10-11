@@ -194,8 +194,8 @@ bottomCardView config push =
   , background Color.grey700
   , gravity CENTER
   , weight 1.0
-  ][  if config.customerIssueCard.issueFaced then customerIssueView config push
-        else if config.customerBottomCard.visible then customerBottomCardView config push
+  ][  customerBottomCardView config push  
+    , if config.customerIssueCard.issueFaced then customerIssueView config push
           else dummyTextView
     , linearLayout
       [ width MATCH_PARENT
@@ -225,9 +225,9 @@ getViewsByOrder config item push =
 
 customerIssueView :: forall w. Config -> (Action -> Effect Unit) -> PrestoDOM (Effect Unit) w
 customerIssueView config push =
-  scrollView [
-    width MATCH_PARENT ,
-    height WRAP_CONTENT
+  (if os == "IOS" then linearLayout else scrollView) 
+  [ width MATCH_PARENT
+  , height WRAP_CONTENT
   ][
     linearLayout
     [ width MATCH_PARENT
@@ -245,7 +245,7 @@ customerIssueView config push =
         , gravity CENTER
         , margin $ MarginTop 15
         , orientation VERTICAL
-        , visibility if config.customerIssueCard.selectedYesNoButton == 0 then VISIBLE else GONE
+        , visibility if config.customerIssueCard.selectedYesNoButton == if config.customerIssueCard.isNightRide then 1 else 0 then VISIBLE else GONE
         ](mapWithIndex (\ index item ->
             linearLayout
             [ height WRAP_CONTENT
@@ -327,6 +327,7 @@ customerBottomCardView config push =
   [ width MATCH_PARENT
   , height WRAP_CONTENT
   , orientation VERTICAL
+  , visibility if config.customerBottomCard.visible then VISIBLE else GONE
   , cornerRadius 8.0
   , stroke $ "1,"<>Color.grey800
   , padding $ Padding 10 10 10 10
@@ -362,7 +363,7 @@ customerBottomCardView config push =
 
 reportIssueView :: forall w. Config -> (Action -> Effect Unit) -> PrestoDOM (Effect Unit) w
 reportIssueView  config push =
-  linearLayout
+  relativeLayout
     [ height MATCH_PARENT
     , width MATCH_PARENT
     ][ CancelRidePopUp.view (push <<< IssueReportPopUpAC) (config.customerIssueCard.reportIssuePopUpConfig)]

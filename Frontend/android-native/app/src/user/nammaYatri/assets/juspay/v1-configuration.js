@@ -36,6 +36,7 @@ window.getMerchantConfig = function () {
     "logs": ["JUSPAY","FIREBASE","CLEVERTAP"],
     "primaryButtonCornerRadius" : 8.0,
     "cancelSearchTextColor": "#E55454",
+    "showNightSafety" : true,
     "dashboardUrl" : "https://nammayatri.in/open?source=in-app",
     "quoteListItemConfig": {
       "primaryButtonCorner": 8.0,

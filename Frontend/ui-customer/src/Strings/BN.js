@@ -636,5 +636,9 @@ const bengaliStrings = {
   "PLEASE_ENABLE_LOCATION_PERMISSION" : "অনুগ্রহ করে রাইড খোঁজা শুরু করতে সেটিংস অ্যাপ থেকে নম্মা যাত্রীর জন্য অবস্থানের অনুমতি সক্ষম করুন।",
   "AC_CAB" : "এসি ক্যাব",
   "AC_SUV" : "এসি এসইউভি",
-  "RIDE_TYPE" : "রাইড টাইপ"
+  "RIDE_TYPE" : "রাইড টাইপ",
+  "DID_YOU_HAVE_A_SAFE_JOURNEY" : "আপনি একটি নিরাপদ যাত্রা আছে?",
+  "TRIP_WAS_SAFE_AND_WORRY_FREE" : "আমরা নিশ্চিত করতে চাই যে আপনার ভ্রমণ নিরাপদ এবং দুশ্চিন্তামুক্ত।",
+  "DRIVER_BEHAVED_INAPPROPRIATELY" : "চালক অশালীন আচরণ করেন",
+  "I_DID_NOT_FEEL_SAFE" : "আমি নিরাপদ বোধ করিনি"
 }
