@@ -468,8 +468,7 @@ export const drawPolygon = function(geoJson) {
   }
 }
 
-export const removeLabelFromMarker = function(zoomLevel){
-  return function () {
+export const removeLabelFromMarker = (zoomLevel) => {
     if (JBridge.removeLabelFromMarker){
       try{
         return JBridge.removeLabelFromMarker(zoomLevel);
@@ -477,7 +476,6 @@ export const removeLabelFromMarker = function(zoomLevel){
         return JBridge.removeLabelFromMarker();
       }
     }
-  }
 }
 export const addCarousel = function (modelArray) {
   return function (id) {

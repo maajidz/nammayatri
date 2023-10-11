@@ -600,7 +600,7 @@ export const updateRouteMarker = function (data) {
   }
 }
 
-export const updateRoute = function (data, destMarker, eta, srcMarker, specialLocation, zoomLevel) {
+export const updateRoute = (data, destMarker, eta, srcMarker, specialLocation, zoomLevel) => {
     if (window.JBridge.updateRoute) {
       var json = JSON.stringify(data);
     try{
@@ -1483,7 +1483,7 @@ export const showKeyboard = function(id){
     JBridge.showKeyboard(id); // imeOptions is set to IME_ACTION_SEARCH and IME_ACTION_DONE
 }
 
-export const locateOnMap = function (str, lat, lon, geoJson, coodinates, zoomLevel) {
+export const locateOnMap = (str, lat, lon, geoJson, coodinates, zoomLevel) => {
   try{
       let payload = { "goToCurrentLocation": str, "lat": lat, "lon": lon, "geoJson": geoJson, "points": JSON.stringify(coodinates), "zoomLevel": zoomLevel};
       return JBridge.locateOnMap(JSON.stringify(payload));

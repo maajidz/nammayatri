@@ -338,8 +338,7 @@ public class MobilityCustomerBridge extends MobilityCommonBridge {
                     String eta = payload.optString("eta", "");
                     String src = payload.optString("srcMarker", "");
                     String specialLocation = payload.optString("specialLocation", "");
-                    String _zoomLevel = payload.optString("zoomLevel", "");
-                    float zoomLevel = Float.parseFloat(_zoomLevel);
+                    float zoomLevel = payload.optFloat("zoomLevel", 17.0);
                     ArrayList<LatLng> path = new ArrayList<>();
                     JSONObject jsonObject = new JSONObject(json);
                     JSONArray coordinates = jsonObject.getJSONArray("points");
@@ -538,7 +537,7 @@ public class MobilityCustomerBridge extends MobilityCommonBridge {
             String lon = payload.optString("lon", "0.0");
             String geoJson = payload.optString("geoJson", "");
             String points = payload.optString("points", "[]");
-            float zoomLevel = Float.parseFloat(payload.optString("zoomLevel", "17.0"));
+            float zoomLevel = payload.optFloat("zoomLevel", 17.0);
 
             if (geoJson.equals("") || points.equals("[]")){
                 locateOnMap(goToCurrentLocation,lat,lon,zoomLevel);
@@ -656,7 +655,6 @@ public class MobilityCustomerBridge extends MobilityCommonBridge {
                 }
             });
         } catch (Exception e) {
-            // Log.i(MAPS, "LocateOnMap error for ", e);
             Log.i("dhruv", "LocateOnMap error for ", e);
         }
     }
