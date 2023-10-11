@@ -52,7 +52,7 @@ eval GoToHomeScreen state = exit GoToHome
 eval (LoadPlans plans) state = do
     let (UiPlansResp planResp) = plans
     _ <- pure $ setValueToLocalStore DRIVER_SUBSCRIBED "false"
-    let planList = planListTransformer plans
+    let planList = planListTransformer plans false
     continue state { data{ plansList = planList , selectedPlanItem = (planList !! 0)}}
 eval (SelectPlan config ) state = continue state {data { selectedPlanItem = Just config }}
 eval (JoinPlanAC PrimaryButton.OnClick) state = updateAndExit state $ StartFreeTrialExit state

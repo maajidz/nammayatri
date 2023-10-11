@@ -41,7 +41,7 @@ import Font.Style (Style(..))
 import Helpers.Utils as HU
 import JBridge as JB
 import Language.Types (STR(..))
-import Prelude (map, not, show, unit, ($), (&&), (*), (+), (/), (/=), (==), (>))
+import Prelude (map, not, show, unit, ($), (&&), (*), (+), (/), (/=), (==), (>), (||))
 import PrestoDOM.Types.DomAttributes (Corners(..))
 import Screens.PaymentHistoryScreen.Transformer (getAutoPayStageData)
 import Screens.SubscriptionScreen.Transformer (decodeOfferPlan, getPromoConfig)
@@ -182,6 +182,7 @@ joinPlanButtonConfig state = let
       , alpha = if isNothing state.props.joinPlanProps.selectedPlanItem then 0.6 else 1.0
       , height = (V 48)
       , cornerRadius = 8.0
+      , visibility = if state.data.config.enableIntroductoryView then GONE else VISIBLE
       , id = "JoinPlanPrimaryButton"
       , enableLoader = (JB.getBtnLoader "JoinPlanPrimaryButton")
       , margin = (MarginBottom 16)

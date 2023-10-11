@@ -664,7 +664,7 @@ const kannadaStrings = {
   PAYMENT_HISTORY : "ಪಾವತಿ ಇತಿಹಾಸ",
   DO_A_ONE_TIME_SETTLEMENT : "ಒಂದು ಬಾರಿ ಪರಿಹಾರವನ್ನು ಮಾಡಿ",
   TAP_A_PLAN_TO_VIEW_DETAILS : "ವಿವರಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಯೋಜನೆಯನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ",
-  HOW_IT_WORKS : "ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?",
+  HOW_IT_WORKS : "ಸ್ವಯಂ ಪಾವತಿ ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?",
   ZERO_COMMISION : "ZERO ಕಮಿಷನ್",
   EARN_TODAY_PAY_TOMORROW : "ಇಂದು ಗಳಿಸಿ, ನಾಳೆ ಪಾವತಿಸಿ",
   PAY_ONLY_IF_YOU_TAKE_RIDES : "ನೀವು ಸವಾರಿ ಮಾಡಿದರೆ ಮಾತ್ರ ಪಾವತಿಸಿ",
@@ -908,5 +908,10 @@ const kannadaStrings = {
   AC_CAB : "ಎಸಿ ಕ್ಯಾಬ್",
   AC_SUV : "ಎಸಿ ಎಸ್ಯುವಿ",
   DOWNGRADE_VEHICLE : "ಡೌನ್‌ಗ್ರೇಡ್ ವಾಹನ",
-  WHAT_ARE_PURPLE_RIDES : "ಪರ್ಪಲ್ ರೈಡ್ಸ್ ಎಂದರೇನು?"
+  WHAT_ARE_PURPLE_RIDES : "ಪರ್ಪಲ್ ರೈಡ್ಸ್ ಎಂದರೇನು?",
+  GET_READY_FOR_YS_SUBSCRIPTION : "ಯಾತ್ರಿ ಸತಿ ಯೋಜನೆಗಳಿಗೆ ಸಿದ್ಧರಾಗಿ!",
+  SIGNUP_EARLY_FOR_SPECIAL_OFFERS : "ವಿಶೇಷ ಕೊಡುಗೆಗಳಿಗಾಗಿ ಮುಂಚಿತವಾಗಿ ಸೈನ್ ಅಪ್ ಮಾಡಿ",
+  GUARANTEED_FIXED_PRICE : "ಜನವರಿ 1, 2025 ರವರೆಗೆ ಖಾತರಿಪಡಿಸಿದ ಸ್ಥಿರ ಬೆಲೆ",
+  INTRODUCTORY_OFFER_TO_BE_ANNOUNCED_SOON : "ಪರಿಚಯಾತ್ಮಕ ಕೊಡುಗೆಯನ್ನು ಶೀಘ್ರದಲ್ಲೇ ಪ್ರಕಟಿಸಲಾಗುವುದು!",
+  NO_CHARGES_TILL : "ಡಿಸೆಂಬರ್ 31 ರವರೆಗೆ ಯಾವುದೇ ಶುಲ್ಕಗಳಿಲ್ಲ",
 }

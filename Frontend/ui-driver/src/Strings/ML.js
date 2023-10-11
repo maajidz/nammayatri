@@ -660,7 +660,7 @@ const mlStrings = {
   PAYMENT_HISTORY : "പേയ്‌മെന്റ് ചരിത്രം",
   DO_A_ONE_TIME_SETTLEMENT : "ഒറ്റത്തവണ സെറ്റിൽമെന്റ് നടത്തുക",
   TAP_A_PLAN_TO_VIEW_DETAILS : "വിശദാംശങ്ങൾ കാണാൻ ഒരു പ്ലാൻ ടാപ്പ് ചെയ്യുക",
-  HOW_IT_WORKS : "ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു?",
+  HOW_IT_WORKS : "എങ്ങനെയാണ് ഓട്ടോപേ പ്രവർത്തിക്കുന്നത്?",
   ZERO_COMMISION : "ZERO കമ്മീഷൻ",
   EARN_TODAY_PAY_TOMORROW : "ഇന്ന് സമ്പാദിക്കുക, നാളെ പണമടയ്ക്കുക",
   PAY_ONLY_IF_YOU_TAKE_RIDES : "നിങ്ങൾ സവാരി നടത്തിയാൽ മാത്രം പണം നൽകുക",
@@ -876,5 +876,10 @@ const mlStrings = {
   AC_CAB : "എസി ക്യാബ്",
   AC_SUV : "എസി എസ്‌യുവി",
   DOWNGRADE_VEHICLE : "വാഹനം തരംതാഴ്ത്തുക",
-  WHAT_ARE_PURPLE_RIDES : "എന്താണ് പർപ്പിൾ റൈഡുകൾ?"
+  WHAT_ARE_PURPLE_RIDES : "എന്താണ് പർപ്പിൾ റൈഡുകൾ?",
+  GET_READY_FOR_YS_SUBSCRIPTION : "യാത്രി സതി പദ്ധതികൾക്കായി തയ്യാറാകൂ!",
+  SIGNUP_EARLY_FOR_SPECIAL_OFFERS : "പ്രത്യേക ഓഫറുകൾക്കായി നേരത്തെ സൈൻ അപ്പ് ചെയ്യുക",
+  GUARANTEED_FIXED_PRICE : "ജനുവരി 1, 2025 വരെ ഉറപ്പുള്ള സ്ഥിര വില",
+  INTRODUCTORY_OFFER_TO_BE_ANNOUNCED_SOON : "ആമുഖ ഓഫർ ഉടൻ പ്രഖ്യാപിക്കും!",
+  NO_CHARGES_TILL : "ഡിസംബർ 31 വരെ നിരക്കുകളൊന്നുമില്ല",
 }

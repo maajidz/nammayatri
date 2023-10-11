@@ -18,6 +18,7 @@ module Screens.SubscriptionScreen.ScreenData where
 
 import Common.Types.App (PaymentStatus(..))
 import Data.Maybe as Mb
+import MerchantConfig.DefaultConfig as DC
 import Screens.Types (AutoPayStatus(..), KeyValType, OptionsMenuState(..), PlanCardConfig, PromoConfig, SubscribePopupType(..), SubscriptionScreenState, SubscriptionSubview(..), DueItem)
 import Services.API (AutopayPaymentStage(..), DriverDuesEntity(..), FeeType(..), InvoiceStatus(..), PaymentBreakUp(..))
 
@@ -56,7 +57,8 @@ initData = {
             detailsList : [],
             payerUpiId : Mb.Nothing,
             pspLogo : ""
-        }
+        },
+        config : DC.config.subscriptionConfig
     },
     props : {
         isSelectedLangTamil : false,
@@ -69,7 +71,8 @@ initData = {
         confirmCancel : false,
         joinPlanProps : {
             paymentMode : "",
-            selectedPlanItem : Mb.Nothing
+            selectedPlanItem : Mb.Nothing,
+            isIntroductory : true
         },
         myPlanProps : {
             isDuesExpanded : false,

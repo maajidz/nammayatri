@@ -412,7 +412,7 @@ eval (PaymentPendingPopupAC PopUpModal.OptionWithHtmlClick) state = do
 
 eval (PaymentPendingPopupAC PopUpModal.OnSecondaryTextClick) state = do
   continueWithCmd state [do
-    _ <- openUrlInApp $ "https://www.youtube.com/shorts/x9cJN78j9V8"
+    _ <- openUrlInApp $ state.data.config.subscriptionConfig.overlayYoutubeLink
     pure NoAction
   ]
   

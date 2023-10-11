@@ -694,7 +694,7 @@ const hindiStrings = {
   PAYMENT_HISTORY : "भुगतान इतिहास",
   DO_A_ONE_TIME_SETTLEMENT : "एकमुश्त निपटान करें",
   TAP_A_PLAN_TO_VIEW_DETAILS : "विवरण देखने के लिए किसी योजना पर टैप करें",
-  HOW_IT_WORKS : "यह कैसे काम करता है?",
+  HOW_IT_WORKS : "ऑटोपे कैसे काम करता है?",
   ZERO_COMMISION : "शून्य कमीशन",
   EARN_TODAY_PAY_TOMORROW : "आज कमाएँ, कल भुगतान करें",
   PAY_ONLY_IF_YOU_TAKE_RIDES : "भुगतान केवल तभी करें जब आप सवारी लें",
@@ -936,5 +936,10 @@ const hindiStrings = {
   AC_SUV : "एसी एसयूवी",
   DOWNGRADE_VEHICLE : "डाउनग्रेड वाहन",
   LOW_DUES_CLEAR_POPUP_DESC : "नॉन-स्टॉप सवारी का आनंद लेने के लिए अभी अपना बकाया भुगतान करें",
-  WHAT_ARE_PURPLE_RIDES : "पर्पल सवारी क्या है?"
+  WHAT_ARE_PURPLE_RIDES : "पर्पल सवारी क्या है?",
+  GET_READY_FOR_YS_SUBSCRIPTION : "यात्री साथी योजनाओं के लिए तैयार हो जाएं!",
+  SIGNUP_EARLY_FOR_SPECIAL_OFFERS : "विशेष ऑफर के लिए जल्दी साइन अप करें",
+  GUARANTEED_FIXED_PRICE : "1 जनवरी, 2025 तक निश्चित मूल्य की गारंटी",
+  INTRODUCTORY_OFFER_TO_BE_ANNOUNCED_SOON : "परिचयात्मक ऑफर की घोषणा जल्द ही की जाएगी!",
+  NO_CHARGES_TILL : "31 दिसंबर तक कोई शुल्क नहीं",
 }

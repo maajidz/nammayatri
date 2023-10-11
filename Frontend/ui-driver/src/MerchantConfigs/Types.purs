@@ -33,12 +33,18 @@ type SubscriptionConfig =  {
   showDUOfferBanner :: Boolean,
   offerBannerValidTill :: String,
   offerBannerDeadline :: String,
-  currentPlanCacheExpTime :: Int,
   lowDuesLimit :: Number,
   maxDuesLimit :: Number,
   highDueWarningLimit :: Number,
   moveDriverToOfflineInHighDueDaily :: Boolean,
-  enableSubscriptionPopups :: Boolean
+  enableSubscriptionPopups :: Boolean,
+  faqLink :: String,
+  supportNumber :: String,
+  whatsappSupportLink :: String,
+  myPlanYoutubeLink :: String,
+  overlayYoutubeLink :: String,
+  enableDues :: Boolean,
+  enableIntroductoryView :: Boolean
  }
 
 type RideActionModelConfig = {

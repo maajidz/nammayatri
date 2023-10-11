@@ -126,7 +126,7 @@ eval BackPressed state =
   else if state.props.subView == PlanDetails then continue state{props { subView = ManagePlan}}
   else if state.props.subView == FindHelpCentre then continue state {props { subView = state.props.prevSubView, kioskLocation = [], noKioskLocation = false, showError = false}}
   else if state.props.myPlanProps.isDueViewExpanded then continue state{props { myPlanProps{isDueViewExpanded = false}}}
-  else if state.data.myPlanData.autoPayStatus /= ACTIVE_AUTOPAY && not state.props.isEndRideModal then continue state{props { popUpState = Mb.Just SupportPopup}}
+  else if state.data.myPlanData.autoPayStatus /= ACTIVE_AUTOPAY && not state.props.isEndRideModal && not state.data.config.enableIntroductoryView then continue state{props { popUpState = Mb.Just SupportPopup}}
   else exit $ HomeScreen state
 
 eval ToggleDueDetails state = continue state {props {myPlanProps { isDuesExpanded = not state.props.myPlanProps.isDuesExpanded}}}
@@ -141,10 +141,10 @@ eval (OptionsMenuAction (OptionsMenu.ItemClick item)) state = do
       "payment_history" -> pure ViewPaymentHistory 
       "call_support" -> pure CallSupport
       "chat_for_help" -> do
-          _ <- openUrlInApp "https://wa.me/917483117936?text=Hello%2C%20I%20need%20help%20with%20setting%20up%20Autopay%20Subscription%0A%E0%B2%B8%E0%B3%8D%E0%B2%B5%E0%B2%AF%E0%B2%82%20%E0%B2%AA%E0%B2%BE%E0%B2%B5%E0%B2%A4%E0%B2%BF%20%E0%B2%9A%E0%B2%82%E0%B2%A6%E0%B2%BE%E0%B2%A6%E0%B2%BE%E0%B2%B0%E0%B2%BF%E0%B2%95%E0%B3%86%E0%B2%AF%E0%B2%A8%E0%B3%8D%E0%B2%A8%E0%B3%81%20%E0%B2%B9%E0%B3%8A%E0%B2%82%E0%B2%A6%E0%B2%BF%E0%B2%B8%E0%B2%B2%E0%B3%81%20%E0%B2%A8%E0%B2%A8%E0%B2%97%E0%B3%86%20%E0%B2%B8%E0%B2%B9%E0%B2%BE%E0%B2%AF%E0%B2%A6%20%E0%B2%85%E0%B2%97%E0%B2%A4%E0%B3%8D%E0%B2%AF%E0%B2%B5%E0%B2%BF%E0%B2%A6%E0%B3%86"
+          _ <- openUrlInApp state.data.config.whatsappSupportLink
           pure NoAction
       "view_faq" -> do
-          _ <- openUrlInApp "https://nammayatri.in/plans/"
+          _ <- openUrlInApp state.data.config.faqLink
           pure NoAction
       "find_help_centre" -> pure ViewHelpCentre
       _ -> pure NoAction
@@ -234,7 +234,7 @@ eval ViewAutopayDetails state = continue state{props {subView = PlanDetails }}
 eval (BottomNavBarAction (BottomNavBar.OnNavigate screen)) state = do
   let newState = state{props{optionsMenuState = ALL_COLLAPSED, myPlanProps{ isDueViewExpanded = false }}}
   if screen == "Join" then continue state
-  else if state.data.myPlanData.autoPayStatus /= ACTIVE_AUTOPAY then do 
+  else if state.data.myPlanData.autoPayStatus /= ACTIVE_AUTOPAY && not state.data.config.enableIntroductoryView then do 
     continue state{props {popUpState = Mb.Just SupportPopup, redirectToNav = screen, optionsMenuState = ALL_COLLAPSED, myPlanProps{ isDueViewExpanded = false }}}
   else do case screen of
             "Home" -> exit $ HomeScreen newState
@@ -262,7 +262,7 @@ eval (LoadPlans plans) state = do
   let (UiPlansResp planResp) = plans
   _ <- pure $ setValueToLocalStore DRIVER_SUBSCRIBED "false"
   continue state {
-      data{ joinPlanData {allPlans = planListTransformer plans,
+      data{ joinPlanData {allPlans = planListTransformer plans state.data.config.enableIntroductoryView,
                             subscriptionStartDate = (convertUTCtoISC planResp.subscriptionStartTime "Do MMM")}},
       props{showShimmer = false, subView = JoinPlan,  
             joinPlanProps { selectedPlanItem = if (isNothing state.props.joinPlanProps.selectedPlanItem) then getSelectedPlan plans else state.props.joinPlanProps.selectedPlanItem}} }
@@ -338,7 +338,7 @@ eval (TryAgainButtonAC PrimaryButton.OnClick) state =
       else updateAndExit updateState $ Refresh
 
 eval CallSupport state = do
-  _ <- pure $ showDialer "08069490091" false
+  _ <- pure $ showDialer state.data.config.supportNumber false
   continue state
 
 eval (CallHelpCenter phone) state = do

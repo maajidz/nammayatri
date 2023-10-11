@@ -30,7 +30,7 @@ import Foreign (Foreign)
 import Foreign.Class (class Decode, class Encode)
 import Foreign.Object (Object)
 import Halogen.VDom.DOM.Prop (PropValue)
-import MerchantConfig.Types (AppConfig)
+import MerchantConfig.Types (AppConfig, SubscriptionConfig)
 import Prelude (class Eq, class Show)
 import Presto.Core.Utils.Encoding (defaultDecode, defaultEncode)
 import Presto.Core.Utils.Encoding (defaultEnumDecode, defaultEnumEncode)
@@ -996,7 +996,8 @@ type BottomNavBarState = {
 type NavIcons = {
   activeIcon :: String,
   defaultIcon :: String,
-  text :: String
+  text :: String,
+  screenName :: ScreenName
 }
  -- ######################################  TripDetailsScreenState   ######################################
 
@@ -1579,7 +1580,8 @@ type SubscriptionScreenData = {
   paymentMode :: String,
   planId :: String,
   orderId :: Maybe String,
-  errorMessage :: String
+  errorMessage :: String,
+  config :: SubscriptionConfig
 }
 
 type AutoPayDetails = {
@@ -1633,7 +1635,8 @@ type JoinPlanData = {
 
 type JoinPlanProps = {
   paymentMode :: String,
-  selectedPlanItem :: Maybe PlanCardConfig
+  selectedPlanItem :: Maybe PlanCardConfig,
+  isIntroductory :: Boolean
 }
 
 type ManagePlanData = {

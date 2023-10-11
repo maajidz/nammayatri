@@ -29,12 +29,18 @@ config =
     showDUOfferBanner : false,
     offerBannerValidTill : "",
     offerBannerDeadline : "",
-    currentPlanCacheExpTime : 3600,
     lowDuesLimit : 25.0,
     maxDuesLimit : 100.0,
     highDueWarningLimit : 75.0,
     moveDriverToOfflineInHighDueDaily : false,
-    enableSubscriptionPopups : false
+    enableSubscriptionPopups : false,
+    supportNumber : "",
+    faqLink : "",
+    whatsappSupportLink : "",
+    myPlanYoutubeLink : "",
+    overlayYoutubeLink : "",
+    enableDues : false,
+    enableIntroductoryView : false
   },
   rideActionModelConfig : {
     showVehicleVariant : true

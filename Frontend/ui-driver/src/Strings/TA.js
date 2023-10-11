@@ -666,7 +666,7 @@ const tamilStrings = {
   PAYMENT_HISTORY : "கட்டண வரலாறு",
   DO_A_ONE_TIME_SETTLEMENT : "ஒரு முறை பணம் செலுத்துங்கள்",
   TAP_A_PLAN_TO_VIEW_DETAILS : "விவரங்களைப் பார்க்க ஒரு திட்டத்தைத் அழுத்தவும்",
-  HOW_IT_WORKS : "<u> மேலும் விவரம் </u>",
+  HOW_IT_WORKS : "தானியங்கு செலுத்துதல் எவ்வாறு செயல்படுகிறது?",
   ZERO_COMMISION : "ஜீரோ கமிஷன்",
   EARN_TODAY_PAY_TOMORROW : "இன்று சம்பாதிக்கவும், நாளை செலுத்தவும்",
   PAY_ONLY_IF_YOU_TAKE_RIDES : "நீங்கள் சவாரி செய்தால் மட்டும் பணம் செலுத்துங்கள்",
@@ -907,5 +907,10 @@ const tamilStrings = {
   AC_CAB : "ஏசி வண்டி",
   AC_SUV : "ஏசி எஸ்யூவி",
   DOWNGRADE_VEHICLE : "தரமிறக்கும் வாகனம்",
-  WHAT_ARE_PURPLE_RIDES : "பர்பிள் சவாரிகள் என்றால் என்ன?"
+  WHAT_ARE_PURPLE_RIDES : "பர்பிள் சவாரிகள் என்றால் என்ன?",
+  GET_READY_FOR_YS_SUBSCRIPTION : "யாத்ரி சதி திட்டங்களுக்கு தயாராகுங்கள்!",
+  SIGNUP_EARLY_FOR_SPECIAL_OFFERS : "சிறப்புச் சலுகைகளுக்கு முன்கூட்டியே பதிவுசெய்க",
+  GUARANTEED_FIXED_PRICE : "ஜனவரி 1, 2025 வரை நிலையான விலைக்கு உத்தரவாதம்",
+  INTRODUCTORY_OFFER_TO_BE_ANNOUNCED_SOON : "அறிமுக சலுகை விரைவில் அறிவிக்கப்படும்!",
+  NO_CHARGES_TILL : "டிசம்பர் 31 வரை கட்டணம் இல்லை",
 }

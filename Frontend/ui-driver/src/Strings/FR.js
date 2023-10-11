@@ -523,7 +523,7 @@ const frenchStrings = {
   PAYMENT_HISTORY : "Historique des paiements",
   DO_A_ONE_TIME_SETTLEMENT : "Effectuer un règlement unique",
   TAP_A_PLAN_TO_VIEW_DETAILS : "Appuyez sur un plan pour afficher les détails",
-  HOW_IT_WORKS : "Comment ça marche ?",
+  HOW_IT_WORKS : "Comment fonctionne le paiement automatique ?",
   ZERO_COMMISION : "ZERO commission",
   EARN_TODAY_PAY_TOMORROW : "Gagnez aujourd'hui, payez demain",
   PAY_ONLY_IF_YOU_TAKE_RIDES : "Ne payez que si vous faites des trajets",
@@ -737,5 +737,10 @@ const frenchStrings = {
   AC_CAB : "Cabine AC",
   AC_SUV : "SUV climatisé",
   DOWNGRADE_VEHICLE : "véhicule déclassé",
-  WHAT_ARE_PURPLE_RIDES : "Qu'est-ce que les Purple Rides ?"
+  WHAT_ARE_PURPLE_RIDES : "Qu'est-ce que les Purple Rides ?",
+  GET_READY_FOR_YS_SUBSCRIPTION : "Préparez-vous pour les plans Yatri Sathi !",
+  SIGNUP_EARLY_FOR_SPECIAL_OFFERS : "Inscrivez-vous tôt pour bénéficier d'offres spéciales",
+  GUARANTEED_FIXED_PRICE : "Prix fixe garanti jusqu'au 1er janvier 2025",
+  INTRODUCTORY_OFFER_TO_BE_ANNOUNCED_SOON : "L'offre de lancement sera bientôt annoncée !",
+  NO_CHARGES_TILL : "Aucun frais jusqu'au 31 décembre",
 }

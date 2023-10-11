@@ -696,7 +696,7 @@ const englishStrings = {
   PAYMENT_HISTORY : "Payment History",
   DO_A_ONE_TIME_SETTLEMENT : "Do a one-time Settlement",
   TAP_A_PLAN_TO_VIEW_DETAILS : "Tap a plan to view details",
-  HOW_IT_WORKS : "How it works?",
+  HOW_IT_WORKS : "How Autopay works?",
   ZERO_COMMISION : "ZERO commission",
   EARN_TODAY_PAY_TOMORROW : "Earn Today, Pay Tomorrow",
   PAY_ONLY_IF_YOU_TAKE_RIDES : "Pay only if you take rides",
@@ -936,5 +936,10 @@ const englishStrings = {
   AC_CAB : "AC Cab",
   AC_SUV : "AC SUV",
   DOWNGRADE_VEHICLE : "Downgrade Vehicle",
-  WHAT_ARE_PURPLE_RIDES : "What are Purple Rides?"
+  WHAT_ARE_PURPLE_RIDES : "What are Purple Rides?",
+  GET_READY_FOR_YS_SUBSCRIPTION : "Get ready for\nYatri Sathi Plans!",
+  SIGNUP_EARLY_FOR_SPECIAL_OFFERS : "Signup early for special offers",
+  GUARANTEED_FIXED_PRICE : "Guaranteed fixed price until \nJan 1, 2025",
+  INTRODUCTORY_OFFER_TO_BE_ANNOUNCED_SOON : "Introductory offer will be announced soon!",
+  NO_CHARGES_TILL : "No charges till Dec 31"
 } 
