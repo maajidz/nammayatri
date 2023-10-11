@@ -84,7 +84,8 @@ instance FromTType' BeamDPC.DriverPoolConfig DriverPoolConfig where
             driverToDestinationDistanceThreshold = driverToDestinationDistanceThreshold,
             driverToDestinationDuration = driverToDestinationDuration,
             createdAt = createdAt,
-            updatedAt = updatedAt
+            updatedAt = updatedAt,
+            vehicleVariant = vehicleVariant
           }
 
 instance ToTType' BeamDPC.DriverPoolConfig DriverPoolConfig where
@@ -110,5 +111,6 @@ instance ToTType' BeamDPC.DriverPoolConfig DriverPoolConfig where
         BeamDPC.driverToDestinationDistanceThreshold = driverToDestinationDistanceThreshold,
         BeamDPC.driverToDestinationDuration = driverToDestinationDuration,
         BeamDPC.createdAt = createdAt,
-        BeamDPC.updatedAt = updatedAt
+        BeamDPC.updatedAt = updatedAt,
+        BeamDPC.vehicleVariant = vehicleVariant
       }

@@ -193,8 +193,9 @@ handler merchant sReq = do
     listVehicleVariantHelper farePolicy = catMaybes $ everyPossibleVariant <&> \var -> find ((== var) . (.vehicleVariant)) farePolicy
 
     buildEstimates farePolicies result fromLocation toLocation specialLocationTag area routeInfo = do
-      driverPoolCfg <- getDriverPoolConfig merchant.id result.distance
-      estimateInfos <- buildEstimatesInfos fromLocation toLocation driverPoolCfg result farePolicies specialLocationTag area routeInfo
+      driverPoolCfgs <- getDriverPoolConfigs merchant.id result.distance
+      let estimateInfo = mapM (\cfg -> buildEstimatesInfos cfg.vehicleVariant fromLocation toLocation cfg result farePolicies specialLocationTag area routeInfo) driverPoolCfgs
+      estimateInfos :: [EstimateInfo] <- concat <$> estimateInfo
       return (Nothing, Just estimateInfos)
 
     selectFarePolicy distance farePolicies = do
@@ -215,6 +216,7 @@ handler merchant sReq = do
         Just dp -> return (estimate, dp)
 
     buildEstimatesInfos ::
+      DVeh.Variant ->
       DLoc.Location ->
       DLoc.Location ->
       DriverPoolConfig ->
@@ -224,14 +226,14 @@ handler merchant sReq = do
       DFareProduct.Area ->
       RouteInfo ->
       Flow [EstimateInfo]
-    buildEstimatesInfos fromLocation toLocation driverPoolCfg result farePolicies specialLocationTag area routeInfo = do
+    buildEstimatesInfos mbVariant fromLocation toLocation driverPoolCfg result farePolicies specialLocationTag area routeInfo = do
       let merchantId = merchant.id
       if null farePolicies
         then do
           logDebug "Trip doesnot match any fare policy constraints."
           return []
         else do
-          driverPoolNotOnRide <- calculateDriverPool Estimate driverPoolCfg Nothing fromLocation merchantId True Nothing
+          driverPoolNotOnRide <- calculateDriverPool Estimate driverPoolCfg (Just mbVariant) fromLocation merchantId True Nothing
           logDebug $ "Driver Pool not on ride " <> show driverPoolNotOnRide
           driverPoolCurrentlyOnRide <-
             if null driverPoolNotOnRide

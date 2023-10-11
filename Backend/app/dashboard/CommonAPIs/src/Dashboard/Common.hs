@@ -18,6 +18,7 @@ module Dashboard.Common where
 import Data.Aeson
 import Data.OpenApi
 import Kernel.Prelude
+import Servant (FromHttpApiData (..), ToHttpApiData (..))
 
 data Customer
 
@@ -47,7 +48,24 @@ data DriverHomeLocation
 
 data Variant = SEDAN | SUV | HATCHBACK | AUTO_RICKSHAW | TAXI | TAXI_PLUS
   deriving stock (Show, Generic)
-  deriving anyclass (ToJSON, FromJSON, ToSchema)
+  deriving anyclass (ToJSON, FromJSON, ToSchema, ToParamSchema)
+
+instance FromHttpApiData Variant where
+  parseUrlPiece "sedan" = pure SEDAN
+  parseUrlPiece "suv" = pure SUV
+  parseUrlPiece "hatchback" = pure HATCHBACK
+  parseUrlPiece "auto_rickshaw" = pure AUTO_RICKSHAW
+  parseUrlPiece "taxi" = pure TAXI
+  parseUrlPiece "taxi_plus" = pure TAXI_PLUS
+  parseUrlPiece _ = Left "Unabl to parse Variant"
+
+instance ToHttpApiData Variant where
+  toUrlPiece SEDAN = "sedan"
+  toUrlPiece SUV = "suv"
+  toUrlPiece HATCHBACK = "hatchback"
+  toUrlPiece AUTO_RICKSHAW = "auto_rickshaw"
+  toUrlPiece TAXI = "taxi"
+  toUrlPiece TAXI_PLUS = "taxi_plus"
 
 -- | Hide secrets before storing request (or response) to DB.
 --

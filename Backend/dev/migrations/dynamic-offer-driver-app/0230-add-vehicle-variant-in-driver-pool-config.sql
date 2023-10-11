@@ -1,0 +1,21 @@
+ALTER TABLE atlas_driver_offer_bpp.driver_pool_config ADD vehicle_variant character varying(255);
+
+INSERT INTO atlas_driver_offer_bpp.driver_pool_config (
+	merchant_id,min_radius_of_search,max_radius_of_search,radius_step_size,driver_position_info_expiry,actual_distance_threshold,max_driver_quotes_required,driver_quote_limit,driver_request_count_limit,driver_batch_size,max_number_of_batches,max_parallel_search_requests,pool_sorting_type,single_batch_process_time,trip_distance,radius_shrink_value_for_drivers_on_ride,driver_to_destination_distance_threshold,driver_to_destination_duration,vehicle_variant)
+	VALUES ('favorit0-0000-0000-0000-00000favorit',5000,7000,500,36000,7000,1,2,3,5,3,3,'Intelligent',10,15,300,300,10,'SEDAN');
+
+INSERT INTO atlas_driver_offer_bpp.driver_pool_config (
+	merchant_id,min_radius_of_search,max_radius_of_search,radius_step_size,driver_position_info_expiry,actual_distance_threshold,max_driver_quotes_required,driver_quote_limit,driver_request_count_limit,driver_batch_size,max_number_of_batches,max_parallel_search_requests,pool_sorting_type,single_batch_process_time,trip_distance,radius_shrink_value_for_drivers_on_ride,driver_to_destination_distance_threshold,driver_to_destination_duration,vehicle_variant)
+	VALUES ('favorit0-0000-0000-0000-00000favorit',3000,5000,500,36000,7000,1,2,3,5,3,3,'Intelligent',10,16,300,300,10,'SUV');
+
+INSERT INTO atlas_driver_offer_bpp.driver_pool_config (
+	merchant_id,min_radius_of_search,max_radius_of_search,radius_step_size,driver_position_info_expiry,actual_distance_threshold,max_driver_quotes_required,driver_quote_limit,driver_request_count_limit,driver_batch_size,max_number_of_batches,max_parallel_search_requests,pool_sorting_type,single_batch_process_time,trip_distance,radius_shrink_value_for_drivers_on_ride,driver_to_destination_distance_threshold,driver_to_destination_duration,vehicle_variant)
+	VALUES ('favorit0-0000-0000-0000-00000favorit',2000,4000,500,36000,7000,1,2,3,5,3,3,'Intelligent',10,17,300,300,10,'HATCHBACK');
+
+INSERT INTO atlas_driver_offer_bpp.driver_pool_config (
+	merchant_id,min_radius_of_search,max_radius_of_search,radius_step_size,driver_position_info_expiry,actual_distance_threshold,max_driver_quotes_required,driver_quote_limit,driver_request_count_limit,driver_batch_size,max_number_of_batches,max_parallel_search_requests,pool_sorting_type,single_batch_process_time,trip_distance,radius_shrink_value_for_drivers_on_ride,driver_to_destination_distance_threshold,driver_to_destination_duration,vehicle_variant)
+	VALUES ('favorit0-0000-0000-0000-00000favorit',1000,3000,500,36000,7000,1,2,3,5,3,3,'Intelligent',10,18,300,300,10,'AUTO_RICKSHAW');
+
+INSERT INTO atlas_driver_offer_bpp.driver_pool_config (
+	merchant_id,min_radius_of_search,max_radius_of_search,radius_step_size,driver_position_info_expiry,actual_distance_threshold,max_driver_quotes_required,driver_quote_limit,driver_request_count_limit,driver_batch_size,max_number_of_batches,max_parallel_search_requests,pool_sorting_type,single_batch_process_time,trip_distance,radius_shrink_value_for_drivers_on_ride,driver_to_destination_distance_threshold,driver_to_destination_duration,vehicle_variant)
+	VALUES ('favorit0-0000-0000-0000-00000favorit',3000,7000,500,36000,7000,1,2,3,5,3,3,'Intelligent',10,19,300,300,10,'TAXI');
