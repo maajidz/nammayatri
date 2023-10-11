@@ -42,7 +42,7 @@ import Kernel.Types.Id
 import Kernel.Utils.Common hiding (id)
 import qualified Lib.Payment.Domain.Types.PaymentOrder as DOrder
 import qualified Lib.Payment.Storage.Queries.PaymentOrder as SOrder
-import SharedLogic.DriverFee (roundToHalf)
+import SharedLogic.DriverFee (calculatePlatformFeeAttr, roundToHalf)
 import qualified SharedLogic.MessageBuilder as MessageBuilder
 import qualified SharedLogic.Payment as SPayment
 import qualified Storage.CachedQueries.Merchant.TransporterConfig as QTC
@@ -104,7 +104,8 @@ data PlanFareBreakup = PlanFareBreakup
 data OfferEntity = OfferEntity
   { title :: Maybe Text,
     description :: Maybe Text,
-    tnc :: Maybe Text
+    tnc :: Maybe Text,
+    offerId :: Text
   }
   deriving (Generic, ToJSON, FromJSON, ToSchema)
 
@@ -407,6 +408,7 @@ createMandateInvoiceAndOrder driverId merchantId plan = do
         else do
           SPayment.createOrder (driverId, merchantId) ([driverFee], []) (Just $ mandateOrder currentDues now mandateValidity) INV.MANDATE_SETUP_INVOICE Nothing
     mkDriverFee currentDues = do
+      let (fee, cgst, sgst) = if currentDues > 0 then (0.0, 0.0, 0.0) else calculatePlatformFeeAttr plan.registrationAmount plan
       id <- generateGUID
       now <- getCurrentTime
       return $
@@ -418,7 +420,7 @@ createMandateInvoiceAndOrder driverId merchantId plan = do
             numRides = 0,
             createdAt = now,
             updatedAt = now,
-            platformFee = DF.PlatformFee (if currentDues > 0 then 0.0 else plan.registrationAmount) 0.0 0.0,
+            platformFee = DF.PlatformFee fee cgst sgst,
             totalEarnings = 0,
             feeType = DF.MANDATE_REGISTRATION,
             govtCharges = 0,
@@ -485,7 +487,8 @@ convertPlanToPlanEntity driverId applicationDate isCurrentPlanEntity plan@Plan {
       OfferEntity
         { title = offer.offerDescription.title,
           description = offer.offerDescription.description,
-          tnc = offer.offerDescription.tnc
+          tnc = offer.offerDescription.tnc,
+          offerId = offer.offerId
         }
     makeOfferReq date paymentMode_ transporterConfig = do
       driver <- QP.findById driverId >>= fromMaybeM (PersonDoesNotExist driverId.getId)
