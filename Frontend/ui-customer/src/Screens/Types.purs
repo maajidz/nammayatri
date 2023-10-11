@@ -536,6 +536,24 @@ derive instance genericStage :: Generic Stage _
 instance eqStage :: Eq Stage where eq = genericEq
 instance showStage :: Show Stage where show = genericShow
 
+data RentalStage = NotRental
+                 | RentalSearchLocation
+                 | RentalSlab
+                 | RentalFareBreakup
+                 | RentalScheduleRide
+                 | RentalSearchRides
+
+derive instance rentalGenericStage :: Generic RentalStage _
+instance rentalEqStage :: Eq RentalStage where eq = genericEq
+instance rentalShowStage :: Show RentalStage where show = genericShow
+
+data BookingStage = NormalBooking
+                  | Rental
+                  
+derive instance genericBookingStage :: Generic BookingStage _
+instance eqBookingStage :: Eq BookingStage where eq = genericEq
+instance showBookingStage :: Show BookingStage where show = genericShow
+
 data SearchLocationModelType = SearchLocation | LocateOnMap | NoView
 
 data PopupType = Logout | ConfirmBack | NoPopUp | ActiveQuotePopUp | TipsPopUp
@@ -703,7 +721,15 @@ type HomeScreenStateProps =
   , showDisabilityPopUp :: Boolean
   , isChatNotificationDismissed :: Boolean
   , searchLocationModelProps :: SearchLocationModelProps
+  , rentalStage :: RentalStage
+  , showRentalPackagePopup :: Boolean
+  , bookingStage :: BookingStage
+  , rentalData :: RentalConfig
   }
+
+type RentalConfig = {
+    dateAndTime :: String
+}
 
 type SearchLocationModelProps = {
     isAutoComplete :: Boolean

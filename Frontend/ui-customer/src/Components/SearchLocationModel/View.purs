@@ -20,6 +20,8 @@ import Common.Types.App
 import Animation (translateYAnimFromTop)
 import Animation.Config (translateFullYAnimWithDurationConfig, translateYAnimHomeConfig, Direction(..))
 import Common.Types.App (LazyCheck(..))
+import Components.Calendar.View as CalendarView
+import Components.Calendar.Controller as CalendarController
 import Components.LocationListItem as LocationListItem
 import Components.LocationTagBar as LocationTagBar
 import Components.PrimaryButton as PrimaryButton
@@ -29,13 +31,13 @@ import Data.Function (flip)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Debug (spy)
 import Effect (Effect)
-import Engineering.Helpers.Commons (getNewIDWithTag, isPreviousVersion, os, safeMarginBottom, safeMarginTop, screenHeight, screenWidth, setText)
+import Engineering.Helpers.Commons (getNewIDWithTag, isPreviousVersion, os, safeMarginBottom, safeMarginTop, screenHeight, screenWidth, setText, getCurrentUTC, convertUTCtoISC)
 import Engineering.Helpers.LogEvent (logEvent)
 import Font.Size as FontSize
 import Font.Style as FontStyle
 import Helpers.Utils (debounceFunction, getLocationName, getPreviousVersion, getSearchType)
 import Helpers.Utils (getAssetStoreLink, getCommonAssetStoreLink, getAssetsBaseUrl)
-import JBridge (getBtnLoader, showKeyboard, getCurrentPosition, firebaseLogEvent, startLottieProcess, lottieAnimationConfig)
+import JBridge (getBtnLoader, showKeyboard, getCurrentPosition, firebaseLogEvent, startLottieProcess, lottieAnimationConfig, datePicker, dateAndTimePicker, timePicker)
 import Language.Strings (getString)
 import Language.Types (STR(..))
 import MerchantConfig.Utils (Merchant(..), getMerchant)
@@ -43,20 +45,23 @@ import Prelude ((<>))
 import Prelude (Unit, bind, const, map, pure, unit, ($), (&&), (+), (-), (/), (/=), (<<<), (<>), (==), (||), not, discard, (>=), void)
 import PrestoDOM (Gravity(..), Length(..), Margin(..), Orientation(..), Accessiblity(..), Padding(..), PrestoDOM, Visibility(..), Accessiblity(..), accessibilityHint ,adjustViewWithKeyboard, afterRender, alignParentBottom, alpha, autoCorrectionType, background, clickable, color, cornerRadius, cursorColor, disableClickFeedback, editText, ellipsize, fontStyle, frameLayout, gravity, height, hint, hintColor, id, imageUrl, imageView, imageWithFallback, inputTypeI, lineHeight, linearLayout, margin, onBackPressed, onChange, onClick, onFocus, orientation, padding, relativeLayout, scrollBarY, scrollView, singleLine, stroke, text, textSize, textView, visibility, weight, width, accessibility, lottieAnimationView, layoutGravity)
 import PrestoDOM.Animation as PrestoAnim
+import PrestoDOM.Properties (cornerRadii, sheetState)
+import PrestoDOM.Types.DomAttributes (Corners(..))
 import Resources.Constants (getDelayForAutoComplete)
-import Screens.Types (SearchLocationModelType(..), LocationListItemState)
+import Screens.Types (RentalStage(..), SearchLocationModelType(..), LocationListItemState, BookingStage(..))
 import Storage (KeyStore(..), getValueToLocalStore)
 import Styles.Colors as Color
 import Data.String as DS
 
 view :: forall w. (Action -> Effect Unit) -> SearchLocationModelState -> PrestoDOM (Effect Unit) w
 view push state =
-  linearLayout
+  let showDestinationEditText = if(state.bookingStage == Rental) then dateTimerView state push else sourceDestinationEditTextView state push
+  in linearLayout
       [ height MATCH_PARENT
       , width MATCH_PARENT
       , orientation VERTICAL
       , background case state.isSearchLocation of
-                    SearchLocation -> Color.white900
+                    SearchLocation -> if(state.rentalStage /= NotRental) then Color.white900 else if (state.isRideServiceable) then Color.grey800 else Color.white900
                     _           -> Color.transparent --"#FFFFFF"
       , margin $ MarginBottom (if state.isSearchLocation == LocateOnMap then bottomSpacing else 0)
       , onBackPressed push (const $ GoBack)
@@ -91,7 +96,8 @@ view push state =
                       ]
                   ]
                   , sourceDestinationImageView state
-                  , sourceDestinationEditTextView state push
+                  , showDestinationEditText
+                  -- , 
                   ]]
                   , relativeLayout 
                     [ width MATCH_PARENT
@@ -120,7 +126,7 @@ searchResultsParentView state push =
   , height MATCH_PARENT
   , margin $ MarginHorizontal 16 16
   , orientation VERTICAL
-  , visibility if state.isSearchLocation == SearchLocation && state.isRideServiceable && not state.showLoader then VISIBLE else GONE
+  , visibility if state.isSearchLocation == SearchLocation && state.isRideServiceable && not state.showLoader && state.rentalStage /= RentalSlab then VISIBLE else GONE
     ][  savedLocationBar state push
       , searchResultsView state push ]
 
@@ -184,7 +190,12 @@ locationUnserviceableView state push =
 ---------------------------- sourceDestinationImageView ---------------------------------
 sourceDestinationImageView :: forall w. SearchLocationModelState -> PrestoDOM (Effect Unit) w
 sourceDestinationImageView state =
-  frameLayout
+  let secondImage = case state.bookingStage of
+                      Rental -> "ys_ic_calendar," <> (getAssetStoreLink FunctionCall) <> "ys_ic_calendar.png"
+                      _      -> "ny_ic_red_circle," <> (getCommonAssetStoreLink FunctionCall) <> "ny_ic_red_circle.png"
+      showDottedLine = if state.bookingStage == Rental then false else true 
+      secondImageSize = if state.bookingStage == Rental then 20 else 15 
+  in frameLayout
     [ height $ V 100
     , width $ V 35
     , margin $ MarginTop 9
@@ -212,9 +223,9 @@ sourceDestinationImageView state =
         , gravity CENTER
         , margin (Margin 2 70 2 0)
         ][  imageView
-            [ height $ V 15
-            , width $ V 15
-            , imageWithFallback $ "ny_ic_red_circle," <> (getCommonAssetStoreLink FunctionCall) <> "ny_ic_red_circle.png"
+            [ height $ V secondImageSize
+            , width $ V secondImageSize
+            , imageWithFallback secondImage
             ]
         ]
     ]
@@ -235,7 +246,7 @@ sourceDestinationEditTextView state push =
       , background Color.darkGreyishBlue
       , cornerRadius 4.0 
       , stroke $ if state.isSource == Just true && state.isSearchLocation == LocateOnMap then "1," <> Color.yellowText else "0," <> Color.yellowText
-      ][ editText $
+      ][  editText $
             [ height $ V 37
             , weight 1.0
             , text state.source
@@ -269,6 +280,7 @@ sourceDestinationEditTextView state push =
             , inputTypeI if state.isSearchLocation == LocateOnMap then 0 else 1
             , onFocus push $ const $ EditTextFocusChanged "S"
             , autoCorrectionType 1
+            , clickable if(state.rentalStage == RentalSlab) then false else true
             ] <> FontStyle.subHeading1 LanguageStyle
         , linearLayout
             [ height $ V 32
@@ -290,6 +302,19 @@ sourceDestinationEditTextView state push =
                 , imageWithFallback $ "ny_ic_close_grey," <> (getAssetStoreLink FunctionCall) <> "ny_ic_close_grey.png"
                 ]
             ]
+        , linearLayout
+          [ height $ V 45
+          , width WRAP_CONTENT
+          , gravity CENTER
+          , padding (Padding 0 10 0 5)
+          , visibility if state.rentalStage == RentalSlab then VISIBLE else GONE
+          ]
+          [ imageView
+            [ height $ V 45 
+            , width $ V 16
+            , imageWithFallback $ "ys_edit_pencil," <> (getAssetStoreLink FunctionCall <> "ys_edit_pencil.png")
+            ]
+          ]
         ]
     , linearLayout
         [ height $ V 1
@@ -362,7 +387,20 @@ sourceDestinationEditTextView state push =
                 , width $ V 19
                 , imageWithFallback $ "ny_ic_close_grey," <> (getAssetStoreLink FunctionCall) <> "ny_ic_close_grey.png"
                 ]
+            ] 
+        , linearLayout
+          [ height $ V 45
+          , width WRAP_CONTENT
+          , gravity CENTER
+          , padding (PaddingHorizontal 5 5)
+          , visibility if(state.rentalStage == RentalSlab) then VISIBLE else GONE
+          ]
+          [imageView
+            [ height $ V 16
+            , width $ V 16
+            , imageWithFallback $ "ny_ic_clear," <> (getAssetStoreLink FunctionCall) <> "ny_ic_clear.png"
             ]
+          ]
         ]
     , linearLayout
         [ height $ V 1
@@ -421,7 +459,7 @@ primaryButtonConfig state =
     config = PrimaryButton.config
     primaryButtonConfig' = config
       { textConfig
-        { text = if state.isSearchLocation == LocateOnMap then if state.isSource == Just true then (getString CONFIRM_PICKUP_LOCATION) else (getString CONFIRM_DROP_LOCATION) else ""
+        { text =  if state.rentalStage == RentalSearchLocation then (getString CONFIRM_PICKUP_LOCATION) else if state.isSearchLocation == LocateOnMap then if state.isSource == Just true then (getString CONFIRM_PICKUP_LOCATION) else (getString CONFIRM_DROP_LOCATION) else ""
         , color = state.homeScreenConfig.primaryTextColor
         , height = V 40
         }
@@ -437,12 +475,14 @@ primaryButtonConfig state =
 
 savedLocationBar :: forall w. SearchLocationModelState -> (Action -> Effect Unit) -> PrestoDOM (Effect Unit) w
 savedLocationBar state push =
+  let showSavedLocation = if state.bookingStage == Rental then false else true
+  in
   linearLayout
   [ width MATCH_PARENT
   , height WRAP_CONTENT
   , margin $ if os == "IOS" then MarginVertical 15 15 else MarginTop 15
   , accessibility DISABLE_DESCENDANT
-  , visibility if (not state.isAutoComplete) then VISIBLE else GONE
+  , visibility if (not state.isAutoComplete && showSavedLocation) then VISIBLE else GONE
   ][ linearLayout
      [ width MATCH_PARENT
      , height WRAP_CONTENT
@@ -460,8 +500,8 @@ primaryButtonView state push =
     , background Color.transparent
     , visibility if state.isSearchLocation == LocateOnMap then VISIBLE else GONE
     ][ recenterButtonView push state
-      , PrimaryButton.view (push <<< PrimaryButtonActionController)(primaryButtonConfig state)]
-
+      , PrimaryButton.view (push <<< PrimaryButtonActionController)(primaryButtonConfig state)
+    ]
 
 
 recenterButtonView :: forall w. (Action -> Effect Unit) -> SearchLocationModelState -> PrestoDOM ( Effect Unit) w
@@ -489,6 +529,8 @@ recenterButtonView push state =
 
 bottomBtnsView :: forall w . SearchLocationModelState -> (Action  -> Effect Unit) -> PrestoDOM (Effect Unit) w
 bottomBtnsView state push =
+  let showBottomButtonView = if state.isSearchLocation == LocateOnMap || (not state.isRideServiceable) || state.bookingStage == Rental then false else true
+  in
   linearLayout
     [ height WRAP_CONTENT
     , width MATCH_PARENT
@@ -497,7 +539,7 @@ bottomBtnsView state push =
     , alignParentBottom "true,-1"
     , background Color.white900
     , accessibility DISABLE_DESCENDANT
-    , visibility if state.isSearchLocation == LocateOnMap || (not state.isRideServiceable) then GONE else VISIBLE
+    , visibility if showBottomButtonView then VISIBLE else GONE
     , adjustViewWithKeyboard "true"
     ][  linearLayout
         [ height $ V 1
@@ -577,3 +619,71 @@ destBtnData state =
   [ { text: (getString SELECT_LOCATION_ON_MAP), imageUrl: "ny_ic_locate_on_map,https://assets.juspay.in/nammayatri/images/user/ny_ic_locate_on_map.png", action: SetLocationOnMap, buttonType: "LocateOnMap" }]
 
 
+---------------------------- dateTimerView ---------------------------------
+dateTimerView :: forall w . SearchLocationModelState -> (Action  -> Effect Unit) -> PrestoDOM (Effect Unit) w
+dateTimerView state push = 
+  linearLayout
+  [ width MATCH_PARENT
+  , orientation VERTICAL
+  , margin if os == "IOS" then (Margin 0 18 15 0) else (Margin 0 16 16 0)
+  , height $ V 121
+  ] 
+  [ linearLayout 
+    [ height WRAP_CONTENT
+    , width MATCH_PARENT
+    , orientation HORIZONTAL
+    , background Color.darkGreyishBlue
+    , cornerRadius 4.0 
+    , stroke $ if state.isSource == Just true && state.isSearchLocation == LocateOnMap then "1," <> Color.yellowText else "0," <> Color.yellowText
+    ] [
+      textView $
+      [ height $ V 37
+      , weight 1.0
+      , text state.source
+      , color Color.white900
+      , background Color.darkGreyishBlue
+      , singleLine true
+      , ellipsize true
+      , cornerRadius 4.0
+      , padding (Padding 8 7 32 7)
+      , lineHeight "24"
+      , cursorColor state.homeScreenConfig.primaryTextColor
+      , accessibilityHint "Pickup Location Editable field"
+      , accessibility ENABLE
+      , hint (getString START_)
+      , hintColor Color.black600
+      ] <> FontStyle.subHeading1 LanguageStyle 
+    ]
+  , linearLayout
+  [ height WRAP_CONTENT
+  , width MATCH_PARENT
+  , cornerRadius 4.0
+  , orientation HORIZONTAL
+  , margin $ MarginTop 12
+  , background Color.darkGreyishBlue
+  , stroke if state.isSource == Just false && state.isSearchLocation == LocateOnMap then "1," <> Color.yellowText else "0," <> Color.yellowText
+  , onClick (\action -> timePicker push $ TimePicker
+                      ) (const NoAction)
+  ][ textView $
+    [ height $ V 37
+    , weight 1.0
+    , text state.rentalData.dateAndTime
+    , color Color.white900
+    , stroke $ "0," <> Color.black
+    , padding (Padding 8 7 4 7)
+    , hint ("Now, Date")
+    , hintColor Color.black600
+    , singleLine true
+    , ellipsize true
+    , accessibilityHint "Destination Location Editable field"
+    , accessibility ENABLE
+    , cursorColor state.homeScreenConfig.primaryTextColor 
+    ] <> FontStyle.subHeading1 LanguageStyle 
+  ]
+]
+
+calendarConfig :: SearchLocationModelState -> CalendarController.Config
+calendarConfig state = 
+  let
+    config = CalendarController.config
+  in config

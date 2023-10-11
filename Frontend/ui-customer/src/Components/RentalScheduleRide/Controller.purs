@@ -13,16 +13,16 @@
   the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -}
 
-module Components.SearchLocationModel.Controller where
+module Components.RentalScheduleRide.Controller where
 
-import Components.Calendar as Calendar
 import Components.LocationListItem as LocationListItem
 import Components.LocationTagBar as LocationTagBarController
 import Components.PrimaryButton as PrimaryButton
+import Components.PrimaryButton.Controller as PrimaryButtonController
 import Data.Maybe (Maybe(..))
 import Prelude (show)
 import PrestoDOM (Visibility(..))
-import Screens.Types (RentalStage(..), SearchLocationModelType, LocationListItemState, LocItemType(..), BookingStage(..), RentalConfig(..))
+import Screens.Types (RentalStage(..), SearchLocationModelType, LocationListItemState, LocItemType(..))
 import MerchantConfig.Types (AppConfig)
 import Helpers.Utils (getAssetStoreLink, getCommonAssetStoreLink)
 import Common.Types.App (LazyCheck(..))
@@ -31,24 +31,7 @@ import Foreign.Object (Object)
 import Foreign (Foreign)
 
 data Action = GoBack
-            | NoAction
-            | SourceChanged String
-            | DestinationChanged String
-            | SourceClear
-            | UpdateSource Number Number String
-            | DestinationClear
-            | SetLocationOnMap
-            | SetCurrentLocation
-            | EditTextFocusChanged String
-            | LocationListItemActionController LocationListItem.Action
-            | PrimaryButtonActionController PrimaryButton.Action
-            | DebounceCallBack String Boolean
-            | SavedAddressClicked LocationTagBarController.Action
-            | UpdateCurrentLocation String String
-            | RecenterCurrentLocation
-            | RentalScheduleAction
-            | TimePicker Int Int
-            | CalendarAC Calendar.Action
+            | PrimaryButtonActionController PrimaryButtonController.Action
 
 type SearchLocationModelState = {
     isSearchLocation :: SearchLocationModelType
@@ -62,14 +45,7 @@ type SearchLocationModelState = {
   , isRideServiceable :: Boolean
   , homeScreenConfig :: AppConfig
   , logField :: Object Foreign
-  , crossBtnSrcVisibility :: Boolean
-  , crossBtnDestVisibility :: Boolean
-  , isAutoComplete :: Boolean
-  , showLoader :: Boolean
-  , prevLocation :: String
   , rentalStage :: RentalStage
-  , bookingStage :: BookingStage
-  , rentalData :: RentalConfig
 }
 
 dummy_data :: Array LocationListItemState
