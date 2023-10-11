@@ -5,6 +5,8 @@ import Data.Aeson.Types (Parser)
 import qualified Data.Text as T
 import Database.Beam.Postgres (Postgres)
 import EulerHS.Prelude
+import qualified Lib.Payment.Storage.Beam.PaymentOrder as PaymentOrder
+import qualified Lib.Payment.Storage.Beam.PaymentTransaction as PaymentTransaction
 import Sequelize
 import qualified "dynamic-offer-driver-app" Storage.Beam.BapMetadata as BapMetadata
 import qualified "dynamic-offer-driver-app" Storage.Beam.BecknRequest as BecknRequest
@@ -74,6 +76,7 @@ import qualified "dynamic-offer-driver-app" Storage.Beam.Message.MessageReport a
 import qualified "dynamic-offer-driver-app" Storage.Beam.Message.MessageTranslation as MessageTranslation
 import qualified "dynamic-offer-driver-app" Storage.Beam.MetaData as MetaData
 import qualified "dynamic-offer-driver-app" Storage.Beam.OnboardingDocumentConfig as OnboardingDocumentConfig
+import qualified "dynamic-offer-driver-app" Storage.Beam.Payment ()
 import qualified "dynamic-offer-driver-app" Storage.Beam.Person as Person
 import qualified "dynamic-offer-driver-app" Storage.Beam.QuoteSpecialZone as QuoteSpecialZone
 import qualified "dynamic-offer-driver-app" Storage.Beam.Rating as Rating
@@ -175,6 +178,8 @@ data UpdateModel
   | GoHomeConfigUpdate
   | LocationUpdate
   | LocationMappingUpdate
+  | PaymentOrderUpdate
+  | PaymentTransactionUpdate
   deriving (Generic, Show)
 
 getTagUpdate :: UpdateModel -> Text
@@ -260,6 +265,8 @@ getTagUpdate DriverHomeLocationUpdate = "DriverHomeLocationOptions"
 getTagUpdate GoHomeConfigUpdate = "GoHomeConfigOptions"
 getTagUpdate LocationUpdate = "LocationOptions"
 getTagUpdate LocationMappingUpdate = "LocationMappingOptions"
+getTagUpdate PaymentOrderUpdate = "PaymentOrderOptions"
+getTagUpdate PaymentTransactionUpdate = "PaymentTransactionOptions"
 
 parseTagUpdate :: Text -> Parser UpdateModel
 parseTagUpdate "BapMetadataOptions" = return BapMetadataUpdate
@@ -344,6 +351,8 @@ parseTagUpdate "DriverHomeLocationOptions" = return DriverHomeLocationUpdate
 parseTagUpdate "GoHomeConfigOptions" = return GoHomeConfigUpdate
 parseTagUpdate "LocationOptions" = return LocationUpdate
 parseTagUpdate "LocationMappingOptions" = return LocationMappingUpdate
+parseTagUpdate "PaymentOrderOptions" = return PaymentOrderUpdate
+parseTagUpdate "PaymentTransactionOptions" = return PaymentTransactionUpdate
 parseTagUpdate t = fail $ T.unpack ("Expected a UpdateModel but got '" <> t <> "'")
 
 data DBUpdateObject
@@ -429,6 +438,8 @@ data DBUpdateObject
   | GoHomeConfigOptions UpdateModel [Set Postgres GoHomeConfig.GoHomeConfigT] (Where Postgres GoHomeConfig.GoHomeConfigT)
   | LocationOptions UpdateModel [Set Postgres Location.LocationT] (Where Postgres Location.LocationT)
   | LocationMappingOptions UpdateModel [Set Postgres LocationMapping.LocationMappingT] (Where Postgres LocationMapping.LocationMappingT)
+  | PaymentOrderOptions UpdateModel [Set Postgres PaymentOrder.PaymentOrderT] (Where Postgres PaymentOrder.PaymentOrderT)
+  | PaymentTransactionOptions UpdateModel [Set Postgres PaymentTransaction.PaymentTransactionT] (Where Postgres PaymentTransaction.PaymentTransactionT)
 
 -------------------------------- ToJSON DBUpdateObject -------------------------------------
 instance ToJSON DBUpdateObject where
@@ -686,3 +697,9 @@ instance FromJSON DBUpdateObject where
       LocationMappingUpdate -> do
         (updVals, whereClause) <- parseUpdateCommandValues contents
         return $ LocationMappingOptions updateModel updVals whereClause
+      PaymentOrderUpdate -> do
+        (updVals, whereClause) <- parseUpdateCommandValues contents
+        return $ PaymentOrderOptions updateModel updVals whereClause
+      PaymentTransactionUpdate -> do
+        (updVals, whereClause) <- parseUpdateCommandValues contents
+        return $ PaymentTransactionOptions updateModel updVals whereClause
