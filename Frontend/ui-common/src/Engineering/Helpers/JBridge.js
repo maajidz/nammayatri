@@ -1481,12 +1481,12 @@ export const showKeyboard = function(id){
     JBridge.showKeyboard(id); // imeOptions is set to IME_ACTION_SEARCH and IME_ACTION_DONE
 }
 
-export const locateOnMap = (str, lat, lon, geoJson, coodinates, zoomLevel) => {
+export const locateOnMap = (configObj) => {
   try{
-      let payload = { "goToCurrentLocation": str, "lat": lat, "lon": lon, "geoJson": geoJson, "points": JSON.stringify(coodinates), "zoomLevel": zoomLevel};
-      return JBridge.locateOnMap(JSON.stringify(payload));
+      console.log(JSON.stringify(configObj))
+      return JBridge.locateOnMap(JSON.stringify(configObj));
   } catch (err){
-      return JBridge.locateOnMap(str, lat, lon, geoJson, JSON.stringify(coodinates));
+      return JBridge.locateOnMap(configObj.goToCurrentLocation, configObj.lat, configObj.lon, configObj.geoJson, JSON.stringify(configObj.points));
   }
 };
 

@@ -77,7 +77,7 @@ import Foreign.Class (encode)
 foreign import showLoaderImpl      :: String -> Effect Unit
 -- foreign import readFile'      :: String -> Effect String
 -- foreign import showLoader'      :: String -> Effect Unit
-foreign import locateOnMap :: EffectFn6 Boolean Number Number String (Array Location) Number Unit
+foreign import locateOnMap :: LocateOnMapConfig -> Effect Unit
 
 foreign import exitLocateOnMap :: String -> Unit
 foreign import shareTextMessage :: String -> String -> Unit
@@ -382,6 +382,25 @@ updateRouteConfig = {
   , specialLocation : ""
   , zoomLevel : 17.0
 }
+
+type LocateOnMapConfig = {
+    goToCurrentLocation :: Boolean
+  , lat :: Number
+  , lon :: Number
+  , geoJson :: String
+  , points :: (Array Location)
+  , zoomLevel :: Number
+}
+
+locateOnMapConfig = {
+    goToCurrentLocation : false
+  , lat : 0.0
+  , lon : 0.0
+  , geoJson : ""
+  , points : []
+  , zoomLevel : 17.0
+}
+
 
 type MapRouteConfig = {
     sourceSpecialTagIcon :: String

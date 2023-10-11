@@ -70,7 +70,7 @@ import Font.Size as FontSize
 import Font.Style as FontStyle
 import Halogen.VDom.DOM.Prop (Prop)
 import Helpers.Utils (decodeError, fetchAndUpdateCurrentLocation, getCurrentLocationMarker, getLocationName, getNewTrackingId, getPreviousVersion, parseFloat, storeCallBackCustomer, storeCallBackLocateOnMap, storeOnResumeCallback, toString, getCommonAssetStoreLink, getAssetStoreLink, getAssetsBaseUrl, getSearchType)
-import JBridge (UpdateRouteMarker, addMarker, animateCamera, drawRoute, enableMyLocation, firebaseLogEvent, generateSessionId, getCurrentPosition, getExtendedPath, getHeightFromPercent, getLayoutBounds, initialWebViewSetUp, isCoordOnPath, isInternetAvailable, isMockLocation, lottieAnimationConfig, removeAllPolylines, removeMarker, requestKeyboardShow, scrollOnResume, showMap, startChatListenerService, startLottieProcess, startTimerWithTime, stopChatListenerService, storeCallBackMessageUpdated, storeCallBackOpenChatScreen, toast, updateRoute, waitingCountdownTimer, UpdateRouteConfig, Locations, MapRouteConfig)
+import JBridge (UpdateRouteMarker, addMarker, animateCamera, drawRoute, enableMyLocation, firebaseLogEvent, generateSessionId, getCurrentPosition, getExtendedPath, getHeightFromPercent, getLayoutBounds, initialWebViewSetUp, isCoordOnPath, isInternetAvailable, isMockLocation, lottieAnimationConfig, removeAllPolylines, removeMarker, requestKeyboardShow, scrollOnResume, showMap, startChatListenerService, startLottieProcess, startTimerWithTime, stopChatListenerService, storeCallBackMessageUpdated, storeCallBackOpenChatScreen, toast, updateRoute, waitingCountdownTimer, updateRouteConfig, Locations, MapRouteConfig)
 import Language.Strings (getString)
 import Language.Types (STR(..))
 import Log (printLog)
@@ -95,15 +95,6 @@ import Storage (KeyStore(..), getValueToLocalStore, isLocalStageOn, setValueToLo
 import Styles.Colors as Color
 import Types.App (GlobalState, defaultGlobalState)
 
-updateRouteConfig :: Locations -> String -> String -> String -> MapRouteConfig -> Number -> UpdateRouteConfig
-updateRouteConfig json destMarker eta srcMarker specialLocation zoomLevel = {
-    json : json
-  , destMarker : destMarker
-  , eta : eta
-  , srcMarker : srcMarker
-  , specialLocation : specialLocation
-  , zoomLevel : zoomLevel
-}
 screen :: HomeScreenState -> Screen Action HomeScreenState ScreenOutput
 screen initialState =
   { initialState
@@ -2022,7 +2013,7 @@ driverLocationTracking push action driverArrivedAction updateState duration trac
                                                     specialLocationConfig "" sourceSpecialTagIcon
                                                   else
                                                     specialLocationConfig "" destSpecialTagIcon
-                        liftFlow $ updateRoute (updateRouteConfig newPoints markers.destMarker (metersToKm locationResp.distance state) markers.srcMarker specialLocationTag zoomLevel)
+                        liftFlow $ updateRoute updateRouteConfig { json = newPoints, destMarker =  markers.destMarker, eta =  (metersToKm locationResp.distance state), srcMarker =  markers.srcMarker, specialLocation = specialLocationTag, zoomLevel = zoomLevel}
                         _ <- doAff do liftEffect $ push $ updateState locationResp.eta locationResp.distance
                         void $ delay $ Milliseconds duration
                         driverLocationTracking push action driverArrivedAction updateState duration trackingId state routeState
