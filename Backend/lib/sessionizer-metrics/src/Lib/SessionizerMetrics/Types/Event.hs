@@ -61,7 +61,7 @@ data EventStreamMap = EventStreamMap
   }
   deriving (Show, Read, Eq, Ord, Generic, ToJSON, FromJSON, ToSchema, FromDhall)
 
-data EventType = RideCreated | RideStarted | RideEnded | RideCancelled | BookingCreated | BookingCancelled | BookingCompleted | SearchRequest | Quotes | Estimate
+data EventType = RideCreated | RideStarted | RideEnded | RideCancelled | BookingCreated | BookingCancelled | BookingCompleted | SearchRequest | Quotes | Estimate | ExophoneData
   deriving (Show, Read, Eq, Ord, Generic, ToJSON, FromJSON, ToSchema, FromDhall)
 
 type EventStreamFlow m r = (HasFlowEnv m r '["kafkaProducerTools" ::: KafkaProducerTools], HasField "version" r DeploymentVersion, HasField "eventStreamMap" r [EventStreamMap], HasField "eventRequestCounter" r (Vector (Text, Text, Text) Counter))

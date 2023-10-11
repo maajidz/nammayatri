@@ -54,6 +54,7 @@ library
       API.Internal.FeedbackForm
       API.UI
       API.UI.Call
+      API.UI.CallEvent
       API.UI.CancellationReason
       API.UI.Driver
       API.UI.DriverOnboarding
@@ -127,6 +128,7 @@ library
       Domain.Action.Internal.DriverReferee
       Domain.Action.Internal.FeedbackForm
       Domain.Action.UI.Call
+      Domain.Action.UI.CallEvent
       Domain.Action.UI.CancellationReason
       Domain.Action.UI.Driver
       Domain.Action.UI.DriverOnboarding.AadhaarVerification

@@ -19,6 +19,7 @@ module API.UI
 where
 
 import qualified API.UI.Call as Call
+import qualified API.UI.CallEvent as CallEvent
 import qualified API.UI.CancellationReason as CancellationReason
 import qualified API.UI.Driver as Driver
 import qualified API.UI.DriverOnboarding as DriverOnboarding
@@ -79,6 +80,7 @@ type API =
            :<|> LeaderBoard.API
            :<|> OnMessage.API
            :<|> RideRoute.API
+           :<|> CallEvent.API
            :<|> Plan.API
            :<|> KioskLocation.API
        )
@@ -111,5 +113,6 @@ handler =
     :<|> LeaderBoard.handler
     :<|> OnMessage.handler
     :<|> RideRoute.handler
+    :<|> CallEvent.handler
     :<|> Plan.handler
     :<|> KioskLocation.handler

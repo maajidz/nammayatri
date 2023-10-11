@@ -55,6 +55,12 @@ data Payload
         vehVar :: VehicleVariant, --vehicle variant
         cAt :: UTCTime
       }
+  | Exophone
+      { vendor :: Maybe Text,
+        callType :: Maybe Text,
+        callSid :: Maybe Text,
+        status :: Maybe Text
+      }
   deriving (Show, Eq, Generic, ToJSON, FromJSON, ToSchema)
 
 data RideEventData = RideEventData
@@ -77,6 +83,17 @@ data QuoteEventData = QuoteEventData
   { quote :: DQuote.Quote,
     person :: Person,
     merchantId :: Id Merchant
+  }
+
+data ExophoneEventData = ExophoneEventData
+  { vendor :: Maybe Text,
+    callType :: Maybe Text,
+    rideId :: Id DRide.Ride,
+    callSid :: Maybe Text,
+    status :: Maybe Text,
+    merchantId :: Maybe (Id Merchant),
+    triggeredBy :: EventTriggeredBy,
+    personId :: Id Person
   }
 
 newtype SearchEventData = SearchEventData
@@ -183,3 +200,13 @@ triggerBookingEvent eventType bookingData = do
   let bookingPayload = Booking {bId = bookingData.booking.id, bs = bookingData.booking.status, cAt = bookingData.booking.createdAt, uAt = bookingData.booking.updatedAt}
   event <- createEvent (Just $ getId bookingData.booking.riderId) (getId bookingData.booking.merchantId) eventType RIDER_APP System (Just bookingPayload) (Just $ getId bookingData.booking.id)
   triggerEvent event
+
+triggerExophoneEvent ::
+  ( EventStreamFlow m r
+  ) =>
+  ExophoneEventData ->
+  m ()
+triggerExophoneEvent exophoneData = do
+  let exophonePayload = Exophone {vendor = exophoneData.vendor, callType = exophoneData.callType, callSid = exophoneData.callSid, status = exophoneData.status}
+  exoevent <- createEvent (Just $ getId exophoneData.personId) (maybe "" getId exophoneData.merchantId) ExophoneData RIDER_APP exophoneData.triggeredBy (Just exophonePayload) (Just exophoneData.rideId.getId)
+  triggerEvent exoevent
