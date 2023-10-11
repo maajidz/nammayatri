@@ -142,14 +142,14 @@ findAllRidesBookingsByRideId (Id merchantId) rideIds = do
 findOneByBookingId :: MonadFlow m => Id Booking -> m (Maybe Ride)
 findOneByBookingId (Id bookingId) = findAllWithOptionsKV [Se.Is BeamR.bookingId $ Se.Eq bookingId] (Se.Desc BeamR.createdAt) (Just 1) Nothing <&> listToMaybe
 
-findRidesWithinDates :: MonadFlow m => Id Person -> Maybe Ride.RideStatus -> Maybe Day -> Maybe Day -> m [Ride]
-findRidesWithinDates (Id driverId) mbRideStatus mbFromDay mbToDay =
+findRidesWithinDates :: MonadFlow m => Id Person -> Ride.RideStatus -> Day -> Day -> m [Ride]
+findRidesWithinDates (Id driverId) rideStatus fromDay toDay =
   findAllWithOptionsKV
     [ Se.And
         [ Se.Is BeamR.driverId $ Se.Eq driverId,
-          Se.Is BeamR.status $ Se.Eq (fromJust mbRideStatus),
-          Se.Is BeamR.updatedAt $ Se.GreaterThanOrEq (minDayTime (fromJust mbFromDay)),
-          Se.Is BeamR.updatedAt $ Se.LessThanOrEq (maxDayTime (fromJust mbToDay))
+          Se.Is BeamR.status $ Se.Eq rideStatus,
+          Se.Is BeamR.updatedAt $ Se.GreaterThanOrEq (minDayTime fromDay),
+          Se.Is BeamR.updatedAt $ Se.LessThanOrEq (maxDayTime toDay)
         ]
     ]
     (Se.Asc BeamR.updatedAt)

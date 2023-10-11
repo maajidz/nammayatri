@@ -12,11 +12,7 @@
  the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -}
 
-module API.UI.RideSummary
-  ( DriverRideSummaryListResp (..),
-    handler,
-  )
-where
+module API.UI.RideSummary where
 
 import Data.Time (Day)
 import Domain.Action.UI.RideSummary as RDS
@@ -34,14 +30,14 @@ type API =
   "rideSummary"
     :> ( "list"
            :> TokenAuth
-           :> QueryParam "status" Ride.RideStatus
-           :> QueryParam "fromDate" Day
-           :> QueryParam "toDate" Day
+           :> MandatoryQueryParam "status" Ride.RideStatus
+           :> MandatoryQueryParam "fromDate" Day
+           :> MandatoryQueryParam "toDate" Day
            :> Get '[JSON] RDS.DriverRideSummaryListResp
        )
 
 handler :: FlowServer API
 handler = listRideSummary
 
-listRideSummary :: (Id DP.Person, Id Merchant.Merchant) -> Maybe Ride.RideStatus -> Maybe Day -> Maybe Day -> FlowHandler RDS.DriverRideSummaryListResp
-listRideSummary (driverId, merchantId) mbRideStatus mbFromDay mbToDay = withFlowHandlerAPI $ RDS.listDriverRidesSummary driverId merchantId mbRideStatus mbFromDay mbToDay
+listRideSummary :: (Id DP.Person, Id Merchant.Merchant) -> Ride.RideStatus -> Day -> Day -> FlowHandler RDS.DriverRideSummaryListResp
+listRideSummary (driverId, merchantId) status fromDay toDay = withFlowHandlerAPI $ RDS.listDriverRidesSummary driverId merchantId status fromDay toDay

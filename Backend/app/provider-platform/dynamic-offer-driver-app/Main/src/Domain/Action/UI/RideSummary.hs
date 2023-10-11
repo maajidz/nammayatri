@@ -37,9 +37,9 @@ newtype DriverRideSummaryListResp = DriverRideSummaryListResp
   }
   deriving (Generic, Show, FromJSON, ToJSON, ToSchema)
 
-listDriverRidesSummary :: MonadFlow m => Id DP.Person -> Id Merchant.Merchant -> Maybe Ride.RideStatus -> Maybe Day -> Maybe Day -> m DriverRideSummaryListResp
-listDriverRidesSummary personId _ mbRideStatus mbFromDay mbToDay = do
-  rideSummaryList <- QRide.findRidesWithinDates personId mbRideStatus mbFromDay mbToDay
+listDriverRidesSummary :: MonadFlow m => Id DP.Person -> Id Merchant.Merchant -> Ride.RideStatus -> Day -> Day -> m DriverRideSummaryListResp
+listDriverRidesSummary personId _ rideStatus fromDay toDay = do
+  rideSummaryList <- QRide.findRidesWithinDates personId rideStatus fromDay toDay
   list <- mkRideSummaryList rideSummaryList
   return $ DriverRideSummaryListResp {..}
 

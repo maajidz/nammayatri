@@ -41,6 +41,7 @@ import qualified API.UI.Rating as Rating
 import qualified API.UI.Registration as Registration
 import qualified API.UI.Ride as Ride
 import qualified API.UI.RideRoute as RideRoute
+import qualified API.UI.RideSummary as RideSummary
 import qualified API.UI.Route as Route
 import qualified API.UI.Transporter as Transporter
 import qualified API.UI.Vehicle as Vehicle
@@ -81,6 +82,7 @@ type API =
            :<|> RideRoute.API
            :<|> Plan.API
            :<|> KioskLocation.API
+           :<|> RideSummary.API
        )
 
 handler :: FlowServer API
@@ -113,3 +115,4 @@ handler =
     :<|> RideRoute.handler
     :<|> Plan.handler
     :<|> KioskLocation.handler
+    :<|> RideSummary.handler
