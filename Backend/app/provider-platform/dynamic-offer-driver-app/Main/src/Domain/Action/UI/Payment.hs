@@ -22,6 +22,7 @@ module Domain.Action.UI.Payment
   )
 where
 
+import qualified Domain.Action.UI.Plan as DPlan
 import Domain.Action.UI.Ride.EndRide.Internal
 import Domain.Types.DriverFee
 import qualified Domain.Types.DriverInformation as DI
@@ -168,7 +169,7 @@ juspayWebhookHandler merchantShortId authData value = do
       pure Ack
     _ -> throwError $ InternalError "Unknown Service Config"
 
-processPayment :: (MonadFlow m, CacheFlow m r, EsqDBReplicaFlow m r, EsqDBFlow m r) => Id DM.Merchant -> Id DP.Person -> Id DOrder.PaymentOrder -> Bool -> m ()
+processPayment :: (MonadFlow m, CacheFlow m r, EsqDBReplicaFlow m r, EsqDBFlow m r, MonadThrow m) => Id DM.Merchant -> Id DP.Person -> Id DOrder.PaymentOrder -> Bool -> m ()
 processPayment merchantId driverId orderId sendNotification = do
   driver <- B.runInReplica $ QP.findById driverId >>= fromMaybeM (PersonDoesNotExist driverId.getId)
   driverInfo <- QDI.findById (cast driverId) >>= fromMaybeM (PersonNotFound driverId.getId)
@@ -183,6 +184,7 @@ processPayment merchantId driverId orderId sendNotification = do
     QDF.updateStatusByIds CLEARED driverFeeIds now
     QDFS.clearPaymentStatus driverId driverInfo.active
     QIN.updateInvoiceStatusByInvoiceId INV.SUCCESS (cast orderId)
+    when (driverInfo.autoPayStatus == Just DI.SUSPENDED) (void $ DPlan.planResume (driverId, merchantId))
     updatePaymentStatus driverId merchantId
     when sendNotification $ notifyPaymentSuccessIfNotNotified driver orderId
 

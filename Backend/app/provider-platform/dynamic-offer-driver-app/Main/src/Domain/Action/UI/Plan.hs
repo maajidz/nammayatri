@@ -324,7 +324,7 @@ planSuspend isDashboard (driverId, _merchantId) = do
   return Success
 
 -- This API is to make Mandate Active and switch to Autopay plan type. If an only if an Auto Pay plan was paused/cancelled by driver from App.
-planResume :: (Id SP.Person, Id DM.Merchant) -> Flow APISuccess
+planResume :: (MonadFlow m, CacheFlow m r) => (Id SP.Person, Id DM.Merchant) -> m APISuccess
 planResume (driverId, _merchantId) = do
   driverInfo <- DI.findById (cast driverId) >>= fromMaybeM (PersonNotFound driverId.getId)
   unless (driverInfo.autoPayStatus == Just DI.SUSPENDED) $ throwError InvalidAutoPayStatus
@@ -350,7 +350,7 @@ validateActiveMandateExists driverId driverPlan = do
       unless (mandate.status == DM.ACTIVE) $ throwError (ActiveMandateDoNotExist driverId.getId)
       return mandate
 
-validateInActiveMandateExists :: Id SP.Person -> DriverPlan -> Flow DM.Mandate
+validateInActiveMandateExists :: (MonadFlow m, MonadThrow m) => Id SP.Person -> DriverPlan -> m DM.Mandate
 validateInActiveMandateExists driverId driverPlan = do
   case driverPlan.mandateId of
     Nothing -> throwError $ InActiveMandateDoNotExist driverId.getId
