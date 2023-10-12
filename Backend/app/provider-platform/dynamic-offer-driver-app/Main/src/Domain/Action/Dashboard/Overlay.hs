@@ -80,7 +80,7 @@ createOverlay merchantShortId req = do
       return
         DTMO.Overlay
           { id = guid,
-            merchantId = merchantId,
+            merchantOperatingCityId = merchantOperatingCityId,
             ..
           }
 
@@ -198,7 +198,7 @@ scheduleOverlay :: ShortId DM.Merchant -> ScheduleOverlay -> Flow APISuccess
 scheduleOverlay merchantShortId req@ScheduleOverlay {..} = do
   merchant <- findMerchantByShortId merchantShortId
   maxShards <- asks (.maxShards)
-  transporterConfig <- CQTC.findByMerchantId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
+  transporterConfig <- CQTC.findByMerchantOpCityId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
   now <- getLocalCurrentTime transporterConfig.timeDiffFromUtc
   let scheduledTime = UTCTime (utctDay now) (timeOfDayToTime req.scheduleTime)
   let jobScheduledTime =

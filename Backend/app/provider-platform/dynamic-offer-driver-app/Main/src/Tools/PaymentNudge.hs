@@ -128,7 +128,7 @@ sendSwitchPlanNudge transporterConfig driverInfo mbCurrPlan mbDriverPlan numRide
 
 switchPlanNudge :: (CacheFlow m r, EsqDBFlow m r) => DP.Person -> Int -> HighPrecMoney -> Text -> m ()
 switchPlanNudge driver numOfRides saveUpto planId = do
-  mOverlay <- CMP.findByMerchantIdPNKeyLangaugeUdf driver.merchantId switchPlanBudgeKey (fromMaybe ENGLISH driver.language) Nothing
+  mOverlay <- CMP.findByMerchantOpCityIdPNKeyLangaugeUdf driver.merchantId switchPlanBudgeKey (fromMaybe ENGLISH driver.language) Nothing
   whenJust mOverlay $ \overlay -> do
     let description =
           T.replace (templateText "numberOfRides") (show numOfRides)
@@ -144,7 +144,7 @@ notifyPaymentFailure driverId paymentMode mbBankErrorCode = do
   let totalDues = sum $ map (\dueInvoice -> roundToHalf (fromIntegral dueInvoice.govtCharges + dueInvoice.platformFee.fee + dueInvoice.platformFee.cgst + dueInvoice.platformFee.sgst)) dueDriverFees
 
   let pnKey = if paymentMode == AUTOPAY then autopayPaymentFailedNudgeKey else maunalPaymentFailedNudgeKey
-  mOverlay <- CMP.findByMerchantIdPNKeyLangaugeUdf driver.merchantId pnKey (fromMaybe ENGLISH driver.language) mbBankErrorCode
+  mOverlay <- CMP.findByMerchantOpCityIdPNKeyLangaugeUdf driver.merchantId pnKey (fromMaybe ENGLISH driver.language) mbBankErrorCode
   whenJust mOverlay $ \overlay -> do
     let description = T.replace (templateText "dueAmount") (show totalDues) <$> overlay.description
     sendOverlay driver.merchantId driver.id driver.deviceToken overlay.title description overlay.imageUrl overlay.okButtonText overlay.cancelButtonText overlay.actions overlay.link overlay.endPoint overlay.method overlay.reqBody

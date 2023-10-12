@@ -20,8 +20,8 @@ module Storage.Queries.Merchant.MerchantMessage
     #-}
 where
 
-import Domain.Types.Merchant as DOrg
 import Domain.Types.Merchant.MerchantMessage
+import Domain.Types.Merchant.MerchantOperatingCity
 import Kernel.Beam.Functions
 import Kernel.Prelude
 import Kernel.Types.Common
@@ -29,15 +29,15 @@ import Kernel.Types.Id
 import qualified Sequelize as Se
 import qualified Storage.Beam.Merchant.MerchantMessage as BeamMM
 
-findByMerchantIdAndMessageKey :: MonadFlow m => Id Merchant -> MessageKey -> m (Maybe MerchantMessage)
-findByMerchantIdAndMessageKey (Id merchantId) messageKey = findOneWithKV [Se.And [Se.Is BeamMM.merchantId $ Se.Eq merchantId, Se.Is BeamMM.messageKey $ Se.Eq messageKey]]
+findByMerchantOpCityIdAndMessageKey :: MonadFlow m => Id MerchantOperatingCity -> MessageKey -> m (Maybe MerchantMessage)
+findByMerchantOpCityIdAndMessageKey (Id merchantOperatingCityId) messageKey = findOneWithKV [Se.And [Se.Is BeamMM.merchantOperatingCityId $ Se.Eq merchantOperatingCityId, Se.Is BeamMM.messageKey $ Se.Eq messageKey]]
 
 instance FromTType' BeamMM.MerchantMessage MerchantMessage where
   fromTType' BeamMM.MerchantMessageT {..} = do
     pure $
       Just
         MerchantMessage
-          { merchantId = Id merchantId,
+          { merchantOperatingCityId = Id merchantOperatingCityId,
             messageKey = messageKey,
             message = message,
             updatedAt = updatedAt,
@@ -47,7 +47,7 @@ instance FromTType' BeamMM.MerchantMessage MerchantMessage where
 instance ToTType' BeamMM.MerchantMessage MerchantMessage where
   toTType' MerchantMessage {..} = do
     BeamMM.MerchantMessageT
-      { BeamMM.merchantId = getId merchantId,
+      { BeamMM.merchantOperatingCityId = getId merchantOperatingCityId,
         BeamMM.messageKey = messageKey,
         BeamMM.message = message,
         BeamMM.updatedAt = updatedAt,

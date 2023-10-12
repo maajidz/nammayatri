@@ -67,10 +67,10 @@ idfyWebhookHandler merchantShortId secret val = do
   merchant <- findMerchantByShortId merchantShortId
   let merchantId = merchant.id
   merchantServiceUsageConfig <-
-    CQMSUC.findByMerchantId merchantId
+    CQMSUC.findByMerchantOpCityId merchantId
       >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantId.getId)
   merchantServiceConfig <-
-    CQMSC.findByMerchantIdAndService merchantId (DMSC.VerificationService merchantServiceUsageConfig.verificationService)
+    CQMSC.findByMerchantOpCityIdAndService merchantId (DMSC.VerificationService merchantServiceUsageConfig.verificationService)
       >>= fromMaybeM (InternalError $ "No verification service provider configured for the merchant, merchantId:" <> merchantId.getId)
   case merchantServiceConfig.serviceConfig of
     DMSC.VerificationServiceConfig vsc -> do

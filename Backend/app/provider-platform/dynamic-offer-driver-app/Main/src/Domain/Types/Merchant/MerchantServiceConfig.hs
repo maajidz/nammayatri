@@ -17,7 +17,7 @@ module Domain.Types.Merchant.MerchantServiceConfig where
 
 import qualified Data.List as List
 import Domain.Types.Common (UsageSafety (..))
-import Domain.Types.Merchant (Merchant)
+import Domain.Types.Merchant.MerchantOperatingCity
 import qualified Kernel.External.AadhaarVerification as AadhaarVerification
 import Kernel.External.AadhaarVerification.Interface.Types
 import qualified Kernel.External.Call as Call
@@ -120,7 +120,7 @@ instance FromJSON (ServiceConfigD 'Unsafe)
 instance ToJSON (ServiceConfigD 'Unsafe)
 
 data MerchantServiceConfigD (s :: UsageSafety) = MerchantServiceConfig
-  { merchantId :: Id Merchant,
+  { merchantOperatingCityId :: Id MerchantOperatingCity,
     serviceConfig :: ServiceConfigD s,
     updatedAt :: UTCTime,
     createdAt :: UTCTime
@@ -159,14 +159,14 @@ getServiceName osc = case osc.serviceConfig of
 
 buildMerchantServiceConfig ::
   MonadTime m =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   ServiceConfig ->
   m MerchantServiceConfig
-buildMerchantServiceConfig merchantId serviceConfig = do
+buildMerchantServiceConfig merchantOperatingCityId serviceConfig = do
   now <- getCurrentTime
   pure
     MerchantServiceConfig
-      { merchantId,
+      { merchantOperatingCityId,
         serviceConfig,
         updatedAt = now,
         createdAt = now

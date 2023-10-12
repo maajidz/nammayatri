@@ -107,7 +107,7 @@ mkAvailableTimeKey :: Text -> Text
 mkAvailableTimeKey driverId = "driver-offer:DriverPool:Available-Time:DriverId-" <> driverId
 
 windowFromIntelligentPoolConfig :: (MonadFlow m, EsqDBFlow m r, CacheFlow m r) => Id DM.Merchant -> (DIPC.DriverIntelligentPoolConfig -> SWC.SlidingWindowOptions) -> m SWC.SlidingWindowOptions
-windowFromIntelligentPoolConfig merchantId windowKey = maybe defaultWindow windowKey <$> DIP.findByMerchantId merchantId
+windowFromIntelligentPoolConfig merchantId windowKey = maybe defaultWindow windowKey <$> DIP.findByMerchantOpCityId merchantId
   where
     defaultWindow = SWC.SlidingWindowOptions 7 SWC.Days
 
@@ -390,7 +390,7 @@ updateDriverSpeedInRedis ::
   UTCTime ->
   m ()
 updateDriverSpeedInRedis merchantId driverId points timeStamp = Redis.withCrossAppRedis $ do
-  locationUpdateSampleTime <- maybe 3 (.locationUpdateSampleTime) <$> DIP.findByMerchantId merchantId
+  locationUpdateSampleTime <- maybe 3 (.locationUpdateSampleTime) <$> DIP.findByMerchantOpCityId merchantId
   now <- getCurrentTime
   let driverLocationUpdatesKey = mkDriverLocationUpdatesKey merchantId driverId
   locationUpdatesList :: [(LatLong, UTCTime)] <-
@@ -412,7 +412,7 @@ getDriverAverageSpeed ::
   Id DP.Person ->
   m Double
 getDriverAverageSpeed merchantId driverId = Redis.withCrossAppRedis $ do
-  intelligentPoolConfig <- DIP.findByMerchantId merchantId
+  intelligentPoolConfig <- DIP.findByMerchantOpCityId merchantId
   let minLocationUpdates = maybe 3 (.minLocationUpdates) intelligentPoolConfig
       defaultDriverSpeed = maybe 27.0 (.defaultDriverSpeed) intelligentPoolConfig
   let driverLocationUpdatesKey = mkDriverLocationUpdatesKey merchantId driverId
@@ -475,7 +475,7 @@ calculateGoHomeDriverPool CalculateGoHomeDriverPoolReq {..} = do
           return (goHomeReq, driver)
       )
       randomDriverPool
-  merchant <- CTC.findByMerchantId merchantId >>= fromMaybeM (TransporterConfigDoesNotExist merchantId.getId)
+  merchant <- CTC.findByMerchantOpCityId merchantId >>= fromMaybeM (TransporterConfigDoesNotExist merchantId.getId)
 
   let convertedDriverPoolRes = map (\(ghr, driver) -> (ghr,driver,) $ makeDriverPoolRes driver) goHomeRequests
   driverGoHomePoolWithActualDistance <-
@@ -749,7 +749,7 @@ calculateDriverCurrentlyOnRideWithActualDist poolCalculationStage driverPoolCfg 
       let temp = DriverPoolResult {..}
       if distanceFromDriverToDestination < driverToDestinationDistanceThreshold
         then do
-          transporter <- CTC.findByMerchantId merchantId >>= fromMaybeM (TransporterConfigNotFound merchantId.getId)
+          transporter <- CTC.findByMerchantOpCityId merchantId >>= fromMaybeM (TransporterConfigNotFound merchantId.getId)
           let defaultPopupDelay = fromMaybe 2 transporter.popupDelayToAddAsPenalty
           let time = driverPoolCfg.driverToDestinationDuration
           pure
@@ -796,7 +796,7 @@ computeActualDistance ::
   m (NonEmpty DriverPoolWithActualDistResult)
 computeActualDistance orgId pickup driverPoolResults = do
   let pickupLatLong = getCoordinates pickup
-  transporter <- CTC.findByMerchantId orgId >>= fromMaybeM (TransporterConfigDoesNotExist orgId.getId)
+  transporter <- CTC.findByMerchantOpCityId orgId >>= fromMaybeM (TransporterConfigDoesNotExist orgId.getId)
   getDistanceResults <-
     Maps.getEstimatedPickupDistances orgId $
       Maps.GetDistancesReq

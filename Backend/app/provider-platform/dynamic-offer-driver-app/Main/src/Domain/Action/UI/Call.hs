@@ -33,6 +33,7 @@ import qualified Data.Text as T
 import qualified Domain.Types.CallStatus as SCS
 import Domain.Types.DriverOnboarding.Error
 import qualified Domain.Types.Merchant as DM
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import Domain.Types.Person as Person
 import qualified Domain.Types.Ride as SRide
 import EulerHS.Prelude (Alternative ((<|>)))
@@ -123,8 +124,8 @@ initiateCallToCustomer rideId = do
             createdAt = now
           }
 
-getDriverMobileNumber :: (EncFlow m r, CacheFlow m r, EsqDBFlow m r, HasField "esqDBReplicaEnv" r EsqDBEnv, HasField "loggerEnv" r LoggerEnv) => (Id Person.Person, Id DM.Merchant) -> Text -> m CallRes
-getDriverMobileNumber (driverId, merchantId) rcNo = do
+getDriverMobileNumber :: (EncFlow m r, CacheFlow m r, EsqDBFlow m r, HasField "esqDBReplicaEnv" r EsqDBEnv, HasField "loggerEnv" r LoggerEnv) => (Id Person.Person, Id DM.Merchant, Id DMOC.MerchantOperatingCity) -> Text -> m CallRes
+getDriverMobileNumber (driverId, _, merchantOpCityId) rcNo = do
   vehicleRC <- RCQuery.findLastVehicleRCWrapper rcNo >>= fromMaybeM (RCNotFound rcNo)
   rcActiveAssociation <- DAQuery.findActiveAssociationByRC vehicleRC.id >>= fromMaybeM ActiveRCNotFound
   callStatusId <- generateGUID
@@ -136,7 +137,7 @@ getDriverMobileNumber (driverId, merchantId) rcNo = do
             toPhoneNum = driverRequestedNumber,
             attachments = Attachments $ CallAttachments {callStatusId = callStatusId, entityId = vehicleRC.id.getId}
           }
-  exotelResponse <- initiateCall merchantId callReq
+  exotelResponse <- initiateCall merchantOpCityId callReq
   callStatus <- buildCallStatus callStatusId exotelResponse vehicleRC.id.getId
   QCallStatus.create callStatus
   return $ CallRes callStatusId

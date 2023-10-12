@@ -14,8 +14,8 @@
 
 module Tools.Payment where
 
-import qualified Domain.Types.Merchant as DM
-import qualified Domain.Types.Merchant.MerchantServiceConfig as DMSC
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
+import qualified Domain.Types.Merchant.MerchantServiceConfig as DMOC
 import qualified Kernel.External.Payment.Interface as Payment
 import Kernel.External.Types (ServiceFlow)
 import Kernel.Prelude
@@ -24,40 +24,40 @@ import Kernel.Types.Id
 import Kernel.Utils.Common
 import qualified Storage.CachedQueries.Merchant.MerchantServiceConfig as CQMSC
 
-createOrder :: ServiceFlow m r => Id DM.Merchant -> Payment.CreateOrderReq -> m Payment.CreateOrderResp
+createOrder :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.CreateOrderReq -> m Payment.CreateOrderResp
 createOrder = runWithServiceConfig Payment.createOrder
 
-orderStatus :: ServiceFlow m r => Id DM.Merchant -> Payment.OrderStatusReq -> m Payment.OrderStatusResp
+orderStatus :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.OrderStatusReq -> m Payment.OrderStatusResp
 orderStatus = runWithServiceConfig Payment.orderStatus
 
-offerList :: ServiceFlow m r => Id DM.Merchant -> Payment.OfferListReq -> m Payment.OfferListResp
+offerList :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.OfferListReq -> m Payment.OfferListResp
 offerList = runWithServiceConfig Payment.offerList
 
-offerApply :: ServiceFlow m r => Id DM.Merchant -> Payment.OfferApplyReq -> m Payment.OfferApplyResp
+offerApply :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.OfferApplyReq -> m Payment.OfferApplyResp
 offerApply = runWithServiceConfig Payment.offerApply
 
-mandateRevoke :: ServiceFlow m r => Id DM.Merchant -> Payment.MandateRevokeReq -> m Payment.MandateRevokeRes
+mandateRevoke :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.MandateRevokeReq -> m Payment.MandateRevokeRes
 mandateRevoke = runWithServiceConfig Payment.mandateRevoke
 
-mandateNotification :: (ServiceFlow m r) => Id DM.Merchant -> Payment.MandateNotificationReq -> m Payment.MandateNotificationRes
+mandateNotification :: (ServiceFlow m r) => Id DMOC.MerchantOperatingCity -> Payment.MandateNotificationReq -> m Payment.MandateNotificationRes
 mandateNotification = runWithServiceConfig Payment.mandateNotification
 
-mandateNotificationStatus :: (ServiceFlow m r) => Id DM.Merchant -> Payment.NotificationStatusReq -> m Payment.NotificationStatusResp
+mandateNotificationStatus :: (ServiceFlow m r) => Id DMOC.MerchantOperatingCity -> Payment.NotificationStatusReq -> m Payment.NotificationStatusResp
 mandateNotificationStatus = runWithServiceConfig Payment.mandateNotificationStatus
 
-mandateExecution :: ServiceFlow m r => Id DM.Merchant -> Payment.MandateExecutionReq -> m Payment.MandateExecutionRes
+mandateExecution :: ServiceFlow m r => Id DMOC.MerchantOperatingCity -> Payment.MandateExecutionReq -> m Payment.MandateExecutionRes
 mandateExecution = runWithServiceConfig Payment.mandateExecution
 
 runWithServiceConfig ::
   ServiceFlow m r =>
   (Payment.PaymentServiceConfig -> req -> m resp) ->
-  Id DM.Merchant ->
+  Id DMOC.MerchantOperatingCity ->
   req ->
   m resp
-runWithServiceConfig func merchantId req = do
+runWithServiceConfig func merchantOpCityId req = do
   merchantServiceConfig <-
-    CQMSC.findByMerchantIdAndService merchantId (DMSC.PaymentService Payment.Juspay)
-      >>= fromMaybeM (MerchantServiceConfigNotFound merchantId.getId "Payment" (show Payment.Juspay))
+    CQMSC.findByMerchantOpCityIdAndService merchantOpCityId (DMOC.PaymentService Payment.Juspay)
+      >>= fromMaybeM (MerchantServiceConfigNotFound merchantOpCityId.getId "Payment" (show Payment.Juspay))
   case merchantServiceConfig.serviceConfig of
-    DMSC.PaymentServiceConfig vsc -> func vsc req
+    DMOC.PaymentServiceConfig vsc -> func vsc req
     _ -> throwError $ InternalError "Unknown Service Config"

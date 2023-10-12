@@ -25,7 +25,7 @@ import Kernel.Types.Id
 data Subscriber
 
 data GoHomeConfig = GoHomeConfig
-  { merchantId :: Id Merchant,
+  { merchantOperatingCityId :: Id Merchant,
     enableGoHome :: Bool,
     startCnt :: Int,
     destRadiusMeters :: Int,

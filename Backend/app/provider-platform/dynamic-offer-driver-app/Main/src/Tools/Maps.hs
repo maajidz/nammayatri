@@ -28,7 +28,7 @@ module Tools.Maps
   )
 where
 
-import Domain.Types.Merchant
+import Domain.Types.Merchant.MerchantOperatingCity
 import qualified Domain.Types.Merchant.MerchantServiceConfig as DOSC
 import Domain.Types.Merchant.MerchantServiceUsageConfig (MerchantServiceUsageConfig)
 import Kernel.External.Maps as Reexport hiding
@@ -55,7 +55,7 @@ getDistance ::
     HasCoordinates a,
     HasCoordinates b
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   GetDistanceReq a b ->
   m (GetDistanceResp a b)
 getDistance = runWithServiceConfig Maps.getDistance (.getDistances)
@@ -65,7 +65,7 @@ getDistanceForCancelRide ::
     HasCoordinates a,
     HasCoordinates b
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   GetDistanceReq a b ->
   m (GetDistanceResp a b)
 getDistanceForCancelRide = runWithServiceConfig Maps.getDistance (.getDistancesForCancelRide)
@@ -75,7 +75,7 @@ getDistances ::
     HasCoordinates a,
     HasCoordinates b
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   GetDistancesReq a b ->
   m (GetDistancesResp a b)
 getDistances = runWithServiceConfig Maps.getDistances (.getDistances)
@@ -85,55 +85,55 @@ getEstimatedPickupDistances ::
     HasCoordinates a,
     HasCoordinates b
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   GetDistancesReq a b ->
   m (GetDistancesResp a b)
 getEstimatedPickupDistances = runWithServiceConfig Maps.getDistances (.getEstimatedPickupDistances)
 
-getRoutes :: ServiceFlow m r => Id Merchant -> GetRoutesReq -> m GetRoutesResp
-getRoutes merchantId req = do
-  transporterConfig <- TConfig.findByMerchantId merchantId >>= fromMaybeM (MerchantNotFound merchantId.getId)
-  runWithServiceConfig (Maps.getRoutes transporterConfig.isAvoidToll) (.getRoutes) merchantId req
+getRoutes :: ServiceFlow m r => Id MerchantOperatingCity -> GetRoutesReq -> m GetRoutesResp
+getRoutes merchantOpCityId req = do
+  transporterConfig <- TConfig.findByMerchantOpCityId merchantOpCityId >>= fromMaybeM (MerchantNotFound merchantOpCityId.getId)
+  runWithServiceConfig (Maps.getRoutes transporterConfig.isAvoidToll) (.getRoutes) merchantOpCityId req
 
-getPickupRoutes :: ServiceFlow m r => Id Merchant -> GetRoutesReq -> m GetRoutesResp
-getPickupRoutes merchantId req = do
-  transporterConfig <- TConfig.findByMerchantId merchantId >>= fromMaybeM (MerchantNotFound merchantId.getId)
-  runWithServiceConfig (Maps.getRoutes transporterConfig.isAvoidToll) (.getPickupRoutes) merchantId req
+getPickupRoutes :: ServiceFlow m r => Id MerchantOperatingCity -> GetRoutesReq -> m GetRoutesResp
+getPickupRoutes merchantOpCityId req = do
+  transporterConfig <- TConfig.findByMerchantOpCityId merchantOpCityId >>= fromMaybeM (MerchantNotFound merchantOpCityId.getId)
+  runWithServiceConfig (Maps.getRoutes transporterConfig.isAvoidToll) (.getPickupRoutes) merchantOpCityId req
 
-getTripRoutes :: ServiceFlow m r => Id Merchant -> GetRoutesReq -> m GetRoutesResp
-getTripRoutes merchantId req = do
-  transporterConfig <- TConfig.findByMerchantId merchantId >>= fromMaybeM (MerchantNotFound merchantId.getId)
-  runWithServiceConfig (Maps.getRoutes transporterConfig.isAvoidToll) (.getTripRoutes) merchantId req
+getTripRoutes :: ServiceFlow m r => Id MerchantOperatingCity -> GetRoutesReq -> m GetRoutesResp
+getTripRoutes merchantOpCityId req = do
+  transporterConfig <- TConfig.findByMerchantOpCityId merchantOpCityId >>= fromMaybeM (MerchantNotFound merchantOpCityId.getId)
+  runWithServiceConfig (Maps.getRoutes transporterConfig.isAvoidToll) (.getTripRoutes) merchantOpCityId req
 
 snapToRoad ::
   ( ServiceFlow m r,
     HasFlowEnv m r '["snapToRoadSnippetThreshold" ::: HighPrecMeters]
   ) =>
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   SnapToRoadReq ->
   m SnapToRoadResp
 snapToRoad = runWithServiceConfig Maps.snapToRoad (.snapToRoad)
 
-autoComplete :: ServiceFlow m r => Id Merchant -> AutoCompleteReq -> m AutoCompleteResp
+autoComplete :: ServiceFlow m r => Id MerchantOperatingCity -> AutoCompleteReq -> m AutoCompleteResp
 autoComplete = runWithServiceConfig Maps.autoComplete (.autoComplete)
 
-getPlaceName :: ServiceFlow m r => Id Merchant -> GetPlaceNameReq -> m GetPlaceNameResp
+getPlaceName :: ServiceFlow m r => Id MerchantOperatingCity -> GetPlaceNameReq -> m GetPlaceNameResp
 getPlaceName = runWithServiceConfig Maps.getPlaceName (.getPlaceName)
 
-getPlaceDetails :: ServiceFlow m r => Id Merchant -> GetPlaceDetailsReq -> m GetPlaceDetailsResp
+getPlaceDetails :: ServiceFlow m r => Id MerchantOperatingCity -> GetPlaceDetailsReq -> m GetPlaceDetailsResp
 getPlaceDetails = runWithServiceConfig Maps.getPlaceDetails (.getPlaceDetails)
 
 runWithServiceConfig ::
   ServiceFlow m r =>
   (MapsServiceConfig -> req -> m resp) ->
   (MerchantServiceUsageConfig -> MapsService) ->
-  Id Merchant ->
+  Id MerchantOperatingCity ->
   req ->
   m resp
 runWithServiceConfig func getCfg orgId req = do
-  orgMapsConfig <- QOMC.findByMerchantId orgId >>= fromMaybeM (MerchantServiceUsageConfigNotFound orgId.getId)
+  orgMapsConfig <- QOMC.findByMerchantOpCityId orgId >>= fromMaybeM (MerchantServiceUsageConfigNotFound orgId.getId)
   orgMapsServiceConfig <-
-    QOMSC.findByMerchantIdAndService orgId (DOSC.MapsService $ getCfg orgMapsConfig)
+    QOMSC.findByMerchantOpCityIdAndService orgId (DOSC.MapsService $ getCfg orgMapsConfig)
       >>= fromMaybeM (MerchantServiceConfigNotFound orgId.getId "Maps" (show $ getCfg orgMapsConfig))
   case orgMapsServiceConfig.serviceConfig of
     DOSC.MapsServiceConfig msc -> func msc req

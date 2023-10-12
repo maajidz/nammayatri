@@ -134,7 +134,7 @@ juspayWebhookHandler merchantShortId authData value = do
   merchant <- findMerchantByShortId merchantShortId
   let merchantId = merchant.id
   merchantServiceConfig <-
-    CQMSC.findByMerchantIdAndService merchantId (DMSC.PaymentService Payment.Juspay)
+    CQMSC.findByMerchantOpCityIdAndService merchantId (DMSC.PaymentService Payment.Juspay)
       >>= fromMaybeM (MerchantServiceConfigNotFound merchantId.getId "Payment" (show Payment.Juspay))
   case merchantServiceConfig.serviceConfig of
     DMSC.PaymentServiceConfig psc -> do

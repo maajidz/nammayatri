@@ -105,7 +105,7 @@ uploadFile merchantShortId Common.UploadFileRequest {..} = do
   merchant <- findMerchantByShortId merchantShortId
   mediaFile <- L.runIO $ base64Encode <$> BS.readFile file
   filePath <- createFilePath merchant.id.getId fileType "" -- TODO: last param is extension (removed it as the content-type header was not comming with proxy api)
-  transporterConfig <- CQTC.findByMerchantId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
+  transporterConfig <- CQTC.findByMerchantOpCityId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
   let fileUrl =
         transporterConfig.mediaFileUrlPattern
           & T.replace "<DOMAIN>" "message"

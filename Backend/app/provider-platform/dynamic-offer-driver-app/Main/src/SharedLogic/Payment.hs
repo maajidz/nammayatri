@@ -123,7 +123,7 @@ mkInvoiceAgainstDriverFee id shortId now maxMandateAmount paymentMode driverFee 
 
 offerListCache :: (MonadFlow m, ServiceFlow m r) => Id DM.Merchant -> Payment.OfferListReq -> m Payment.OfferListResp
 offerListCache merchantId req = do
-  transporterConfig <- SCT.findByMerchantId merchantId >>= fromMaybeM (TransporterConfigNotFound merchantId.getId)
+  transporterConfig <- SCT.findByMerchantOpCityId merchantId >>= fromMaybeM (TransporterConfigNotFound merchantId.getId)
   if transporterConfig.useOfferListCache
     then do
       key <- makeOfferListCacheKey transporterConfig.cacheOfferListByDriverId req

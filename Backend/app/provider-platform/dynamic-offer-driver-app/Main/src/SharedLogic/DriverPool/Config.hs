@@ -37,7 +37,7 @@ getDriverPoolConfig ::
   Meters ->
   m DriverPoolConfig
 getDriverPoolConfig merchantId dist = do
-  configs <- CDP.findAllByMerchantId merchantId
+  configs <- CDP.findAllByMerchantOpCityId merchantId
   let applicableConfig = find filterByDist configs
   case configs of
     [] -> throwError $ InvalidRequest "DriverPoolConfig not found"

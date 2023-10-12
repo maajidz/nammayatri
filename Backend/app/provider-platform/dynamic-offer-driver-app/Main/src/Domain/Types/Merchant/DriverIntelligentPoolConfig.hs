@@ -16,14 +16,14 @@ module Domain.Types.Merchant.DriverIntelligentPoolConfig where
 
 import Data.Time (UTCTime)
 import Domain.Types.Common
-import Domain.Types.Merchant (Merchant)
+import Domain.Types.Merchant.MerchantOperatingCity
 import EulerHS.Prelude hiding (id)
 import Kernel.Types.Common
 import Kernel.Types.Id
 import qualified Kernel.Types.SlidingWindowCounters as SWC
 
 data DriverIntelligentPoolConfigD u = DriverIntelligentPoolConfig
-  { merchantId :: Id Merchant,
+  { merchantOperatingCityId :: Id MerchantOperatingCity,
     actualPickupDistanceWeightage :: Int,
     availabilityTimeWeightage :: Int,
     availabilityTimeWindowOption :: SWC.SlidingWindowOptions,

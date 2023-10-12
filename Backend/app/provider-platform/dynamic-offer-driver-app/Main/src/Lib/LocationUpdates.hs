@@ -20,7 +20,7 @@ module Lib.LocationUpdates
 where
 
 import Domain.Action.Beckn.Search
-import Domain.Types.Merchant (Merchant)
+import qualified Domain.Types.Merchant.MerchantOperatingCity as DMOC
 import qualified Domain.Types.Merchant.MerchantServiceConfig as DOSC
 import Domain.Types.Person
 import Domain.Types.Ride
@@ -78,13 +78,13 @@ updateDeviation routeDeviationThreshold (Just rideId) batchWaypoints = do
       logWarning $ "Ride route points not found for rideId: " <> show rideId
       return False
 
-buildRideInterpolationHandler :: Id Merchant -> Bool -> Flow (RideInterpolationHandler Person Flow)
-buildRideInterpolationHandler merchantId isEndRide = do
-  transportConfig <- MTC.findByMerchantId merchantId >>= fromMaybeM (TransporterConfigNotFound merchantId.getId)
-  orgMapsConfig <- QOMC.findByMerchantId merchantId >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantId.getId)
+buildRideInterpolationHandler :: Id DMOC.MerchantOperatingCity -> Bool -> Flow (RideInterpolationHandler Person Flow)
+buildRideInterpolationHandler merchantOpCityId isEndRide = do
+  transportConfig <- MTC.findByMerchantOpCityId merchantOpCityId >>= fromMaybeM (TransporterConfigNotFound merchantOpCityId.getId)
+  orgMapsConfig <- QOMC.findByMerchantOpCityId merchantOpCityId >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchantOpCityId.getId)
   orgMapsServiceConfig <-
-    QOMSC.findByMerchantIdAndService merchantId (DOSC.MapsService orgMapsConfig.snapToRoad)
-      >>= fromMaybeM (MerchantServiceConfigNotFound merchantId.getId "Maps" (show orgMapsConfig.snapToRoad))
+    QOMSC.findByMerchantOpCityIdAndService merchantOpCityId (DOSC.MapsService orgMapsConfig.snapToRoad)
+      >>= fromMaybeM (MerchantServiceConfigNotFound merchantOpCityId.getId "Maps" (show orgMapsConfig.snapToRoad))
   case orgMapsServiceConfig.serviceConfig of
     DOSC.MapsServiceConfig cfg ->
       return $

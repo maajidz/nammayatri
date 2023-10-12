@@ -146,7 +146,7 @@ castMerchantStatus = \case
 merchantCommonConfig :: ShortId DM.Merchant -> Flow Common.MerchantCommonConfigRes
 merchantCommonConfig merchantShortId = do
   merchant <- findMerchantByShortId merchantShortId
-  config <- CQTC.findByMerchantId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
+  config <- CQTC.findByMerchantOpCityId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
   pure $ mkMerchantCommonConfigRes config
 
 mkMerchantCommonConfigRes :: DTC.TransporterConfig -> Common.MerchantCommonConfigRes
@@ -157,7 +157,7 @@ merchantCommonConfigUpdate :: ShortId DM.Merchant -> Common.MerchantCommonConfig
 merchantCommonConfigUpdate merchantShortId req = do
   runRequestValidation Common.validateMerchantCommonConfigUpdateReq req
   merchant <- findMerchantByShortId merchantShortId
-  config <- CQTC.findByMerchantId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
+  config <- CQTC.findByMerchantOpCityId merchant.id >>= fromMaybeM (TransporterConfigNotFound merchant.id.getId)
   let updConfig =
         config{pickupLocThreshold = maybe config.pickupLocThreshold (.value) req.pickupLocThreshold,
                dropLocThreshold = maybe config.dropLocThreshold (.value) req.dropLocThreshold,
@@ -199,8 +199,8 @@ driverPoolConfig :: ShortId DM.Merchant -> Maybe Meters -> Flow Common.DriverPoo
 driverPoolConfig merchantShortId mbTripDistance = do
   merchant <- findMerchantByShortId merchantShortId
   configs <- case mbTripDistance of
-    Nothing -> CQDPC.findAllByMerchantId merchant.id
-    Just tripDistance -> maybeToList <$> CQDPC.findByMerchantIdAndTripDistance merchant.id tripDistance
+    Nothing -> CQDPC.findAllByMerchantOpCityId merchant.id
+    Just tripDistance -> maybeToList <$> CQDPC.findByMerchantOpCityIdAndTripDistance merchant.id tripDistance
   pure $ mkDriverPoolConfigRes <$> configs
 
 mkDriverPoolConfigRes :: DDPC.DriverPoolConfig -> Common.DriverPoolConfigItem
@@ -224,7 +224,7 @@ driverPoolConfigUpdate ::
 driverPoolConfigUpdate merchantShortId tripDistance req = do
   runRequestValidation Common.validateDriverPoolConfigUpdateReq req
   merchant <- findMerchantByShortId merchantShortId
-  config <- CQDPC.findByMerchantIdAndTripDistance merchant.id tripDistance >>= fromMaybeM (DriverPoolConfigDoesNotExist merchant.id.getId tripDistance)
+  config <- CQDPC.findByMerchantOpCityIdAndTripDistance merchant.id tripDistance >>= fromMaybeM (DriverPoolConfigDoesNotExist merchant.id.getId tripDistance)
   let updConfig =
         config{minRadiusOfSearch = maybe config.minRadiusOfSearch (.value) req.minRadiusOfSearch,
                maxRadiusOfSearch = maybe config.maxRadiusOfSearch (.value) req.maxRadiusOfSearch,
@@ -263,7 +263,7 @@ driverPoolConfigCreate ::
 driverPoolConfigCreate merchantShortId tripDistance req = do
   runRequestValidation Common.validateDriverPoolConfigCreateReq req
   merchant <- findMerchantByShortId merchantShortId
-  mbConfig <- CQDPC.findByMerchantIdAndTripDistance merchant.id tripDistance
+  mbConfig <- CQDPC.findByMerchantOpCityIdAndTripDistance merchant.id tripDistance
   whenJust mbConfig $ \_ -> throwError (DriverPoolConfigAlreadyExists merchant.id.getId tripDistance)
   newConfig <- buildDriverPoolConfig merchant.id tripDistance req
   _ <- CQDPC.create newConfig
@@ -282,7 +282,7 @@ buildDriverPoolConfig merchantId tripDistance Common.DriverPoolConfigCreateReq {
   now <- getCurrentTime
   pure
     DDPC.DriverPoolConfig
-      { merchantId,
+      { merchantOperatingCityId,
         poolSortingType = castPoolSortingType poolSortingType,
         distanceBasedBatchSplit = map castBatchSplitByPickupDistance distanceBasedBatchSplit,
         updatedAt = now,
@@ -294,7 +294,7 @@ buildDriverPoolConfig merchantId tripDistance Common.DriverPoolConfigCreateReq {
 driverIntelligentPoolConfig :: ShortId DM.Merchant -> Flow Common.DriverIntelligentPoolConfigRes
 driverIntelligentPoolConfig merchantShortId = do
   merchant <- findMerchantByShortId merchantShortId
-  config <- CQDIPC.findByMerchantId merchant.id >>= fromMaybeM (DriverIntelligentPoolConfigNotFound merchant.id.getId)
+  config <- CQDIPC.findByMerchantOpCityId merchant.id >>= fromMaybeM (DriverIntelligentPoolConfigNotFound merchant.id.getId)
   pure $ mkDriverIntelligentPoolConfigRes config
 
 mkDriverIntelligentPoolConfigRes :: DDIPC.DriverIntelligentPoolConfig -> Common.DriverIntelligentPoolConfigRes
@@ -308,7 +308,7 @@ driverIntelligentPoolConfigUpdate ::
 driverIntelligentPoolConfigUpdate merchantShortId req = do
   runRequestValidation Common.validateDriverIntelligentPoolConfigUpdateReq req
   merchant <- findMerchantByShortId merchantShortId
-  config <- CQDIPC.findByMerchantId merchant.id >>= fromMaybeM (DriverIntelligentPoolConfigNotFound merchant.id.getId)
+  config <- CQDIPC.findByMerchantOpCityId merchant.id >>= fromMaybeM (DriverIntelligentPoolConfigNotFound merchant.id.getId)
   let updConfig =
         config{availabilityTimeWeightage = maybe config.availabilityTimeWeightage (.value) req.availabilityTimeWeightage,
                availabilityTimeWindowOption = fromMaybe config.availabilityTimeWindowOption req.availabilityTimeWindowOption,
@@ -335,8 +335,8 @@ onboardingDocumentConfig :: ShortId DM.Merchant -> Maybe Common.DocumentType -> 
 onboardingDocumentConfig merchantShortId mbReqDocumentType = do
   merchant <- findMerchantByShortId merchantShortId
   configs <- case mbReqDocumentType of
-    Nothing -> CQODC.findAllByMerchantId merchant.id
-    Just reqDocumentType -> maybeToList <$> CQODC.findByMerchantIdAndDocumentType merchant.id (castDocumentType reqDocumentType)
+    Nothing -> CQODC.findAllByMerchantOpCityId merchant.id
+    Just reqDocumentType -> maybeToList <$> CQODC.findByMerchantOpCityIdAndDocumentType merchant.id (castDocumentType reqDocumentType)
   pure $ mkOnboardingDocumentConfigRes <$> configs
 
 mkOnboardingDocumentConfigRes :: DODC.OnboardingDocumentConfig -> Common.OnboardingDocumentConfigItem
@@ -391,7 +391,7 @@ onboardingDocumentConfigUpdate merchantShortId reqDocumentType req = do
   -- runRequestValidation Common.validateOnboardingDocumentConfigUpdateReq req
   merchant <- findMerchantByShortId merchantShortId
   let documentType = castDocumentType reqDocumentType
-  config <- CQODC.findByMerchantIdAndDocumentType merchant.id documentType >>= fromMaybeM (OnboardingDocumentConfigDoesNotExist merchant.id.getId $ show documentType)
+  config <- CQODC.findByMerchantOpCityIdAndDocumentType merchant.id documentType >>= fromMaybeM (OnboardingDocumentConfigDoesNotExist merchant.id.getId $ show documentType)
   let updConfig =
         config{checkExtraction = maybe config.checkExtraction (.value) req.checkExtraction,
                checkExpiry = maybe config.checkExpiry (.value) req.checkExpiry,
@@ -447,7 +447,7 @@ onboardingDocumentConfigCreate merchantShortId reqDocumentType req = do
   -- runRequestValidation Common.validateOnboardingDocumentConfigCreateReq req
   merchant <- findMerchantByShortId merchantShortId
   let documentType = castDocumentType reqDocumentType
-  mbConfig <- CQODC.findByMerchantIdAndDocumentType merchant.id documentType
+  mbConfig <- CQODC.findByMerchantOpCityIdAndDocumentType merchant.id documentType
   whenJust mbConfig $ \_ -> throwError (OnboardingDocumentConfigAlreadyExists merchant.id.getId $ show documentType)
   newConfig <- buildOnboardingDocumentConfig merchant.id documentType req
   _ <- CQODC.create newConfig
@@ -466,7 +466,7 @@ buildOnboardingDocumentConfig merchantId documentType Common.OnboardingDocumentC
   now <- getCurrentTime
   pure
     DODC.OnboardingDocumentConfig
-      { merchantId,
+      { merchantOperatingCityId,
         vehicleClassCheckType = castVehicleClassCheckType vehicleClassCheckType,
         supportedVehicleClasses = castSupportedVehicleClasses supportedVehicleClasses,
         updatedAt = now,
@@ -510,7 +510,7 @@ serviceUsageConfig ::
   Flow Common.ServiceUsageConfigRes
 serviceUsageConfig merchantShortId = do
   merchant <- findMerchantByShortId merchantShortId
-  config <- CQMSUC.findByMerchantId merchant.id >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchant.id.getId)
+  config <- CQMSUC.findByMerchantOpCityId merchant.id >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchant.id.getId)
   pure $ mkServiceUsageConfigRes config
 
 mkServiceUsageConfigRes :: DMSUC.MerchantServiceUsageConfig -> Common.ServiceUsageConfigRes
@@ -534,11 +534,11 @@ mapsServiceUsageConfigUpdate merchantShortId req = do
   forM_ Maps.availableMapsServices $ \service -> do
     when (Common.mapsServiceUsedInReq req service) $ do
       void $
-        CQMSC.findByMerchantIdAndService merchant.id (DMSC.MapsService service)
+        CQMSC.findByMerchantOpCityIdAndService merchant.id (DMSC.MapsService service)
           >>= fromMaybeM (InvalidRequest $ "Merchant config for maps service " <> show service <> " is not provided")
 
   merchantServiceUsageConfig <-
-    CQMSUC.findByMerchantId merchant.id
+    CQMSUC.findByMerchantOpCityId merchant.id
       >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchant.id.getId)
   let updMerchantServiceUsageConfig =
         merchantServiceUsageConfig{getDistances = fromMaybe merchantServiceUsageConfig.getDistances req.getDistances,
@@ -566,11 +566,11 @@ smsServiceUsageConfigUpdate merchantShortId req = do
   forM_ SMS.availableSmsServices $ \service -> do
     when (Common.smsServiceUsedInReq req service) $ do
       void $
-        CQMSC.findByMerchantIdAndService merchant.id (DMSC.SmsService service)
+        CQMSC.findByMerchantOpCityIdAndService merchant.id (DMSC.SmsService service)
           >>= fromMaybeM (InvalidRequest $ "Merchant config for sms service " <> show service <> " is not provided")
 
   merchantServiceUsageConfig <-
-    CQMSUC.findByMerchantId merchant.id
+    CQMSUC.findByMerchantOpCityId merchant.id
       >>= fromMaybeM (MerchantServiceUsageConfigNotFound merchant.id.getId)
   let updMerchantServiceUsageConfig =
         merchantServiceUsageConfig{smsProvidersPriorityList = req.smsProvidersPriorityList

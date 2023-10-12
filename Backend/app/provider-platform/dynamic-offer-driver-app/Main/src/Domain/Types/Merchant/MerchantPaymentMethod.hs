@@ -17,7 +17,7 @@ module Domain.Types.Merchant.MerchantPaymentMethod where
 import Data.Aeson.Types
 import qualified Data.List as List
 import Domain.Types.Common (UsageSafety (..))
-import Domain.Types.Merchant (Merchant)
+import Domain.Types.Merchant.MerchantOperatingCity
 import Kernel.Prelude
 import Kernel.Types.Id
 import qualified Text.Show
@@ -25,7 +25,7 @@ import Tools.Beam.UtilsTH (mkBeamInstancesForEnum)
 
 data MerchantPaymentMethodD (s :: UsageSafety) = MerchantPaymentMethod
   { id :: Id MerchantPaymentMethod,
-    merchantId :: Id Merchant,
+    merchantOperatingCityId :: Id MerchantOperatingCity,
     paymentType :: PaymentType,
     paymentInstrument :: PaymentInstrument,
     collectedBy :: PaymentCollector,

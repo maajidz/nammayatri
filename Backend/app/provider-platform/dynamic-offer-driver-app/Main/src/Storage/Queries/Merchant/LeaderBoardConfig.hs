@@ -15,8 +15,8 @@
 
 module Storage.Queries.Merchant.LeaderBoardConfig where
 
-import Domain.Types.Merchant
 import Domain.Types.Merchant.LeaderBoardConfig
+import Domain.Types.Merchant.MerchantOperatingCity
 import Kernel.Beam.Functions
 import Kernel.Prelude
 import Kernel.Types.Common
@@ -24,8 +24,8 @@ import Kernel.Types.Id
 import qualified Sequelize as Se
 import qualified Storage.Beam.Merchant.LeaderBoardConfig as BeamLBC
 
-findLeaderBoardConfigbyType :: MonadFlow m => LeaderBoardType -> Id Merchant -> m (Maybe LeaderBoardConfigs)
-findLeaderBoardConfigbyType leaderBType merchantId = findOneWithKV [Se.And [Se.Is BeamLBC.leaderBoardType $ Se.Eq leaderBType, Se.Is BeamLBC.merchantId $ Se.Eq (getId merchantId)]]
+findLeaderBoardConfigbyType :: MonadFlow m => LeaderBoardType -> Id MerchantOperatingCity -> m (Maybe LeaderBoardConfigs)
+findLeaderBoardConfigbyType leaderBType merchantOperatingCityId = findOneWithKV [Se.And [Se.Is BeamLBC.leaderBoardType $ Se.Eq leaderBType, Se.Is BeamLBC.merchantOperatingCityId $ Se.Eq (getId merchantOperatingCityId)]]
 
 instance FromTType' BeamLBC.LeaderBoardConfigs LeaderBoardConfigs where
   fromTType' BeamLBC.LeaderBoardConfigsT {..} = do
@@ -39,7 +39,7 @@ instance FromTType' BeamLBC.LeaderBoardConfigs LeaderBoardConfigs where
             zScoreBase = zScoreBase,
             leaderBoardLengthLimit = fromIntegral leaderBoardLengthLimit,
             isEnabled = isEnabled,
-            merchantId = Id merchantId
+            merchantOperatingCityId = Id merchantOperatingCityId
           }
 
 instance ToTType' BeamLBC.LeaderBoardConfigs LeaderBoardConfigs where
@@ -52,5 +52,5 @@ instance ToTType' BeamLBC.LeaderBoardConfigs LeaderBoardConfigs where
         BeamLBC.zScoreBase = zScoreBase,
         BeamLBC.leaderBoardLengthLimit = fromIntegral leaderBoardLengthLimit,
         BeamLBC.isEnabled = isEnabled,
-        BeamLBC.merchantId = getId merchantId
+        BeamLBC.merchantOperatingCityId = getId merchantOperatingCityId
       }

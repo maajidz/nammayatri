@@ -16,14 +16,14 @@ module Domain.Types.Merchant.DriverPoolConfig where
 
 import Data.Time (UTCTime)
 import Domain.Types.Common
-import Domain.Types.Merchant (Merchant)
+import Domain.Types.Merchant.MerchantOperatingCity
 import EulerHS.Prelude hiding (id)
 import Kernel.Types.Common
 import Kernel.Types.Id
 import SharedLogic.Allocator.Jobs.SendSearchRequestToDrivers.Handle.Internal.DriverPool.Config
 
 data DriverPoolConfigD u = DriverPoolConfig
-  { merchantId :: Id Merchant,
+  { merchantOperatingCityId :: Id MerchantOperatingCity,
     minRadiusOfSearch :: Meters,
     maxRadiusOfSearch :: Meters,
     radiusStepSize :: Meters,

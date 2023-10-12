@@ -16,7 +16,7 @@ module Domain.Types.Merchant.TransporterConfig where
 
 import Data.Time (NominalDiffTime, UTCTime)
 import Domain.Types.Common
-import Domain.Types.Merchant (Merchant)
+import Domain.Types.Merchant.MerchantOperatingCity (MerchantOperatingCity)
 import EulerHS.Prelude hiding (id)
 import Kernel.External.Notification.FCM.Types (FCMConfig)
 import Kernel.Types.Common
@@ -30,7 +30,7 @@ data AadhaarImageResizeConfig = AadhaarImageResizeConfig
 
 -- ProviderConfig?
 data TransporterConfigD u = TransporterConfig
-  { merchantId :: Id Merchant,
+  { merchantOperatingCityId :: Id MerchantOperatingCity,
     pickupLocThreshold :: Meters,
     dropLocThreshold :: Meters,
     rideTimeEstimatedThreshold :: Seconds,

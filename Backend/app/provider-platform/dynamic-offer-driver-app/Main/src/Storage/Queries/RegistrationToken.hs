@@ -79,6 +79,7 @@ instance FromTType' BeamRT.RegistrationToken RegistrationToken where
             tokenExpiry = tokenExpiry,
             entityId = entityId,
             merchantId = merchantId,
+            merchantOperatingCityId = merchantOperatingCityId,
             entityType = entityType,
             createdAt = createdAt,
             updatedAt = updatedAt,
@@ -104,5 +105,6 @@ instance ToTType' BeamRT.RegistrationToken RegistrationToken where
         BeamRT.createdAt = createdAt,
         BeamRT.updatedAt = updatedAt,
         BeamRT.info = info,
-        BeamRT.alternateNumberAttempts = alternateNumberAttempts
+        BeamRT.alternateNumberAttempts = alternateNumberAttempts,
+        BeamRT.merchantOperatingCityId = merchantOperatingCityId
       }

@@ -108,7 +108,7 @@ validateImage isDashboard (personId, _) ImageValidateRequest {..} = do
 
   images <- Query.findRecentByPersonIdAndImageType personId imageType
   unless isDashboard $ do
-    transporterConfig <- findByMerchantId merchantId >>= fromMaybeM (TransporterConfigNotFound merchantId.getId)
+    transporterConfig <- findByMerchantOpCityId merchantId >>= fromMaybeM (TransporterConfigNotFound merchantId.getId)
     let onboardingTryLimit = transporterConfig.onboardingTryLimit
     when (length images > onboardingTryLimit) $ do
       -- not needed now

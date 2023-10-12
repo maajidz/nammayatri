@@ -20,17 +20,17 @@ module Storage.Queries.Merchant.MerchantServiceUsageConfig
     #-}
 where
 
-import Domain.Types.Merchant as DOrg
+import Domain.Types.Merchant.MerchantOperatingCity
 import Domain.Types.Merchant.MerchantServiceUsageConfig
 import Kernel.Beam.Functions
 import Kernel.Prelude
-import Kernel.Types.Common
+import Kernel.Types.Common (MonadFlow, MonadTime (getCurrentTime))
 import Kernel.Types.Id
 import qualified Sequelize as Se
 import qualified Storage.Beam.Merchant.MerchantServiceUsageConfig as BeamMSUC
 
-findByMerchantId :: MonadFlow m => Id Merchant -> m (Maybe MerchantServiceUsageConfig)
-findByMerchantId (Id merchantId) = findOneWithKV [Se.Is BeamMSUC.merchantId $ Se.Eq merchantId]
+findByMerchantOpCityId :: MonadFlow m => Id MerchantOperatingCity -> m (Maybe MerchantServiceUsageConfig)
+findByMerchantOpCityId (Id merchantOperatingCityId) = findOneWithKV [Se.Is BeamMSUC.merchantOperatingCityId $ Se.Eq merchantOperatingCityId]
 
 updateMerchantServiceUsageConfig :: MonadFlow m => MerchantServiceUsageConfig -> m ()
 updateMerchantServiceUsageConfig MerchantServiceUsageConfig {..} = do
@@ -46,14 +46,14 @@ updateMerchantServiceUsageConfig MerchantServiceUsageConfig {..} = do
       Se.Set BeamMSUC.smsProvidersPriorityList smsProvidersPriorityList,
       Se.Set BeamMSUC.updatedAt now
     ]
-    [Se.Is BeamMSUC.merchantId (Se.Eq $ getId merchantId)]
+    [Se.Is BeamMSUC.merchantOperatingCityId (Se.Eq $ getId merchantOperatingCityId)]
 
 instance FromTType' BeamMSUC.MerchantServiceUsageConfig MerchantServiceUsageConfig where
   fromTType' BeamMSUC.MerchantServiceUsageConfigT {..} = do
     pure $
       Just
         MerchantServiceUsageConfig
-          { merchantId = Id merchantId,
+          { merchantOperatingCityId = Id merchantOperatingCityId,
             initiateCall = initiateCall,
             getDistances = getDistances,
             getEstimatedPickupDistances = getEstimatedPickupDistances,
@@ -79,7 +79,7 @@ instance FromTType' BeamMSUC.MerchantServiceUsageConfig MerchantServiceUsageConf
 instance ToTType' BeamMSUC.MerchantServiceUsageConfig MerchantServiceUsageConfig where
   toTType' MerchantServiceUsageConfig {..} = do
     BeamMSUC.MerchantServiceUsageConfigT
-      { BeamMSUC.merchantId = getId merchantId,
+      { BeamMSUC.merchantOperatingCityId = getId merchantOperatingCityId,
         BeamMSUC.initiateCall = initiateCall,
         BeamMSUC.getDistances = getDistances,
         BeamMSUC.getEstimatedPickupDistances = getEstimatedPickupDistances,

@@ -50,7 +50,7 @@ findImagesByPersonAndType (Id merchantId) (Id personId) imgType =
 findRecentByPersonIdAndImageType :: (MonadFlow m, CacheFlow m r, EsqDBFlow m r) => Id Person -> ImageType -> m [Image]
 findRecentByPersonIdAndImageType personId imgtype = do
   person <- B.runInReplica $ QP.findById personId >>= fromMaybeM (PersonNotFound personId.getId)
-  transporterConfig <- QTC.findByMerchantId person.merchantId >>= fromMaybeM (TransporterConfigNotFound person.merchantId.getId)
+  transporterConfig <- QTC.findByMerchantOpCityId person.merchantId >>= fromMaybeM (TransporterConfigNotFound person.merchantId.getId)
   let onboardingRetryTimeInHours = transporterConfig.onboardingRetryTimeInHours
       onBoardingRetryTimeInHours' = intToNominalDiffTime onboardingRetryTimeInHours
   now <- getCurrentTime

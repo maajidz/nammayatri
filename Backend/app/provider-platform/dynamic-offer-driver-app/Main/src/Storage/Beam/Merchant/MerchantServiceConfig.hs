@@ -31,7 +31,7 @@ import Kernel.Prelude
 import Tools.Beam.UtilsTH
 
 data MerchantServiceConfigT f = MerchantServiceConfigT
-  { merchantId :: B.C f Text,
+  { merchantOperatingCityId :: B.C f Text,
     serviceName :: B.C f Domain.ServiceName,
     configJSON :: B.C f A.Value,
     updatedAt :: B.C f UTCTime,
@@ -43,7 +43,7 @@ instance B.Table MerchantServiceConfigT where
   data PrimaryKey MerchantServiceConfigT f
     = Id (B.C f Domain.ServiceName) (B.C f Text)
     deriving (Generic, B.Beamable)
-  primaryKey = Id <$> serviceName <*> merchantId
+  primaryKey = Id <$> serviceName <*> merchantOperatingCityId
 
 type MerchantServiceConfig = MerchantServiceConfigT Identity
 
@@ -71,6 +71,6 @@ getServiceNameConfigJSON = \case
   Domain.IssueTicketServiceConfig ticketCfg -> case ticketCfg of
     Ticket.KaptureConfig cfg -> (Domain.IssueTicketService Ticket.Kapture, toJSON cfg)
 
-$(enableKVPG ''MerchantServiceConfigT ['serviceName, 'merchantId] [])
+$(enableKVPG ''MerchantServiceConfigT ['serviceName, 'merchantOperatingCityId] [])
 
 $(mkTableInstances ''MerchantServiceConfigT "merchant_service_config")

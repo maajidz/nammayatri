@@ -20,8 +20,8 @@ module Storage.Queries.Merchant.DriverPoolConfig
     #-}
 where
 
-import Domain.Types.Merchant
 import Domain.Types.Merchant.DriverPoolConfig
+import Domain.Types.Merchant.MerchantOperatingCity
 import Kernel.Beam.Functions
 import Kernel.Prelude
 import Kernel.Types.Common (Meters, MonadFlow, MonadTime (getCurrentTime))
@@ -32,11 +32,11 @@ import qualified Storage.Beam.Merchant.DriverPoolConfig as BeamDPC
 create :: MonadFlow m => DriverPoolConfig -> m ()
 create = createWithKV
 
-findAllByMerchantId :: MonadFlow m => Id Merchant -> m [DriverPoolConfig]
-findAllByMerchantId (Id merchantId) = findAllWithOptionsKV [Se.Is BeamDPC.merchantId $ Se.Eq merchantId] (Se.Desc BeamDPC.tripDistance) Nothing Nothing
+findAllByMerchantOpCityId :: MonadFlow m => Id MerchantOperatingCity -> m [DriverPoolConfig]
+findAllByMerchantOpCityId (Id merchantOperatingCityId) = findAllWithOptionsKV [Se.Is BeamDPC.merchantOperatingCityId $ Se.Eq merchantOperatingCityId] (Se.Desc BeamDPC.tripDistance) Nothing Nothing
 
-findByMerchantIdAndTripDistance :: MonadFlow m => Id Merchant -> Meters -> m (Maybe DriverPoolConfig)
-findByMerchantIdAndTripDistance (Id merchantId) tripDistance = findOneWithKV [Se.And [Se.Is BeamDPC.merchantId $ Se.Eq merchantId, Se.Is BeamDPC.tripDistance $ Se.Eq tripDistance]]
+findByMerchantIdAndTripDistance :: MonadFlow m => Id MerchantOperatingCity -> Meters -> m (Maybe DriverPoolConfig)
+findByMerchantIdAndTripDistance (Id merchantOperatingCityId) tripDistance = findOneWithKV [Se.And [Se.Is BeamDPC.merchantOperatingCityId $ Se.Eq merchantOperatingCityId, Se.Is BeamDPC.tripDistance $ Se.Eq tripDistance]]
 
 update :: MonadFlow m => DriverPoolConfig -> m ()
 update config = do
@@ -57,14 +57,14 @@ update config = do
       Se.Set BeamDPC.singleBatchProcessTime config.singleBatchProcessTime,
       Se.Set BeamDPC.updatedAt now
     ]
-    [Se.And [Se.Is BeamDPC.merchantId (Se.Eq $ getId config.merchantId), Se.Is BeamDPC.tripDistance (Se.Eq config.tripDistance)]]
+    [Se.And [Se.Is BeamDPC.merchantOperatingCityId (Se.Eq $ getId config.merchantOperatingCityId), Se.Is BeamDPC.tripDistance (Se.Eq config.tripDistance)]]
 
 instance FromTType' BeamDPC.DriverPoolConfig DriverPoolConfig where
   fromTType' BeamDPC.DriverPoolConfigT {..} = do
     pure $
       Just
         DriverPoolConfig
-          { merchantId = Id merchantId,
+          { merchantOperatingCityId = Id merchantOperatingCityId,
             distanceBasedBatchSplit = distanceBasedBatchSplit,
             minRadiusOfSearch = minRadiusOfSearch,
             maxRadiusOfSearch = maxRadiusOfSearch,
@@ -90,7 +90,7 @@ instance FromTType' BeamDPC.DriverPoolConfig DriverPoolConfig where
 instance ToTType' BeamDPC.DriverPoolConfig DriverPoolConfig where
   toTType' DriverPoolConfig {..} = do
     BeamDPC.DriverPoolConfigT
-      { BeamDPC.merchantId = getId merchantId,
+      { BeamDPC.merchantOperatingCityId = getId merchantOperatingCityId,
         BeamDPC.distanceBasedBatchSplit = distanceBasedBatchSplit,
         BeamDPC.minRadiusOfSearch = minRadiusOfSearch,
         BeamDPC.maxRadiusOfSearch = maxRadiusOfSearch,

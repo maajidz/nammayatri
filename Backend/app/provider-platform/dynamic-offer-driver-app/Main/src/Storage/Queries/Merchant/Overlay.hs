@@ -20,7 +20,7 @@ module Storage.Queries.Merchant.Overlay
     #-}
 where
 
-import Domain.Types.Merchant
+import Domain.Types.Merchant.MerchantOperatingCity
 import Domain.Types.Merchant.Overlay
 import Kernel.Beam.Functions
 import Kernel.External.Types (Language)
@@ -36,40 +36,40 @@ create = createWithKV
 createMany :: MonadFlow m => [Overlay] -> m ()
 createMany = traverse_ create
 
-deleteByOverlayKeyMerchantIdUdf :: MonadFlow m => Id Merchant -> Text -> Maybe Text -> m ()
-deleteByOverlayKeyMerchantIdUdf merchantId overlayKey udf1 =
+deleteByOverlayKeyMerchantIdUdf :: MonadFlow m => Id MerchantOperatingCity -> Text -> Maybe Text -> m ()
+deleteByOverlayKeyMerchantIdUdf merchantOperatingCityId overlayKey udf1 =
   deleteWithKV
     [ Se.And
         [ Se.Is BeamMPN.overlayKey (Se.Eq overlayKey),
-          Se.Is BeamMPN.merchantId $ Se.Eq (getId merchantId),
+          Se.Is BeamMPN.merchantOperatingCityId $ Se.Eq (getId merchantOperatingCityId),
           Se.Is BeamMPN.udf1 $ Se.Eq udf1
         ]
     ]
 
-findAllByLanguage :: MonadFlow m => Id Merchant -> Language -> m [Overlay]
-findAllByLanguage merchantId language =
+findAllByLanguage :: MonadFlow m => Id MerchantOperatingCity -> Language -> m [Overlay]
+findAllByLanguage merchantOperatingCityId language =
   findAllWithKV
     [ Se.And
-        [ Se.Is BeamMPN.merchantId $ Se.Eq (getId merchantId),
+        [ Se.Is BeamMPN.merchantOperatingCityId $ Se.Eq (getId merchantOperatingCityId),
           Se.Is BeamMPN.language $ Se.Eq language
         ]
     ]
 
-findAllByOverlayKeyUdf :: MonadFlow m => Id Merchant -> Text -> Maybe Text -> m [Overlay]
-findAllByOverlayKeyUdf merchantId overlayKey udf1 =
+findAllByOverlayKeyUdf :: MonadFlow m => Id MerchantOperatingCity -> Text -> Maybe Text -> m [Overlay]
+findAllByOverlayKeyUdf merchantOperatingCityId overlayKey udf1 =
   findAllWithKV
     [ Se.And
-        [ Se.Is BeamMPN.merchantId $ Se.Eq (getId merchantId),
+        [ Se.Is BeamMPN.merchantOperatingCityId $ Se.Eq (getId merchantOperatingCityId),
           Se.Is BeamMPN.overlayKey $ Se.Eq overlayKey,
           Se.Is BeamMPN.udf1 $ Se.Eq udf1
         ]
     ]
 
-findByMerchantIdPNKeyLangaugeUdf :: MonadFlow m => Id Merchant -> Text -> Language -> Maybe Text -> m (Maybe Overlay)
-findByMerchantIdPNKeyLangaugeUdf id pnKey language udf1 =
+findByMerchantOpCityIdPNKeyLangaugeUdf :: MonadFlow m => Id MerchantOperatingCity -> Text -> Language -> Maybe Text -> m (Maybe Overlay)
+findByMerchantOpCityIdPNKeyLangaugeUdf id pnKey language udf1 =
   findOneWithKV
     [ Se.And
-        [ Se.Is BeamMPN.merchantId $ Se.Eq (getId id),
+        [ Se.Is BeamMPN.merchantOperatingCityId $ Se.Eq (getId id),
           Se.Is BeamMPN.overlayKey $ Se.Eq pnKey,
           Se.Is BeamMPN.language $ Se.Eq language,
           Se.Is BeamMPN.udf1 $ Se.Eq udf1
@@ -82,7 +82,7 @@ instance FromTType' BeamMPN.Overlay Overlay where
       Just
         Overlay
           { id = Id id,
-            merchantId = Id merchantId,
+            merchantOperatingCityId = Id merchantOperatingCityId,
             ..
           }
 
@@ -90,7 +90,7 @@ instance ToTType' BeamMPN.Overlay Overlay where
   toTType' Overlay {..} = do
     BeamMPN.OverlayT
       { BeamMPN.id = getId id,
-        BeamMPN.merchantId = getId merchantId,
+        BeamMPN.merchantOperatingCityId = getId merchantOperatingCityId,
         BeamMPN.overlayKey = overlayKey,
         BeamMPN.language = language,
         BeamMPN.udf1 = udf1,

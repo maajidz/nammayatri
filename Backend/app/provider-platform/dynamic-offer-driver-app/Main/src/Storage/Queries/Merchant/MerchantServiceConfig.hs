@@ -21,7 +21,7 @@ module Storage.Queries.Merchant.MerchantServiceConfig
 where
 
 import qualified Data.Aeson as A
-import Domain.Types.Merchant as DOrg
+import Domain.Types.Merchant.MerchantOperatingCity
 import Domain.Types.Merchant.MerchantServiceConfig
 import qualified Domain.Types.Merchant.MerchantServiceConfig as Domain
 import Kernel.Beam.Functions
@@ -42,8 +42,8 @@ import qualified Sequelize as Se
 import qualified Storage.Beam.Merchant.MerchantServiceConfig as BeamMSC
 import Tools.Error
 
-findByMerchantIdAndService :: MonadFlow m => Id Merchant -> ServiceName -> m (Maybe MerchantServiceConfig)
-findByMerchantIdAndService (Id merchantId) serviceName = findOneWithKV [Se.And [Se.Is BeamMSC.merchantId $ Se.Eq merchantId, Se.Is BeamMSC.serviceName $ Se.Eq serviceName]]
+findByMerchantOpCityIdAndService :: MonadFlow m => Id MerchantOperatingCity -> ServiceName -> m (Maybe MerchantServiceConfig)
+findByMerchantOpCityIdAndService (Id merchantOperatingCityId) serviceName = findOneWithKV [Se.And [Se.Is BeamMSC.merchantOperatingCityId $ Se.Eq merchantOperatingCityId, Se.Is BeamMSC.serviceName $ Se.Eq serviceName]]
 
 findOne :: MonadFlow m => ServiceName -> m (Maybe MerchantServiceConfig)
 findOne serviceName = findAllWithOptionsKV [Se.Is BeamMSC.serviceName $ Se.Eq serviceName] (Se.Desc BeamMSC.createdAt) (Just 1) Nothing <&> listToMaybe
@@ -52,14 +52,14 @@ upsertMerchantServiceConfig :: MonadFlow m => MerchantServiceConfig -> m ()
 upsertMerchantServiceConfig merchantServiceConfig = do
   now <- getCurrentTime
   let (_serviceName, configJSON) = BeamMSC.getServiceNameConfigJSON merchantServiceConfig.serviceConfig
-  res <- findByMerchantIdAndService merchantServiceConfig.merchantId _serviceName
+  res <- findByMerchantOpCityIdAndService merchantServiceConfig.merchantOperatingCityId _serviceName
   if isJust res
     then
       updateWithKV
         [ Se.Set BeamMSC.configJSON configJSON,
           Se.Set BeamMSC.updatedAt now
         ]
-        [Se.Is BeamMSC.merchantId (Se.Eq $ getId merchantServiceConfig.merchantId)]
+        [Se.Is BeamMSC.merchantOperatingCityId (Se.Eq $ getId merchantServiceConfig.merchantOperatingCityId)]
     else createWithKV merchantServiceConfig
 
 instance FromTType' BeamMSC.MerchantServiceConfig MerchantServiceConfig where
@@ -83,7 +83,7 @@ instance FromTType' BeamMSC.MerchantServiceConfig MerchantServiceConfig where
     pure $
       Just
         MerchantServiceConfig
-          { merchantId = Id merchantId,
+          { merchantOperatingCityId = Id merchantOperatingCityId,
             serviceConfig = serviceConfigData,
             updatedAt = updatedAt,
             createdAt = createdAt
@@ -97,7 +97,7 @@ instance FromTType' BeamMSC.MerchantServiceConfig MerchantServiceConfig where
 instance ToTType' BeamMSC.MerchantServiceConfig MerchantServiceConfig where
   toTType' MerchantServiceConfig {..} = do
     BeamMSC.MerchantServiceConfigT
-      { BeamMSC.merchantId = getId merchantId,
+      { BeamMSC.merchantOperatingCityId = getId merchantOperatingCityId,
         BeamMSC.serviceName = fst $ getServiceNameConfigJson serviceConfig,
         BeamMSC.configJSON = snd $ getServiceNameConfigJson serviceConfig,
         BeamMSC.updatedAt = updatedAt,

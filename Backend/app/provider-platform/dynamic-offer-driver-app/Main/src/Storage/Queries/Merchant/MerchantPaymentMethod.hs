@@ -20,7 +20,7 @@ module Storage.Queries.Merchant.MerchantPaymentMethod
     #-}
 where
 
-import Domain.Types.Merchant
+import Domain.Types.Merchant.MerchantOperatingCity
 import Domain.Types.Merchant.MerchantPaymentMethod
 import Kernel.Beam.Functions
 import Kernel.Prelude
@@ -29,8 +29,8 @@ import Kernel.Types.Id
 import qualified Sequelize as Se
 import qualified Storage.Beam.Merchant.MerchantPaymentMethod as BeamMPM
 
-findAllByMerchantId :: MonadFlow m => Id Merchant -> m [MerchantPaymentMethod]
-findAllByMerchantId (Id merchantId) = findAllWithOptionsKV [Se.Is BeamMPM.merchantId $ Se.Eq merchantId] (Se.Desc BeamMPM.priority) Nothing Nothing
+findAllByMerchantOpCityId :: MonadFlow m => Id MerchantOperatingCity -> m [MerchantPaymentMethod]
+findAllByMerchantOpCityId (Id merchantOperatingCityId) = findAllWithOptionsKV [Se.Is BeamMPM.merchantOperatingCityId $ Se.Eq merchantOperatingCityId] (Se.Desc BeamMPM.priority) Nothing Nothing
 
 instance FromTType' BeamMPM.MerchantPaymentMethod MerchantPaymentMethod where
   fromTType' BeamMPM.MerchantPaymentMethodT {..} = do
@@ -38,7 +38,7 @@ instance FromTType' BeamMPM.MerchantPaymentMethod MerchantPaymentMethod where
       Just
         MerchantPaymentMethod
           { id = Id id,
-            merchantId = Id merchantId,
+            merchantOperatingCityId = Id merchantOperatingCityId,
             paymentType = paymentType,
             paymentInstrument = paymentInstrument,
             collectedBy = collectedBy,
@@ -51,7 +51,7 @@ instance ToTType' BeamMPM.MerchantPaymentMethod MerchantPaymentMethod where
   toTType' MerchantPaymentMethod {..} = do
     BeamMPM.MerchantPaymentMethodT
       { BeamMPM.id = getId id,
-        BeamMPM.merchantId = getId merchantId,
+        BeamMPM.merchantOperatingCityId = getId merchantOperatingCityId,
         BeamMPM.paymentType = paymentType,
         BeamMPM.paymentInstrument = paymentInstrument,
         BeamMPM.collectedBy = collectedBy,
