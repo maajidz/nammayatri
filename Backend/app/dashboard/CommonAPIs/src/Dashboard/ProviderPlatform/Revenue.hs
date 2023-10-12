@@ -12,6 +12,8 @@
  the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 -}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Dashboard.ProviderPlatform.Revenue
   ( module Dashboard.ProviderPlatform.Revenue,
@@ -21,11 +23,13 @@ where
 
 import Dashboard.Common as Reexport
 import Dashboard.ProviderPlatform.Driver (DriverFeeStatus)
+import Data.Aeson
 import Data.Text
 import GHC.Int
 import Kernel.Prelude
 import Kernel.Types.Id
 import Kernel.Utils.Common
+import Kernel.Utils.TH (mkHttpInstancesForEnum)
 import Servant hiding (Summary)
 
 type GetCollectionHistory =
@@ -34,6 +38,7 @@ type GetCollectionHistory =
     :> QueryParam "place" Text
     :> QueryParam "from" UTCTime
     :> QueryParam "to" UTCTime
+    :> QueryParam "frequency" Basis
     :> Get '[JSON] CollectionList
 
 -- from, to is on the basis of startTime
@@ -83,3 +88,8 @@ data DriverFeeAPIEntity = DriverFeeAPIEntity
     collectedAt :: Maybe UTCTime
   }
   deriving (Generic, Show, FromJSON, ToJSON, ToSchema)
+
+data Basis = Daily | Hourly
+  deriving (Eq, Generic, Show, FromJSON, ToJSON, ToSchema, ToParamSchema)
+
+$(mkHttpInstancesForEnum ''Basis)

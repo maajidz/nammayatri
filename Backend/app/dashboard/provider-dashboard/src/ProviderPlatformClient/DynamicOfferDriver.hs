@@ -194,7 +194,7 @@ data OverlayAPIs = OverlayAPIs
   }
 
 data RevenueAPIs = RevenueAPIs
-  { getCollectionHistory :: Maybe Text -> Maybe Text -> Maybe UTCTime -> Maybe UTCTime -> Euler.EulerClient Revenue.CollectionList,
+  { getCollectionHistory :: Maybe Text -> Maybe Text -> Maybe UTCTime -> Maybe UTCTime -> Maybe Revenue.Basis -> Euler.EulerClient Revenue.CollectionList,
     getAllDriverFeeHistory :: Maybe UTCTime -> Maybe UTCTime -> Euler.EulerClient [Revenue.AllFees]
   }
 

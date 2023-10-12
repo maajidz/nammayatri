@@ -28,8 +28,11 @@ import Domain.Types.DriverFee
 import qualified Domain.Types.Merchant as DM
 import Environment
 import EulerHS.Prelude hiding (id)
+import Kernel.Types.Error
 import Kernel.Types.Id
-import Kernel.Utils.Common (HighPrecMoney)
+import qualified Kernel.Types.SlidingWindowCounters as KS
+import Kernel.Utils.Common (HighPrecMoney, throwError)
+import Kernel.Utils.SlidingWindowCounters
 import Kernel.Utils.Time
 import SharedLogic.Merchant
 import Storage.Queries.DriverFee (findAllByStatus, findAllByTimeMerchantAndStatus, findAllByVolunteerIds)
@@ -61,13 +64,18 @@ getAllDriverFeeHistory merchantShortId mbFrom mbTo = do
     getNumRides fee = sum $ map numRides fee
     getTotalAmount fee = sum $ map (\fee_ -> fromIntegral fee_.govtCharges + fee_.platformFee.fee + fee_.platformFee.cgst + fee_.platformFee.sgst) fee
 
-getCollectionHistory :: ShortId DM.Merchant -> Maybe Text -> Maybe Text -> Maybe UTCTime -> Maybe UTCTime -> Flow Common.CollectionList
-getCollectionHistory merchantShortId volunteerId place mbFrom mbTo = do
+getCollectionHistory :: ShortId DM.Merchant -> Maybe Text -> Maybe Text -> Maybe UTCTime -> Maybe UTCTime -> Maybe Common.Basis -> Flow Common.CollectionList
+getCollectionHistory merchantShortId volunteerId place mbFrom mbTo basis = do
   now <- getCurrentTime
   merchant <- findMerchantByShortId merchantShortId
   let defaultFrom = UTCTime (fromGregorian 2020 1 1) 0
       from_ = fromMaybe defaultFrom mbFrom
       to = fromMaybe now mbTo
+  let rangeBasis = case basis of
+        Just Common.Daily -> KS.Days
+        Just Common.Hourly -> KS.Hours
+        Nothing -> KS.Days
+  when (rangeBasis == KS.Hours && diffUTCTime to from_ > 24 * 60 * 60) $ throwError $ InvalidRequest "Hourly basis data can be seen only in the range of one day "
   offlineCollections <- case (place, volunteerId) of
     (Nothing, Nothing) -> findAllByStatus merchant.id COLLECTED_CASH from_ to
     (Nothing, Just cId) -> findAllByVolunteerIds merchant.id [cId] from_ to
@@ -78,12 +86,12 @@ getCollectionHistory merchantShortId volunteerId place mbFrom mbTo = do
             _ -> (.id.getId) <$> volunteers
       findAllByVolunteerIds merchant.id relevantIds from_ to
   onlineCollections <- findAllByStatus merchant.id CLEARED from_ to
-  let offlineCollectionsRes = getCollectionSummary offlineCollections
-  let onlineCollectionsRes = getCollectionSummary onlineCollections
+  let offlineCollectionsRes = getCollectionSummary offlineCollections rangeBasis
+  let onlineCollectionsRes = getCollectionSummary onlineCollections rangeBasis
   pure $ Common.CollectionList onlineCollectionsRes offlineCollectionsRes
 
-getCollectionSummary :: [DriverFee] -> Common.CollectionListRes
-getCollectionSummary collections = do
+getCollectionSummary :: [DriverFee] -> KS.PeriodType -> Common.CollectionListRes
+getCollectionSummary collections granuality = do
   let totalCnt = length collections
       totalFeeCollected = sum $ map calcFee collections
       totalRides = sum $ map (.numRides) collections
@@ -91,18 +99,20 @@ getCollectionSummary collections = do
       collectionsTs =
         [ (calculateTotalFee tmp, listToMaybe [x | (_, Just x) <- tmp])
           | tmp <-
-              DL.groupBy (\(_, a) (_, b) -> a == b) $
+              DL.groupBy (\(_, a) (_, b) -> makeGranular a == makeGranular b) $
                 sortBy (comparing snd) [(calcFee fee, fee.collectedAt) | fee <- collections]
         ]
       numRidesTs =
         [ (calculateTotalRides tmp, listToMaybe [x | (_, Just x) <- tmp])
           | tmp <-
-              DL.groupBy (\(_, a) (_, b) -> a == b) $
+              DL.groupBy (\(_, a) (_, b) -> makeGranular a == makeGranular b) $
                 sortBy (comparing snd) [(fee.numRides, fee.collectedAt) | fee <- collections]
         ]
-      driversPmtTs = [(length tmp, listToMaybe tmp) | tmp <- DL.group $ DL.sort $ catMaybes [fee.collectedAt | fee <- collections]]
+      driversPmtTs = [(length tmp, listToMaybe (catMaybes tmp)) | tmp <- DL.groupBy (\a b -> makeGranular a == makeGranular b) $ DL.sort [fee.collectedAt | fee <- collections]]
   Common.CollectionListRes totalCnt totalFeeCollected totalRides totalDrivers collectionsTs numRidesTs driversPmtTs
   where
+    makeGranular (Just timeVal) = makeSlidingWindowKey granuality "" timeVal
+    makeGranular Nothing = ""
     calcFee fee = fromIntegral fee.govtCharges + fee.platformFee.fee + fee.platformFee.cgst + fee.platformFee.sgst
 
 calculateTotalFee :: [(HighPrecMoney, Maybe UTCTime)] -> HighPrecMoney
