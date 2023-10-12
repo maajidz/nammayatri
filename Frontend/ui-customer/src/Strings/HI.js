@@ -628,4 +628,9 @@ const hindiStrings = {
   "HAVE_A_REFFERAL" : "क्या आपके पास रेफरल है?",
   "YOUR_SUGGESTED_DESTINATIONS_AND_RECENT_RIDES_WILL_APPEAR_HERE" : "आपके सुझाए गए गंतव्य और हाल की सवारियां यहां दिखाई देंगी",
   "WELCOME_TO_NAMMA_YATRI_" : "नम्मा यात्री में आपका स्वागत है!",
+  "BOOK_AND_MOVE" : "बुक करें और चलें",
+  "ANYWHERE_IN_THE_CITY" : "शहर में कहीं भी",
+  "CHECKOUT_OUR_LIVE_STATS" : "हमारे लाइव आँकड़े देखें",
+  "BENGALURU_MOST_LOVED_APP" : "बेंगलुरु का सबसे ❤️ ऑटो ऐप",
+  "PICKUP_" : "पिक अप: ",
 }

@@ -514,4 +514,9 @@ export function getStringValue(key) {
     "HAVE_A_REFFERAL": "Vous avez un code de référence?",
     "YOUR_SUGGESTED_DESTINATIONS_AND_RECENT_RIDES_WILL_APPEAR_HERE" : "Vos destinations suggérées et vos trajets récents apparaîtront ici",
     "WELCOME_TO_NAMMA_YATRI_" : "Bienvenue à Namma Yatri!",
+    "BOOK_AND_MOVE" : "Réservez et déplacez-vous",
+    "ANYWHERE_IN_THE_CITY" : "Partout dans la ville",
+    "CHECKOUT_OUR_LIVE_STATS" : "Découvrez nos statistiques en direct",
+    "BENGALURU_MOST_LOVED_APP" : "L'application automobile la plus ❤️ de Bengaluru",
+    "PICKUP_" : "Ramasser: ",
   }

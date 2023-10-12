@@ -623,4 +623,9 @@ const kannadaStrings = {
   "HAVE_A_REFFERAL": "ನಿಮಗೆ ರೆಫರಲ್ ಕೋಡ್ ಇದೆಯೇ?",
   "YOUR_SUGGESTED_DESTINATIONS_AND_RECENT_RIDES_WILL_APPEAR_HERE" : "ನಿಮ್ಮ ಸೂಚಿತ ಗಂತವ್ಯಗಳು ಮತ್ತು ಇತ್ತೀಚಿನ ಸವಾರಿಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ",
   "WELCOME_TO_NAMMA_YATRI_" : "ನಮ್ಮ ಯಾತ್ರಿಗೆ ಸುಸ್ವಾಗತ",
+  "BOOK_AND_MOVE" : "ಬುಕ್ ಮಾಡಿ ಮತ್ತು ಸವಾರಿ ಪಡೆಯಿರಿ",
+  "ANYWHERE_IN_THE_CITY" : "ನಗರದಲ್ಲಿ ಎಲ್ಲಿಯೂ",
+  "CHECKOUT_OUR_LIVE_STATS" : "ನಮ್ಮ ಲೈವ್ ಸ್ಟ್ಯಾಟಸ್ ನೋಡಿ",
+  "BENGALURU_MOST_LOVED_APP" : "ಬೆಂಗಳೂರಿನ ಪ್ರಿಯ ಅಪ್ಲಿಕೇಶನ್",
+  "PICKUP_" : "ಎತ್ತಿಕೊಳ್ಳಿ: ",
 }

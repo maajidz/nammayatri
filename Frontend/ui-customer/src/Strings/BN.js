@@ -643,4 +643,9 @@ const bengaliStrings = {
   "HAVE_A_REFFERAL" : "আপনার কাছে কোন রেফারেল আছে?",
   "YOUR_SUGGESTED_DESTINATIONS_AND_RECENT_RIDES_WILL_APPEAR_HERE" : "আপনার প্রস্তাবিত গন্তব্য এবং সাম্প্রতিক রাইড এখানে দেখানো হবে",
   "WELCOME_TO_NAMMA_YATRI_" : "নম্মা যাত্রীতে আপনাকে স্বাগতম!",
+  "BOOK_AND_MOVE" : "বুক করুন এবং চলুন",
+  "ANYWHERE_IN_THE_CITY" : "শহরের যেকোন জায়গায়",
+  "CHECKOUT_OUR_LIVE_STATS" : "আমাদের লাইভ পরিসংখ্যান চেক করুন",
+  "BENGALURU_MOST_LOVED_APP" : "বেঙ্গালুরুর সবচেয়ে ❤️ অটো অ্যাপ",
+  "PICKUP_" : "পিকআপ: ",
 }

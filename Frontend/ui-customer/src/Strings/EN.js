@@ -627,4 +627,9 @@ const englishStrings = {
   "HAVE_A_REFFERAL" : "Have a Referral?",
   "YOUR_SUGGESTED_DESTINATIONS_AND_RECENT_RIDES_WILL_APPEAR_HERE" : "Your suggested destinations and recent rides will appear here",
   "WELCOME_TO_NAMMA_YATRI_" : "Welcome to Namma Yatri!",
+  "BOOK_AND_MOVE" : "Book and move,",
+  "ANYWHERE_IN_THE_CITY" : "anywhere in the city",
+  "CHECKOUT_OUR_LIVE_STATS" : "Checkout our Live Stats",
+  "BENGALURU_MOST_LOVED_APP" : "Bengaluru's most ❤️ Auto app",
+  "PICKUP_" : "Pickup: ",
 }

@@ -70,7 +70,7 @@ import MerchantConfig.Utils (Merchant(..), getMerchant, getValueFromConfig)
 import Prelude (Unit, bind, const, discard, map, negate, not, pure, show, unit, void, when, ($), (&&), (*), (+), (-), (/), (/=), (<), (<<<), (<=), (<>), (==), (>), (||))
 import Presto.Core.Types.API (ErrorResponse)
 import Presto.Core.Types.Language.Flow (Flow, doAff, delay)
-import PrestoDOM (BottomSheetState(..), Gradient(..), Gravity(..), Length(..), Accessiblity(..), Margin(..), Accessiblity(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), layoutGravity, adjustViewWithKeyboard, afterRender, alignParentBottom, background, clickable, color, scrollBarY,cornerRadius, disableClickFeedback, ellipsize, fontStyle, frameLayout, gradient, gravity, halfExpandedRatio, height, id, imageView, imageWithFallback, lineHeight, linearLayout, lottieAnimationView, margin, maxLines, onBackPressed, onClick, orientation, padding, peakHeight, draggingEnabled, relativeLayout, singleLine, stroke, text, textFromHtml, textSize, textView, url, visibility, webView, weight, width, layoutGravity, accessibilityHint, accessibility, accessibilityFocusable, focusable, scrollView, onSlide)
+import PrestoDOM (BottomSheetState(..), Gradient(..), Gravity(..), Length(..), Accessiblity(..), Margin(..), Accessiblity(..), Orientation(..), Padding(..), PrestoDOM, Screen, Visibility(..), Shadow(..),layoutGravity, adjustViewWithKeyboard, afterRender, alignParentBottom, background, clickable, color, scrollBarY,cornerRadius, disableClickFeedback, ellipsize, fontStyle, frameLayout, gradient, gravity, halfExpandedRatio, height, id, imageView, imageWithFallback, lineHeight, linearLayout, lottieAnimationView, margin, maxLines, onBackPressed, onClick, orientation, padding, peakHeight, draggingEnabled, relativeLayout, singleLine, stroke, text, textFromHtml, textSize, textView, url, visibility, webView, weight, width, layoutGravity, accessibilityHint, accessibility, accessibilityFocusable, focusable, scrollView, onSlide, shadow, clipChildren)
 import PrestoDOM.Animation as PrestoAnim
 import PrestoDOM.Elements.Elements (bottomSheetLayout, coordinatorLayout)
 import PrestoDOM.Properties (cornerRadii, sheetState, alpha)
@@ -1284,175 +1284,190 @@ estimatedFareView push state =
           , cornerRadius 8.0
           , margin $ MarginTop 16
           , padding $ PaddingVertical 2 10
-          ][linearLayout
-            [ height WRAP_CONTENT
+          ][ rideDetailsView push state
+           , bookingPreferencesView push state
+           ]
+        , sourceDestinationDetailsView push state
+        , requestRideButtonView push state
+        , linearLayout
+            [ width MATCH_PARENT
+            , height WRAP_CONTENT
+            , gravity CENTER
+            , margin $ MarginTop 24
+            , visibility if state.props.isRepeatRide && state.props.repeatRideTimerId /= "" then VISIBLE else GONE
+            ][ textView $
+                [ textFromHtml $ "<u>" <> "Tap here to stop auto requesting" <> "</u>" 
+                , color Color.black700
+                ] <> FontStyle.body1 LanguageStyle
+            ]
+      ]
+  ]
+
+rideDetailsView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+rideDetailsView push state = 
+  linearLayout
+    [ height WRAP_CONTENT
+    , width MATCH_PARENT
+    , orientation HORIZONTAL
+    , padding $ PaddingTop 12
+    , margin $ MarginHorizontal 16 16
+    ][ linearLayout
+        [ height WRAP_CONTENT
+        , orientation HORIZONTAL
+        , gravity LEFT
+        , weight 1.0
+        ][ imageView  
+            [ imageWithFallback "ny_ic_auto_quote_list,https://assets.juspay.in/nammayatri/images/common/ny_ic_auto_quote_list.png"
+            , width $ V 55
+            , height $ V 40
+            ]
+         , linearLayout
+            [ width WRAP_CONTENT
+            , height WRAP_CONTENT
+            , accessibility DISABLE
+            , gravity CENTER
+            , orientation VERTICAL
+            ][ textView $
+                [ text state.data.rideDistance
+                , width MATCH_PARENT
+                , accessibilityHint $ "Estimated Ride Distance And Ride Duration Is " <> (fromMaybe "0" (head (DS.split (DS.Pattern " ") state.data.rideDistance))) <> (if any (_ == "km") (DS.split (DS.Pattern " ") state.data.rideDistance) then "Kilo Meters" else "Meters") <> " And " <> state.data.rideDuration
+                , color Color.black800
+                , accessibility ENABLE
+                , height WRAP_CONTENT
+                ] <> FontStyle.body4 LanguageStyle
+              , textView $
+                [ text state.data.rideDuration
+                , accessibility DISABLE
+                , width MATCH_PARENT
+                , color Color.black700
+                , height WRAP_CONTENT
+                ] <> FontStyle.body3 LanguageStyle
+            ]
+        ]
+    , linearLayout
+        [ width WRAP_CONTENT
+        , height MATCH_PARENT
+        , gravity CENTER_VERTICAL
+        ][ textView $
+            [ text $ if state.data.rateCard.additionalFare == 0 then state.data.config.currency <> (show state.data.suggestedAmount) else  state.data.config.currency <> (show state.data.suggestedAmount) <> "-" <> state.data.config.currency <> (show $ (state.data.suggestedAmount + state.data.rateCard.additionalFare))
+            , width WRAP_CONTENT
+            , color Color.black900
+            , height WRAP_CONTENT
+            , fontStyle $ FontStyle.bold LanguageStyle
+            , onClick (\action -> if (getValueFromConfig "showRateCard") == "true" then push action else pure unit ) $ const ShowRateCard
+            ] <> FontStyle.body7 LanguageStyle
+         , imageView
+            [ imageWithFallback "ny_ic_info_blue,https://assets.juspay.in/nammayatri/images/common/ny_ic_info_blue.png"
+            , width $ V 40
+            , height $ V 40
+            , accessibility DISABLE
+            , visibility if (getValueFromConfig "showRateCard") == "true" then VISIBLE else GONE
+            , onClick (\action -> if (getValueFromConfig "showRateCard") == "true" then push action else pure unit ) $ const ShowRateCard
+            ]
+        ]
+    ]
+
+sourceDestinationDetailsView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+sourceDestinationDetailsView push state = 
+  linearLayout
+    [ orientation HORIZONTAL
+    , height WRAP_CONTENT
+    , width MATCH_PARENT
+    , background Color.white900
+    , clickable true
+    , accessibility if state.props.showRateCard then DISABLE_DESCENDANT else DISABLE
+    , visibility if (state.props.currentStage == SettingPrice) && state.props.isRepeatRide then VISIBLE else GONE
+    , margin (MarginTop 16)
+    , padding (Padding 12 12 12 12)
+    , stroke ("1," <> Color.grey900)
+    , gravity CENTER_VERTICAL
+    , cornerRadii $ Corners 10.0 true true true true
+    ][ 
+      linearLayout
+        [ weight 1.0
+        , height WRAP_CONTENT
+        ][SourceToDestination.view (push <<< SourceToDestinationActionController) (sourceToDestinationConfig state)]
+      , imageView
+          [ imageWithFallback "ny_ic_edit,https://assets.juspay.in/nammayatri/images/common/ny_ic_edit.png"
+          , height $ V 40
+          , width $ V 40
+          , onClick push $ const BackPressed
+          ]
+    ]
+
+requestRideButtonView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+requestRideButtonView push state =
+  relativeLayout
+    [ height WRAP_CONTENT
+    , width MATCH_PARENT
+    ][  PrimaryButton.view (push <<< PrimaryButtonActionController) (primaryButtonRequestRideConfig state)
+      , PrestoAnim.animationSet
+        [ translateOutXBackwardAnimY animConfig{duration = 4900, toX = (screenWidth unit), fromY = 0, ifAnim = state.props.repeatRideTimer /= "0"}]  $
+        linearLayout
+            [ height $ V 50
             , width MATCH_PARENT
-            , orientation HORIZONTAL
-            , padding $ PaddingTop 12
-            , margin $ MarginHorizontal 16 16
-            ]
-            [ linearLayout
-                [ height WRAP_CONTENT
-                , orientation HORIZONTAL
-                , gravity LEFT
-                , weight 1.0
-                ][ imageView  
-                    [ imageWithFallback "ny_ic_auto_quote_list,https://assets.juspay.in/nammayatri/images/common/ny_ic_auto_quote_list.png"
-                    , width $ V 55
-                    , height $ V 40
-                    ]
-                  , linearLayout
-                      [ width WRAP_CONTENT
-                      , height WRAP_CONTENT
-                      , accessibility DISABLE
-                      , gravity CENTER
-                      , orientation VERTICAL
-                      ][ textView $
-                          [ text state.data.rideDistance
-                          , width MATCH_PARENT
-                          , gravity CENTER
-                          , accessibilityHint $ "Estimated Ride Distance And Ride Duration Is " <> (fromMaybe "0" (head (DS.split (DS.Pattern " ") state.data.rideDistance))) <> (if any (_ == "km") (DS.split (DS.Pattern " ") state.data.rideDistance) then "Kilo Meters" else "Meters") <> " And " <> state.data.rideDuration
-                          , color Color.black650
-                          , accessibility ENABLE
-                          , height WRAP_CONTENT
-                          ] <> FontStyle.paragraphText LanguageStyle
-                        , textView $
-                          [ text state.data.rideDuration
-                          , accessibility DISABLE
-                          , width MATCH_PARENT
-                          , gravity CENTER
-                          , color Color.black650
-                          , height WRAP_CONTENT
-                          ] <> FontStyle.paragraphText LanguageStyle
-                      ]
-                ]
-            , linearLayout
-                [ width WRAP_CONTENT
-                , height MATCH_PARENT
-                , gravity CENTER_VERTICAL
-                ][ textView $
-                    [ text $ if state.data.rateCard.additionalFare == 0 then state.data.config.currency <> (show state.data.suggestedAmount) else  state.data.config.currency <> (show state.data.suggestedAmount) <> "-" <> state.data.config.currency <> (show $ (state.data.suggestedAmount + state.data.rateCard.additionalFare))
-                    , width WRAP_CONTENT
-                    , color Color.black900
-                    , height WRAP_CONTENT
-                    , fontStyle $ FontStyle.bold LanguageStyle
-                    , onClick (\action -> if (getValueFromConfig "showRateCard") == "true" then push action else pure unit ) $ const ShowRateCard
-                    ] <> FontStyle.body7 LanguageStyle
+            , alpha 0.5
+            , background Color.white900
+            , cornerRadius 8.0
+            , visibility if state.props.repeatRideTimerId /= "" then VISIBLE else GONE
+            , margin $ MarginTop 32
+            ][]
+    ]
 
-                , imageView
-                  [ imageWithFallback "ny_ic_info_blue,https://assets.juspay.in/nammayatri/images/common/ny_ic_info_blue.png"
-                  , width $ V 40
-                  , height $ V 40
-                  , accessibility DISABLE
-                  , visibility if (getValueFromConfig "showRateCard") == "true" then VISIBLE else GONE
-                  , onClick (\action -> if (getValueFromConfig "showRateCard") == "true" then push action else pure unit ) $ const ShowRateCard
-                  ]
-                ]
-            ]
-            , linearLayout
-              [ width MATCH_PARENT
-              , height WRAP_CONTENT
-              , orientation VERTICAL
-              , visibility if (getValueFromConfig "showBookingPreference") == "true" then VISIBLE else GONE
-              ][ linearLayout
-                  [ width MATCH_PARENT
-                  , height $ V 1
-                  , margin $ Margin 16 12 16 14
-                  , background Color.grey900
-                  ][]
-              , linearLayout
-                  [ width MATCH_PARENT
-                  , height WRAP_CONTENT
-                  , orientation VERTICAL
-                  ]
-                  [ linearLayout
-                      [ width MATCH_PARENT
-                      , height WRAP_CONTENT
-                      , gravity CENTER_HORIZONTAL
-                      , onClick push $ const PreferencesDropDown
-                      , accessibility DISABLE
-                      , margin (MarginBottom 8)
-                      ][
-                          textView
-                          [ height $ V 24
-                          , width WRAP_CONTENT
-                          , color Color.darkCharcoal
-                          , text $ getString BOOKING_PREFERENCE
-                          , accessibility DISABLE
-                          , textSize FontSize.a_16
-                          , fontStyle $ FontStyle.regular LanguageStyle
-
-                          ],
-                          imageView
-                          [ width $ V 10
-                          , height $ V 10
-                          , margin (Margin 9 8 0 0)
-                          , accessibility DISABLE
-                          , imageWithFallback if state.data.showPreferences then "ny_ic_chevron_up,https://assets.juspay.in/nammayatri/images/common/ny_ic_chevron_up.png" else "ny_ic_chevron_down,https://assets.juspay.in/nammayatri/images/user/ny_ic_down_arrow.png"
-                          ]
-                      ],
-                      linearLayout
-                        [ width MATCH_PARENT
-                        , height WRAP_CONTENT
-                        , margin $ MarginLeft 20
-                        , orientation VERTICAL
-                        ][ linearLayout
-                          [ width MATCH_PARENT
-                          , height WRAP_CONTENT
-                          , orientation VERTICAL
-                          , visibility if state.data.showPreferences then VISIBLE else GONE
-                          ][ showMenuButtonView push (getString AUTO_ASSIGN_DRIVER) ("ny_ic_faster_lightning," <> (getAssetStoreLink FunctionCall) <> "ny_ic_faster_lightning.png") true state,
-                            showMenuButtonView push (getString CHOOSE_BETWEEN_MULTIPLE_DRIVERS) "ny_ic_info,https://assets.juspay.in/nammayatri/images/user/ny_ic_information_grey.png" false state]
-                      ]
-
-                  ]
-              
-
-
+bookingPreferencesView :: forall w. (Action -> Effect Unit) -> HomeScreenState -> PrestoDOM (Effect Unit) w
+bookingPreferencesView push state = 
+ linearLayout
+  [ width MATCH_PARENT
+  , height WRAP_CONTENT
+  , orientation VERTICAL
+  , visibility if (getValueFromConfig "showBookingPreference") == "true" then VISIBLE else GONE
+  ][ linearLayout
+      [ width MATCH_PARENT
+      , height $ V 1
+      , margin $ Margin 16 12 16 14
+      , background Color.grey900
+      ][]
+  , linearLayout
+      [ width MATCH_PARENT
+      , height WRAP_CONTENT
+      , orientation VERTICAL
+      ][ linearLayout
+          [ width MATCH_PARENT
+          , height WRAP_CONTENT
+          , gravity CENTER_HORIZONTAL
+          , onClick push $ const PreferencesDropDown
+          , accessibility DISABLE
+          , margin (MarginBottom 8)
+          ][ textView
+              [ height $ V 24
+              , width WRAP_CONTENT
+              , color Color.darkCharcoal
+              , text $ getString BOOKING_PREFERENCE
+              , accessibility DISABLE
+              , textSize FontSize.a_16
+              , fontStyle $ FontStyle.regular LanguageStyle
+              ]
+           , imageView
+              [ width $ V 10
+              , height $ V 10
+              , margin (Margin 9 8 0 0)
+              , accessibility DISABLE
+              , imageWithFallback if state.data.showPreferences then "ny_ic_chevron_up,https://assets.juspay.in/nammayatri/images/common/ny_ic_chevron_up.png" else "ny_ic_chevron_down,https://assets.juspay.in/nammayatri/images/user/ny_ic_down_arrow.png"
               ]
           ]
         , linearLayout
-                [ orientation HORIZONTAL
-                , height WRAP_CONTENT
-                , width MATCH_PARENT
-                , background Color.white900
-                , clickable true
-                , accessibility if state.props.showRateCard then DISABLE_DESCENDANT else DISABLE
-                , visibility if (state.props.currentStage == SettingPrice) && state.props.isRepeatRide then VISIBLE else GONE
-                , margin (MarginTop 16)
-                , padding (Padding 12 12 12 12)
-                , stroke ("1," <> Color.grey900)
-                , gravity CENTER_VERTICAL
-                , cornerRadii $ Corners 10.0 true true true true
-                ][ 
-                  linearLayout
-                    [ weight 1.0
-                    , height WRAP_CONTENT
-                    ][SourceToDestination.view (push <<< SourceToDestinationActionController) (sourceToDestinationConfig state)]
-                 , imageView
-                      [ imageWithFallback "ny_ic_edit,https://assets.juspay.in/nammayatri/images/common/ny_ic_edit.png"
-                      , height $ V 40
-                      , width $ V 40
-                      , onClick push $ const BackPressed
-                      ]
-                ]
-        , 
-        relativeLayout
-          [ height WRAP_CONTENT
-          , width MATCH_PARENT
-          ][ PrimaryButton.view (push <<< PrimaryButtonActionController) (primaryButtonRequestRideConfig state)
-           , PrestoAnim.animationSet
-              [ translateOutXBackwardAnimY animConfig{duration = 4900, toX = (screenWidth unit), fromY = 0, ifAnim = state.props.repeatRideTimer /= "0"}]  $
-              linearLayout
-                  [ height $ V 50
-                  , width MATCH_PARENT
-                  , alpha 0.5
-                  , background Color.white900
-                  , cornerRadius 8.0
-                  , visibility if state.props.repeatRideTimerId /= "" then VISIBLE else GONE
-                  , margin $ MarginTop 32
-                  ][]
-          ]
+            [ width MATCH_PARENT
+            , height WRAP_CONTENT
+            , margin $ MarginLeft 20
+            , orientation VERTICAL
+            ][ linearLayout
+              [ width MATCH_PARENT
+              , height WRAP_CONTENT
+              , orientation VERTICAL
+              , visibility if state.data.showPreferences then VISIBLE else GONE
+              ][ showMenuButtonView push (getString AUTO_ASSIGN_DRIVER) ("ny_ic_faster_lightning," <> (getAssetStoreLink FunctionCall) <> "ny_ic_faster_lightning.png") true state,
+                showMenuButtonView push (getString CHOOSE_BETWEEN_MULTIPLE_DRIVERS) "ny_ic_info,https://assets.juspay.in/nammayatri/images/user/ny_ic_information_grey.png" false state]
+            ]
       ]
   ]
 
@@ -2606,7 +2621,7 @@ updatedHomescreenView push state =
       linearLayout
         [ height $ V ((screenHeight unit)/ 3)
         , width MATCH_PARENT
-        , background "#2C2F3A"
+        , background Color.blackBlue
         , padding $ (PaddingTop (safeMarginTop))
         , visibility if isHomeScreenView state then VISIBLE else GONE
         ][] 
@@ -2614,9 +2629,9 @@ updatedHomescreenView push state =
         , linearLayout 
         [ width MATCH_PARENT
         , height MATCH_PARENT
-        , margin $ if isHomeScreenView state then MarginTop 20
-                   else if state.props.locateOnMap then MarginTop 60
-                   else MarginTop 0
+        , margin $ MarginTop $ if isHomeScreenView state then 20
+                   else if state.props.currentStage == SearchLocationModel then 60
+                   else 0
         , orientation VERTICAL
         ][ 
            coordinatorLayout
@@ -2625,10 +2640,9 @@ updatedHomescreenView push state =
             ][ bottomSheetLayout
                 [ height MATCH_PARENT
                 , width MATCH_PARENT
-                , peakHeight $ if state.props.currentStage == HomeScreen then (getHeightFromPercent 83  - safeMarginBottom) else (getHeightFromPercent 100)
+                , peakHeight $ if state.props.currentStage == HomeScreen then (getHeightFromPercent 83  - safeMarginBottom) else (screenHeight unit)
                 , halfExpandedRatio 0.99
                 , draggingEnabled if isHomeScreenView state then true else false
-                , sheetState state.props.homescreenSheetState
                 , onSlide 
                   ( \action -> do
                       case action of 
@@ -2641,6 +2655,7 @@ updatedHomescreenView push state =
                     [ width MATCH_PARENT
                     , height MATCH_PARENT
                     , orientation VERTICAL
+                    , clipChildren false
                     ][ linearLayout[
                         height MATCH_PARENT
                         , width WRAP_CONTENT
@@ -2648,7 +2663,7 @@ updatedHomescreenView push state =
                         , margin $ if isHomeScreenView state then MarginTop 35 else MarginTop 0
                         , padding $ if isHomeScreenView state then PaddingTop 30 else PaddingTop 0
                     ][ scrollView
-                        [ height if isHomeScreenView state then (V (getHeightFromPercent 84)) else (V (getHeightFromPercent 100))
+                        [ height $ V if isHomeScreenView state then ( (getHeightFromPercent 84)) else ( (screenHeight unit))
                         , width MATCH_PARENT
                         ][ linearLayout
                             [ width $ V (screenWidth unit)
@@ -2689,20 +2704,22 @@ footerView push state =
     [ width MATCH_PARENT
     , height WRAP_CONTENT
     , orientation VERTICAL
-    , gradient (Linear 180.0 [Color.white900 , Color.grey700])
+    , gradient if os == "IOS" then (Linear 270.0 [Color.white900 , Color.grey700]) else (Linear 180.0 [Color.white900 , Color.grey700])
     , padding $ Padding 24 24 24 (24+safeMarginBottom)
     , gravity CENTER
     , visibility if isHomeScreenView state then VISIBLE else GONE
     ][
        textView
-        [ text "Book and move,"
+        [ text $ getString BOOK_AND_MOVE
         , textSize FontSize.a_22
         , color Color.black700
+        , gravity CENTER
         , fontStyle $ FontStyle.bold TypoGraphy
         ] 
       , textView
-        [ text "anywhere in the city"
+        [ text $ getString ANYWHERE_IN_THE_CITY
         , textSize FontSize.a_22
+        , gravity CENTER
         , color Color.black700
         , fontStyle $ FontStyle.bold TypoGraphy
         ] 
@@ -2728,21 +2745,20 @@ footerView push state =
               , height $ V 20
               , width $ V 20
               , margin $ MarginRight 7
-              , onClick push $ const ShowRateCard
               ]
             , textView
                 [ height WRAP_CONTENT
                 , width WRAP_CONTENT
-                , text "Checkout our Live Stats"
+                , text $ getString CHECKOUT_OUR_LIVE_STATS 
                 , color Color.blue900
                 , textSize FontSize.a_16
                 , gravity CENTER_VERTICAL
-                , onClick push $ const ShowRateCard
                 ]
           ]
       , textView
-        [ text "Bengaluru's most ❤️ Auto app"
+        [ text $ getString BENGALURU_MOST_LOVED_APP
         , textSize FontSize.a_14
+        , gravity CENTER
         , color Color.black600
         , margin $ MarginTop 16
         ]
@@ -2766,9 +2782,10 @@ whereToButtonView push state  =
       , orientation HORIZONTAL
       , background Color.white900
       , padding $ Padding 16 16 16 16
-      , margin $ (Margin 16 0 16 0)
+      , margin $ (Margin 16 0 16 16)
       , cornerRadii $ Corners 6.0 true true true true
       , visibility if isHomeScreenView state then VISIBLE else GONE
+      , shadow $ Shadow 0.1 0.3 10.0 24.0 Color.greyBackDarkColor 0.5 
       ][
         PrestoAnim.animationSet
         [ Anim.fadeIn  ( state.props.isHomescreenExpanded) 
@@ -2846,7 +2863,7 @@ whereToButtonView push state  =
             , textView
                 [ height WRAP_CONTENT
                 , width WRAP_CONTENT
-                , text "Where to?"
+                , text $ getString WHERE_TO
                 , color Color.black900
                 , textSize FontSize.a_16
                 ]
@@ -2945,7 +2962,7 @@ pickupLocView push state =
               , textView
                   [ height WRAP_CONTENT
                   , width WRAP_CONTENT
-                  , text "Pickup: Current Location"
+                  , text $ (getString PICKUP_) <> "Current Location"
                   , color Color.black600
                   , textSize FontSize.a_14
                   ]
@@ -2978,7 +2995,7 @@ getMapDimenstions state =
                   else if (isHomeScreenView state) then
                     (getHeightFromPercent 45)
                   else
-                    (getHeightFromPercent 95)
+                    (screenHeight unit) - 32
       mapWidth =  if state.props.currentStage /= HomeScreen then ((screenWidth unit)) else ((screenWidth unit) - 32)
   in {height : mapHeight, width : mapWidth}
 
@@ -2997,14 +3014,14 @@ suggestionsView push state =
     [ width MATCH_PARENT
     , height WRAP_CONTENT
     , orientation VERTICAL
-    , padding $ Padding 16 0 16 16
-    , margin $ MarginTop 16
+    , padding $ Padding 0 0 0 16
+    , margin $ Margin 8 16 8 0
     ][ textView $
         [ height WRAP_CONTENT
         , width (MATCH_PARENT)
         , text if length state.data.tripSuggestions  == 0 then (getString SUGGESTED_DESTINATION) else (getString RECENT_RIDES)
         , color Color.black800
-        , padding $ Padding 0 0 0 0 
+        , padding $ Padding 8 0 8 0 
         , margin $ MarginBottom 7
         , accessibilityHint if length state.data.tripSuggestions  == 0 then "Suggested Destinations" else "Recent Rides"
         ] <> FontStyle.subHeading1 TypoGraphy
@@ -3013,7 +3030,7 @@ suggestionsView push state =
         , width MATCH_PARENT
         , text if length state.data.tripSuggestions  == 0 then (getString PLACES_YOU_MIGHT_LIKE_TO_GO_TO) else (getString ONE_CLICK_BOOKING_FOR_YOUR_FAVOURITE_JOURNEYS)
         , color Color.black600
-        , padding $ Padding 0 0 0 0 
+        , padding $ Padding 8 0 8 0 
         , accessibilityHint if length state.data.tripSuggestions  == 0 then "Places you might like to go to." else "One click booking for your favourite journeys!"
         , margin $ MarginBottom 7
         ] <> FontStyle.body3 TypoGraphy
@@ -3061,6 +3078,7 @@ suggestedLocationCardView push state =
     [ height WRAP_CONTENT
     , width MATCH_PARENT
     , orientation VERTICAL
+    , clipChildren false
     ]( mapWithIndex ( \index item -> suggestedDestinationCard push state index item ) (take takeValue state.data.destinationSuggestions))
 
 suggestedDestinationCard ::  forall w. (Action -> Effect Unit) -> HomeScreenState ->Int -> LocationListItemState -> PrestoDOM (Effect Unit) w
@@ -3070,8 +3088,10 @@ suggestedDestinationCard push state index suggestion =
     , width MATCH_PARENT
     , orientation HORIZONTAL
     , stroke $ "1,"<> Color.grey800
-    , margin $ Margin 0 8 0 8
+    , margin $ Margin 8 8 8 8
+    , shadow $ Shadow 0.1 0.1 7.0 24.0 Color.greyBackDarkColor 0.5 
     , padding $ Padding 16 16 16 16
+    , background Color.white900
     , gravity CENTER_VERTICAL
     , cornerRadii $ Corners (16.0) true true true true
     , onClick push $ const (SuggestedDestinationClicked suggestion)
@@ -3082,7 +3102,7 @@ suggestedDestinationCard push state index suggestion =
         , orientation VERTICAL
         , padding (Padding 3 3 3 3)
         , layoutGravity "center_vertical"
-        , margin $ MarginRight 5
+        , margin $ MarginRight 4
         ][ imageView
             [ imageWithFallback $ "ny_ic_destination," <> (getAssetStoreLink FunctionCall) <> "ny_ic_destination.png"
             , height $ V 17
@@ -3131,6 +3151,7 @@ repeatRideCardParentView push state =
     [ height WRAP_CONTENT
     , width MATCH_PARENT
     , orientation VERTICAL
+    , clipChildren false
     ]( mapWithIndex ( \index item -> repeatRideCard push state index item ) (take takeValue state.data.tripSuggestions))
 
 repeatRideCard :: forall w. (Action -> Effect Unit) -> HomeScreenState ->Int -> Trip -> PrestoDOM (Effect Unit) w
@@ -3140,8 +3161,9 @@ repeatRideCard push state  index trip =
     , width MATCH_PARENT
     , orientation HORIZONTAL
     , stroke $ "1,"<> Color.grey800
-    , margin $ Margin 0 7 0 7
     , gravity CENTER_VERTICAL
+    , margin $ Margin 8 8 8 8
+    , shadow $ Shadow 0.1 0.1 7.0 24.0 Color.greyBackDarkColor 0.5 
     , padding $ Padding 9 9 9 9
     , cornerRadii $ Corners (8.0) true true true true
     , onClick push $ const (RepeatRide index trip)
