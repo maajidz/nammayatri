@@ -35,11 +35,11 @@ import Components.PaymentHistoryModel as PaymentHistoryModel
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Trans.Class (lift)
 import Control.Transformers.Back.Trans (runBackT)
-import Data.Array (length, (..), foldl, filter)
+import Data.Array (length, (..), foldl, filter, take, drop)
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Function.Uncurried (runFn1)
-import Data.Int (ceil, floor)
+import Data.Int (ceil, floor, fromNumber, toNumber)
 import Data.Maybe 
 import Data.Tuple as DT
 import Effect (Effect)
@@ -105,9 +105,19 @@ screen initialState =
     eval action state)
   }
 
-getweeklyEarningData :: Array Number -> Array Number
-getweeklyEarningData weeklyEarningData = map (\x -> (x * 100.0)/ maxValue) weeklyEarningData
-  where maxValue = foldl max 0.0 weeklyEarningData
+getweeklyEarningData :: Int -> Array ST.WeeklyEarning -> Array ST.WeeklyEarning
+getweeklyEarningData flag weeklyEarningData = 
+  case flag of
+    0 -> drop (length weeklyEarningData - 7) weeklyEarningData
+    1 -> take 7 weeklyEarningData
+    _ -> []
+
+getWeeklyEarningsPercentage :: Array ST.WeeklyEarning -> Array ST.WeeklyEarning
+getWeeklyEarningsPercentage weeklyEarningData = map (\x-> x{percentLength = ((toNumber (fromMaybe 0 x.earnings)) * 100.0)/ (toNumber maxValue)}) weeklyEarningData
+  where maxValue = foldl getMax 0 weeklyEarningData
+
+getMax :: Int -> ST.WeeklyEarning -> Int
+getMax num1 obj1 = if (fromMaybe 0 obj1.earnings) > num1 then fromMaybe 0 obj1.earnings else num1
 
 view :: forall w . (Action -> Effect Unit) -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w
 view push state =
@@ -226,6 +236,7 @@ totalEarningsView push state =
           [ width (V 24)
           , height (V 24)
           , imageWithFallback $ "ny_ic_chevron_left_black" 
+          , onClick push $ const $ LeftChevronClicked state.props.weekIndex
           ]
         ]
         ,linearLayout
@@ -236,12 +247,12 @@ totalEarningsView push state =
           ][ textView $ 
             [ height WRAP_CONTENT
             , width WRAP_CONTENT
-            , text "24 Dec - 30 Dec, Earnings"
+            , text $ state.props.totalEarningsData.fromDate <> if state.props.totalEarningsData.toDate /= "" then "- " <> state.props.totalEarningsData.toDate else "" <> ", Earnings"
             ] <> FontStyle.paragraphText TypoGraphy
             , textView $ 
             [ height WRAP_CONTENT
             , width WRAP_CONTENT
-            , text "₹1200"
+            , text $ "₹" <> show (state.props.totalEarningsData.totalEarnings)
             , color Color.black900
             ] <> FontStyle.priceFont TypoGraphy
           ]
@@ -255,6 +266,7 @@ totalEarningsView push state =
             , height (V 24)
             , imageWithFallback $ "ny_ic_chevron_right_grey"
             , gravity RIGHT
+            , onClick push $ const $ RightChevronClicked state.props.weekIndex
             ]
           ]
         ]
@@ -279,7 +291,7 @@ totalEarningsView push state =
               ,  textView $ 
               [ height WRAP_CONTENT
               , width WRAP_CONTENT
-              , text "62"
+              , text $ show $ state.props.totalEarningsData.totalRides
               ] <> FontStyle.h2 TypoGraphy
           ]
           , linearLayout
@@ -302,7 +314,7 @@ totalEarningsView push state =
               ,  textView $ 
               [ height WRAP_CONTENT
               , width WRAP_CONTENT
-              , text "729 km"
+              , text $ (show (state.props.totalEarningsData.totalDistanceTravelled) <> " km")
               ] <> FontStyle.h2 TypoGraphy
           ]
         ] 
@@ -310,17 +322,22 @@ totalEarningsView push state =
 
 barGraphView :: forall w. (Action -> Effect Unit) -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w 
 barGraphView push state = 
+  let barGraphData =  (spy "printing array to be sent -> " (getWeeklyEarningsPercentage (getweeklyEarningData state.props.weekIndex state.data.weeklyEarningData))) in
   linearLayout
-  [ height WRAP_CONTENT
+  [ height $ V (150)
   , width MATCH_PARENT
   , background Color.white900
   , orientation HORIZONTAL
   , gravity BOTTOM
-  ]  (DA.mapWithIndex(\ index item  ->  (barView push index item state)) (getweeklyEarningData state.data.weeklyEarningData))
+  , afterRender (\action -> do
+                    _ <- push $ action barGraphData
+                    pure unit
+                ) (const MyAction)
+  ]  (DA.mapWithIndex(\ index item  -> (barView push index item state)) barGraphData)
 
-barView :: forall w. (Action -> Effect Unit) -> Int -> Number -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w 
-barView push index length state = 
-  let selectedIndex = state.props.selectedBarIndex
+barView :: forall w. (Action -> Effect Unit) -> Int -> ST.WeeklyEarning -> ST.DriverEarningsScreenState -> PrestoDOM (Effect Unit) w 
+barView push index item state = 
+  let selectedIndex = state.props.selectedBarIndex 
   in
   linearLayout
   [ height $ WRAP_CONTENT
@@ -331,18 +348,21 @@ barView push index length state =
   ][ linearLayout
   [ height $ WRAP_CONTENT
   , width $ WRAP_CONTENT
-  ][PrestoAnim.animationSet[ Anim.translateInYAnim $  animConfig {duration = 1000, fromY = 200}] $
+  -- ][PrestoAnim.animationSet[ spy "anim 1" (Anim.translateInYAnim $ (getAnimConfig state) {duration = (fromMaybe 0 $ (fromNumber $ length)) * 10, fromY = 200 - (fromMaybe 0 $ (fromNumber $ length))})] $
+  ][PrestoAnim.animationSet[ spy "anim 2" (Anim.translateInYAnim $ animConfig {duration = 1000 + (fromMaybe 0 $ (fromNumber $ item.percentLength)) , fromY = 200 + (fromMaybe 0 $ (fromNumber $ item.percentLength))})] $
     linearLayout
     [ height $ WRAP_CONTENT
     , width $ WRAP_CONTENT
+    -- , onAnimationEnd push $ const Xyz
     ][  linearLayout
-      [ height $ V (ceil length)
+      [ height $ V (ceil item.percentLength)
       , width $ V 30
       , background if selectedIndex < 0 || selectedIndex == index then Color.green900 else Color.green200
       , cornerRadius 4.0
       , onClick push $ const $ BarViewSelected index
       ][]
-    ]]
+    ]
+    ]
     , textView $
       [ height $ WRAP_CONTENT
       , width $ WRAP_CONTENT
@@ -984,3 +1004,6 @@ noRideHistoryView push state =
     , background Color.red
     , padding (PaddingBottom safeMarginBottom)
     ][  ErrorModal.view (push <<< ErrorModalActionController) (errorModalConfig state)]
+
+
+getAnimConfig state = animConfig

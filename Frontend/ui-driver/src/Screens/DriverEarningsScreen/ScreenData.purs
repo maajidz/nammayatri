@@ -19,6 +19,7 @@ import Data.Maybe
 import Foreign.Object (empty)
 import Prelude ((-), negate)
 import Resource.Constants (tripDatesCount)
+import Services.API (RidesSummary)
 import Screens.Types (AnimationState(..), DriverEarningsScreenState, DriverEarningsSubView(..))
 
 initData :: DriverEarningsScreenState
@@ -103,7 +104,114 @@ initData = {
         coins : 600
       }
     ],
-    weeklyEarningData : [50.0,20.0,30.0,1.0,50.0,60.0,10.0],
+    -- weeklyEarningData : [50.0,20.0,30.0,70.0,50.0,60.0,10.0, 80.0, 60.0, 65.0, 25.0, 40.0, 10.0, 45.0],
+    weeklyEarningData : [
+      {
+        earnings : Just 100,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 50.0
+      },
+      {
+        earnings : Just 25,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 20.0
+      },
+      {
+        earnings : Just 150,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 70.0
+      },
+      {
+        earnings : Just 80,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 6,
+        percentLength : 40.0
+      },
+      {
+        earnings : Just 0,
+        rideDistance : 0,
+        rideDate : "2023-12-24",
+        noOfRides : 5,
+        percentLength : 0.0
+      },
+      {
+        earnings : Just 25,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 60.0
+      },
+      {
+        earnings : Just 11,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 5,
+        percentLength : 10.0
+      },
+      {
+        earnings : Just 40,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 30.0
+      },
+      {
+        earnings : Just 76,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 70.0
+      },
+      {
+        earnings : Just 45,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 100.0
+      },
+      {
+        earnings : Just 1,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 50.0
+      },
+      {
+        earnings : Just 70,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 66.0
+      },
+      {
+        earnings : Just 50,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 34.0
+      },
+      {
+        earnings : Just 20,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 58.0
+      },
+      {
+        earnings : Just 10,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 97.0
+      }
+    ],
     tagImages : ["ny_ic_tip_ride_tag", "ny_ic_goto_home_tag",  "ny_ic_disability_tag", "ny_ic_special_location_tag"],
     anyRidesAssignedEver : true
   }
@@ -111,7 +219,73 @@ initData = {
     subView : EARNINGS_VIEW,
     selectedPlanIndex : 0,
     selectedPlanQuantity : 0,
-    selectedBarIndex : -1
+    selectedBarIndex : -1,
+    weekIndex : 0,
+    totalEarningsData : {
+      fromDate : "",
+      toDate : "",
+      totalEarnings : 0,
+      totalRides : 0,
+      totalDistanceTravelled : 0
+    },
+    currWeekData : [
+      {
+        earnings : Just 100,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 50.0
+      },
+      {
+        earnings : Just 25,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 20.0
+      },
+      {
+        earnings : Just 150,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 70.0
+      },
+      {
+        earnings : Just 80,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 6,
+        percentLength : 40.0
+      },
+      {
+        earnings : Just 0,
+        rideDistance : 0,
+        rideDate : "2023-12-24",
+        noOfRides : 5,
+        percentLength : 0.0
+      },
+      {
+        earnings : Just 25,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 60.0
+      },
+      {
+        earnings : Just 11,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 5,
+        percentLength : 10.0
+      },
+      {
+        earnings : Just 40,
+        rideDistance : 8,
+        rideDate : "2023-12-24",
+        noOfRides : 3,
+        percentLength : 30.0
+      }
+    ]
   }
   , datePickerState : {
     activeIndex : tripDatesCount - 1 -- based on no of dates we are showing

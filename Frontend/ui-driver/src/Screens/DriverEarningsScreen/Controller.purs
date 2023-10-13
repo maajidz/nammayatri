@@ -27,7 +27,7 @@ import Components.IndividualRideCard.Controller as IndividualRideCardController
 import Components.PaymentHistoryListItem as PaymentHistoryModelItem
 import Components.PaymentHistoryModel as PaymentHistoryModel
 import Components.PrimaryButton as PrimaryButton
-import Data.Array (union, (!!), filter, length, (:))
+import Data.Array (union, (!!), filter, length, (:), foldl)
 import Data.Int (ceil)
 import Data.Int (fromString, toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
@@ -58,7 +58,6 @@ instance showAction :: Show Action where
 instance loggableAction :: Loggable Action where
   performLog action appId = case action of
     _ -> trackAppScreenRender appId "screen" (getScreen DRIVER_EARNINGS_SCREEN)
-    -- AfterRender -> trackAppScreenRender appId "screen" (getScreen RIDE_HISTORY_SCREEN)
     -- BackPressed -> do
     --   trackAppBackPress appId (getScreen RIDE_HISTORY_SCREEN)
     --   trackAppEndScreen appId (getScreen RIDE_HISTORY_SCREEN)
@@ -113,24 +112,53 @@ data Action = Dummy
             | SelectPlan Int
             | GenericHeaderAC GenericHeader.Action
             | BarViewSelected Int 
+            | LeftChevronClicked Int
+            | RightChevronClicked Int
+            | MyAction (Array WeeklyEarning)
             -- | PaymentHistoryModelAC PaymentHistoryModel.Action
             -- | OpenPaymentHistory
 
 eval :: Action -> DriverEarningsScreenState -> Eval Action ScreenOutput DriverEarningsScreenState
--- eval AfterRender state = continue state
+
 eval BackPressed state = exit GoBack
 
 eval (PrimaryButtonActionController PrimaryButtonController.OnClick) state = continue state
 
 eval (ChangeTab subView') state = continue state{props{subView = subView', selectedBarIndex = -1}}
 
-eval (BarViewSelected index) state = continue state{props{selectedBarIndex = index}}
+eval (BarViewSelected index) state = do
+  let mbSelectedBarData = state.props.currWeekData !! index
+  let selectedBarData = { fromDate : case mbSelectedBarData of
+                                  Just mbSelectedBarData -> mbSelectedBarData.rideDate
+                                  Nothing -> "",
+    toDate : "",
+    totalEarnings : 0,
+    totalRides : 0,
+    totalDistanceTravelled : 0
+  } 
+  continue state{props{selectedBarIndex = index, totalEarningsData = spy "inside BarViewSelected" selectedBarData}}
+
 
 eval (DriverSummary response) state = do
   let (DriverProfileSummaryRes resp) = response
   let anyRidesAssignedEver = if resp.totalRidesAssigned > 0 then true else false
   continue state{data{anyRidesAssignedEver = anyRidesAssignedEver}}
 
+eval (LeftChevronClicked currentIndex) state = do
+  let updatedIndex = case currentIndex of 
+                        0 -> currentIndex + 1
+                        _ -> currentIndex
+  continue state{props{weekIndex = updatedIndex, selectedBarIndex = -1}}
+  
+eval (RightChevronClicked currentIndex) state = do
+  let updatedIndex = case currentIndex of 
+                        1 -> currentIndex - 1
+                        _ -> currentIndex
+  continue state{props{weekIndex = updatedIndex, selectedBarIndex = -1}}
+
+eval (MyAction barGraphData) state = do 
+  let totalBarData = getTotalBarGrapData barGraphData 
+  continue state{props{totalEarningsData = spy "printing totalbardata -> " totalBarData}}
 
 -- eval (OnFadeComplete _ ) state = if (not state.recievedResponse) then continue state else
 --   continue state { shimmerLoader = case state.shimmerLoader of
@@ -245,6 +273,26 @@ getTagImages (RidesInfo ride) list = do
           Nothing -> list
   (a <> b <> c)
   
+
+getTotalBarGrapData :: Array WeeklyEarning -> TotalEarningsData
+getTotalBarGrapData barGraphData = do
+  let firstElement = barGraphData !! 0
+      lastElement = barGraphData !! 6
+      totalEarnings = foldl (\acc record -> case record.earnings of
+                                         Just x -> acc + x
+                                         Nothing -> acc) 0 barGraphData
+      totalDistance = foldl (\acc record ->  acc + record.rideDistance ) 0 barGraphData
+      totalRides = foldl (\acc record -> acc + record.noOfRides) 0 barGraphData
+  {fromDate : case firstElement of
+              Just firstElement -> firstElement.rideDate
+              Nothing -> "",
+    toDate : case lastElement of
+              Just lastElement -> lastElement.rideDate
+              Nothing -> "",
+    totalEarnings : totalEarnings,
+    totalRides : totalRides,
+    totalDistanceTravelled : totalDistance
+  }  
 -- rideHistoryListTransformer :: Array RidesInfo -> Array ItemState
 -- rideHistoryListTransformer list = (map (\(RidesInfo ride) ->
 --   let accessibilityTag = (getDisabilityType ride.disabilityTag)

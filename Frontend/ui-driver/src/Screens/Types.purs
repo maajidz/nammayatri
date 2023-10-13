@@ -30,7 +30,7 @@ import Prelude (class Eq, class Show )
 import Presto.Core.Utils.Encoding (defaultDecode, defaultEncode)
 import Presto.Core.Utils.Encoding (defaultEnumDecode, defaultEnumEncode)
 import PrestoDOM (LetterSpacing, Visibility, visibility)
-import Services.API (GetDriverInfoResp(..), Route, Status, MediaType, PaymentBreakUp)
+import Services.API (GetDriverInfoResp(..), Route, Status, MediaType, PaymentBreakUp, RidesSummary)
 import Styles.Types (FontSize)
 import Components.ChatView.Controller as ChatView
 import Components.RecordAudioModel.Controller as RecordAudioModel
@@ -1751,7 +1751,7 @@ type DriverEarningsScreenData = {
   earningHistoryItems :: Array CoinHistoryItem,
   usageHistoryItems :: Array CoinHistoryItem,
   planItems :: Array CoinPlanItem,
-  weeklyEarningData :: Array Number,
+  weeklyEarningData :: Array WeeklyEarning,
   tagImages :: Array String,
   anyRidesAssignedEver :: Boolean
 }
@@ -1759,7 +1759,26 @@ type DriverEarningsScreenProps = {
   subView :: DriverEarningsSubView,
   selectedPlanIndex :: Int,
   selectedPlanQuantity :: Int,
-  selectedBarIndex :: Int
+  selectedBarIndex :: Int,
+  weekIndex :: Int,
+  totalEarningsData :: TotalEarningsData,
+  currWeekData :: Array WeeklyEarning
+}
+
+type WeeklyEarning = {
+  earnings :: Maybe Int,
+  rideDistance :: Int,
+  rideDate :: String,
+  noOfRides :: Int,
+  percentLength :: Number
+}
+
+type TotalEarningsData = {
+  fromDate :: String,
+  toDate :: String,
+  totalEarnings :: Int,
+  totalRides :: Int,
+  totalDistanceTravelled :: Int
 }
 
 data DriverEarningsSubView = EARNINGS_VIEW | YATRI_COINS_VIEW | USE_COINS_VIEW

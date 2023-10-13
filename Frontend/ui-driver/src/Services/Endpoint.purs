@@ -56,6 +56,9 @@ getRideHistory limit offset isActive status day= do
     "null" -> (getBaseUrl "") <> "/driver/ride/list?limit="<>limit<>"&offset="<>offset<>"&onlyActive="<>isActive <> if day == "null" then "" else "&day=" <> day
     _ -> (getBaseUrl "") <> "/driver/ride/list?onlyActive="<>isActive<>"&status="<> (show status) <> if day == "null" then "" else "&day=" <> day
 
+getRidesSummaryList :: String -> String -> String -> String
+getRidesSummaryList status fromDate toDate = (getBaseUrl "") <> "/driver/rideSummary/list?status=" <> status <> "&fromDate=" <> fromDate <> "&toDate=" <> toDate
+
 offerRide :: String -> String
 offerRide dummyString = (getBaseUrl "") <> "/driver/searchRequest/quote/offer"
 
