@@ -97,9 +97,20 @@ endRidePopUp state = let
   config' = PopUpModal.config
   popUpConfig' = config'{
     primaryText {text = (getString END_RIDE)},
-    secondaryText {text = (getString ARE_YOU_SURE_YOU_WANT_TO_END_THE_RIDE)},
-    option1 {text =(getString GO_BACK)},
-    option2 {text = (getString END_RIDE)}
+    secondaryText {text = (getString ARE_YOU_SURE_YOU_WANT_TO_END_THE_RIDE)}
+    , primaryButtonLayout {
+      visibility = VISIBLE
+      , button1 {
+        textConfig{
+          text=getString GO_BACK
+        } 
+      }
+      , button2 {
+        textConfig{
+          text=getString END_RIDE
+        } 
+      }
+    }
   }
   in popUpConfig'
 
@@ -198,16 +209,21 @@ linkAadhaarPopupConfig state = let
     , margin = Margin 16 24 16 4 },
     secondaryText {
       text = (getString AADHAAR_LINKING_REQUIRED_DESCRIPTION)
-    , margin = MarginBottom 24},
-    option1 {
-      text = (getString LINK_AADHAAR_ID)
-    , background = Color.black900
-    , color = Color.yellow900
-    },
-    option2 {
-      visibility = false
-    },
-    backgroundClickable = true,
+    , margin = MarginBottom 24}
+    , primaryButtonLayout {
+        visibility = VISIBLE 
+      , button1 {
+          textConfig{
+            text = (getString LINK_AADHAAR_ID)
+          , color = Color.yellow900
+          }
+          , background = Color.black900
+        }
+      , button2 {
+          visibility = GONE
+        }
+    }
+    , backgroundClickable = true,
     dismissPopup = true,
     cornerRadius = (PTD.Corners 15.0 true true true true),
     coverImageConfig {
@@ -234,14 +250,19 @@ offerPopupConfig isImageUrl  (PromotionPopupConfig ob) =
     , margin = Margin 16 24 16 4 },
     secondaryText {
       text = ob.description
-    , margin = MarginBottom 24},
-    option1 {
-      text = getString JOIN_NOW
-    , background = Color.black900
-    , color = Color.yellow900
-    },
-    option2 {
-      visibility = false
+    , margin = MarginBottom 24}
+    , primaryButtonLayout{
+      visibility = VISIBLE 
+      , button1 {
+        textConfig {
+          text = getString JOIN_NOW
+          , color = Color.yellow900
+        }
+        , background = Color.black900
+      }
+      , button2 {
+        visibility = GONE
+      }
     },
     backgroundClickable = false,
     cornerRadius = (PTD.Corners 15.0 true true true true),
@@ -285,15 +306,20 @@ freeTrialEndingPopupConfig state =
     secondaryText {
       text = if autoPayStatus == NO_AUTOPAY then getString JOIN_A_PLAN_TO_CONTINUE_TAKING_RIDES else getString SETUP_AUTOPAY_FOR_EASY_PAYMENTS
     , margin = MarginBottom 24
-    },
-    option1 {
-      text = if autoPayStatus == NO_AUTOPAY then getString JOIN_NOW else getString SETUP_AUTOPAY
-    , background = Color.black900
-    , color = Color.yellow900
-    },
-    option2 {
-      visibility = false
-    },
+    }
+    , primaryButtonLayout {
+      visibility = VISIBLE
+      , button1 {
+        textConfig {
+          text = if autoPayStatus == NO_AUTOPAY then getString JOIN_NOW else getString SETUP_AUTOPAY
+          , color = Color.yellow900
+        }
+        , background = Color.black900
+      }
+      , button2{
+        visibility = GONE
+      }
+    }, 
     backgroundClickable = true,
     cornerRadius = (PTD.Corners 15.0 true true true true),
     coverImageConfig {
@@ -363,14 +389,19 @@ paymentPendingPopupConfig state =
         , padding : Padding 0 0 0 0
       }
     },
-    option1 {
-      text = getString CLEAR_DUES <> dues
-    , background = Color.black900
-    , color = Color.yellow900
-    , showShimmer = state.data.paymentState.showShimmer
-    },
-    option2 {
-      visibility = false
+    primaryButtonLayout {
+      visibility = VISIBLE
+      , button1 {
+        textConfig {
+          text = getString CLEAR_DUES <> dues
+        , color = Color.yellow900
+        }
+        , enableLoader = state.data.paymentState.showShimmer
+        , background = Color.black900
+      }
+      , button2 {
+        visibility = GONE
+      }
     },
     backgroundClickable = true,
     cornerRadius = (PTD.Corners 15.0 true true true true),
@@ -424,26 +455,31 @@ cancelConfirmationConfig state = let
               Nothing -> getString FREQUENT_CANCELLATIONS_WILL_LEAD_TO_LESS_RIDES
               Just specialLocationTag -> getString $ getCancelAlertText $ HU.getRideLabelData  "cancelText" (Just specialLocationTag) state.data.activeRide.disabilityTag
     , margin = Margin 16 24 16 24 },
-    secondaryText {visibility = GONE},
-    option1 {
-      text = (getString CONTINUE)
-    , width = V $ (((EHC.screenWidth unit)-92)/2) 
-    , isClickable = state.data.cancelRideConfirmationPopUp.continueEnabled
-    , timerValue = state.data.cancelRideConfirmationPopUp.delayInSeconds
-    , enableTimer = true
-    , background = Color.white900
-    , strokeColor = Color.black500
-    , color = Color.black700
-    },
-    option2 {
-      text = (getString GO_BACK)
-    , margin = MarginLeft 12
-    , width = V $ (((EHC.screenWidth unit)-92)/2)
-    , color = Color.yellow900
-    , strokeColor = Color.black900
-    , background = Color.black900
-    },
-    backgroundClickable = false,
+    secondaryText {visibility = GONE}
+    , primaryButtonLayout{
+      visibility = VISIBLE
+      , button1TimerValue = state.data.cancelRideConfirmationPopUp.delayInSeconds
+      , enableButton1Timer = true
+      , button1 {
+        textConfig{
+          text = (getString CONTINUE) <> "(" <> show state.data.cancelRideConfirmationPopUp.delayInSeconds <> ")"
+        , color = Color.black700
+        }
+        , background = Color.white900
+        , stroke = "1," <> Color.black500
+        , isClickable = state.data.cancelRideConfirmationPopUp.continueEnabled
+      }
+      , button2 {
+        textConfig {
+          text = (getString GO_BACK)
+        , color = Color.yellow900
+        }
+        , margin = MarginLeft 12
+        , stroke = "1," <> Color.black900
+        , background = Color.black900
+      }
+    }
+    , backgroundClickable = false,
     cornerRadius = (PTD.Corners 15.0 true true true true),
     coverImageConfig {
       imageUrl = if state.data.activeRide.specialLocationTag == Nothing || HU.getRequiredTag "" state.data.activeRide.specialLocationTag state.data.activeRide.disabilityTag == Nothing then "ic_cancel_prevention," <> (getAssetStoreLink FunctionCall) <> "ny_ic_cancel_prevention.png"
@@ -475,24 +511,26 @@ driverRCPopUpConfig state = let
       color = Color.black700,
       margin = (Margin 0 0 0 0)
     } ,
-    option1 {
-      background = Color.black900,
-      text = getString GO_TO_VEHICLE_DETAILS,
-      color = Color.yellow900, 
-      margin = MarginTop 24,
-      width = MATCH_PARENT, 
-      height = WRAP_CONTENT 
-    } , 
-    option2 {
-      background = Color.white900, 
-      text = getString CLOSE,
-      width = MATCH_PARENT, 
-      height = WRAP_CONTENT ,
-      color =  Color.black650,
-      strokeColor = Color.white900, 
-      padding = Padding 16 6 16 6, 
-      margin = Margin 0 8 0 0
-    }, 
+    primaryButtonLayout {
+      visibility = VISIBLE
+      , button1{
+        textConfig {
+          text = getString GO_TO_VEHICLE_DETAILS,
+          color = Color.yellow900
+        }
+        , margin = MarginTop 24
+        , background = Color.black900
+      }
+      , button2 {
+        textConfig {
+          text = getString CLOSE,
+          color =  Color.black650
+        },
+        stroke = "1," <> Color.white900, 
+        padding = Padding 16 6 16 6, 
+        margin = Margin 0 8 0 0
+      }
+    },
     coverImageConfig {
       visibility = VISIBLE,
       imageUrl = "ny_rc_deactivated," <> (getAssetStoreLink FunctionCall) <> "ny_rc_deactivated.png", 
@@ -564,13 +602,18 @@ silentModeConfig state = let
   , secondaryText {
       text =  getString SILENT_MODE_PROMPT
     }
-    , option1 {
-      text =   getString GO_OFFLINE
-      , width = (V 140)
-    }
-  , option2 {
-      width = (V 170)
-      , text =  getString GO_SILENT
+  , primaryButtonLayout {
+      visibility = VISIBLE
+      , button1{
+        textConfig {
+          text = getString GO_OFFLINE
+        }
+      }
+      , button2{
+        textConfig {
+          text = getString GO_SILENT
+        }
+      }
     }
   }
   in popUpConfig'
@@ -850,13 +893,18 @@ accessibilityPopUpConfig state =
           text = popupData.secondaryText
         , textStyle = SubHeading2
         , margin = MarginBottom 24},
-        option1 {
-          text = getString GOT_IT
-        , background = Color.black900
-        , color = Color.yellow900
-        },
-        option2 {
-          visibility = false
+        primaryButtonLayout {
+          visibility = VISIBLE,
+          button1 {
+            textConfig {
+              text = getString GOT_IT
+            , color = Color.yellow900
+            }
+            , background = Color.black900
+          },
+          button2 {
+            visibility = GONE
+          }
         },
         backgroundClickable = false,
         cornerRadius = (PTD.Corners 15.0 true true true true),
@@ -885,19 +933,34 @@ chatBlockerPopUpConfig state = let
     margin = (MarginHorizontal 16 16),
     primaryText {text = (getString CUSTOMER_HAS_LOW_VISION)},
     secondaryText {text = (getString PLEASE_CONSIDER_CALLING_THEM )},
-    option1{ text = (getString GOT_IT),
-      width = MATCH_PARENT,
-      background = Color.black900,
-      strokeColor = Color.black900,
-      color = Color.yellow900,
-      margin = MarginHorizontal 16 16
-      },
+
     option2{text = (getString PROCEED_TO_CHAT),
       strokeColor = Color.white900,
       color = Color.black650,
       background = Color.white900,
       margin = MarginHorizontal 16 16 ,
       width = MATCH_PARENT},
+    primaryButtonLayout {
+      visibility = VISIBLE 
+      , button1 {
+        textConfig {
+          text = (getString GOT_IT),
+          color = Color.yellow900
+        },
+        background = Color.black900,
+        stroke = "1," <> Color.black900,
+        margin = MarginHorizontal 16 16
+      }
+      , button2 {
+          textConfig {
+            text = (getString PROCEED_TO_CHAT),
+            color = Color.black650
+          }
+          , background = Color.white900
+          , margin = MarginHorizontal 16 16 
+          , stroke = "1," <> Color.white900
+        }
+    },
     optionButtonOrientation = "VERTICAL",
     dismissPopup = true
   }
@@ -1027,12 +1090,19 @@ getRideCompletedConfig state = let
       secondaryText {
         text = getString YOU_ARE_ABOUT_TO_CALL_NAMMA_YATRI_SUPPORT,
         margin = MarginBottom 16
-      },
-      option1 {
-        text = getString CANCEL
-      },
-      option2 {
-        text = getString CALL_SUPPORT
+      }
+      , primaryButtonLayout {
+        visibility = VISIBLE
+        , button1 {
+          textConfig{
+            text = getString CANCEL
+          }
+        }
+        , button2 {
+          textConfig{
+            text = getString CALL_SUPPORT
+          }
+        }
       }
     },
     badgeCard{
@@ -1103,25 +1173,27 @@ subsBlockerPopUpConfig state = let
       , color = Color.black800
       , textStyle = Heading2
      },
-      option1 {
-        text = getString JOIN_NOW
-      , color = Color.yellow900
-      , background = Color.black900
-      , visibility = true
-      , margin = MarginTop 16
-      , width = MATCH_PARENT
-
-      },
       coverImageConfig {
         imageUrl = "ny_ic_sub_save_more,"<> (getAssetStoreLink FunctionCall) <>"ny_ic_sub_save_more.png"
       , visibility = VISIBLE
       , width = V 280
       , height = V 250
-      },
-    secondaryText {visibility = GONE},
-    option2 { 
-      visibility = false
+      }
+    , primaryButtonLayout{
+      visibility = VISIBLE
+      , button1 {
+        textConfig{
+          text = getString JOIN_NOW
+        , color = Color.yellow900
+        }
+        , background = Color.black900
+        , margin = MarginTop 16
+      }
+      , button2 {
+        visibility = GONE
+      }
     },
+    secondaryText {visibility = GONE},
     optionWithHtml {
       textOpt1 {
         color = Color.black650

@@ -23,6 +23,7 @@ import Components.PrimaryButton as PrimaryButtonController
 import Components.PrimaryEditText as PrimaryEditTextController
 import Components.SelectListModal as SelectListModal
 import Components.StepsHeaderModel.Controller as StepsHeaderModelController
+import Data.Array as DA
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String (length, trim)
 import Engineering.Helpers.Commons (getNewIDWithTag)
@@ -34,7 +35,6 @@ import PrestoDOM (Eval, continue, continueWithCmd, exit, id, updateAndExit)
 import PrestoDOM.Types.Core (class Loggable)
 import Screens (ScreenName(..), getScreen)
 import Screens.Types (AccountSetUpScreenState, Gender(..), ActiveFieldAccountSetup(..), ErrorType(..))
-import Data.Array as DA
 
 instance showAction :: Show Action where
   show _ = ""
@@ -70,6 +70,8 @@ instance loggableAction :: Loggable Action where
       PopUpModal.DismissPopup -> trackAppScreenEvent appId (getScreen ACCOUNT_SET_UP_SCREEN) "popup_modal_action" "popup_dismissed"
       PopUpModal.OnSecondaryTextClick -> trackAppScreenEvent appId (getScreen ACCOUNT_SET_UP_SCREEN) "popup_modal_action" "secondary_text_clicked"
       PopUpModal.OptionWithHtmlClick -> trackAppScreenEvent appId (getScreen ACCOUNT_SET_UP_SCREEN) "popup_modal_action" "option_with_html_clicked"
+      (PopUpModal.PrimaryButton1 _) -> pure unit
+      (PopUpModal.PrimaryButton2 _) -> pure unit
     ShowOptions -> trackAppActionClick appId (getScreen ACCOUNT_SET_UP_SCREEN) "in_screen" "show_options"
     EditTextFocusChanged -> trackAppActionClick appId (getScreen ACCOUNT_SET_UP_SCREEN) "name_edit_text_focus_changed" "edit_text"
     TextChanged value -> trackAppTextInput appId (getScreen ACCOUNT_SET_UP_SCREEN) "name_text_changed" "edit_text"

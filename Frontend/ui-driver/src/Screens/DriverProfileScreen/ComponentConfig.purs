@@ -55,9 +55,20 @@ logoutPopUp  state = let
   config' = PopUpModal.config
   popUpConfig' = config' {
     primaryText {text = (getString LOGOUT)},
-    secondaryText {text = (getString ARE_YOU_SURE_YOU_WANT_TO_LOGOUT)},
-    option1 {text = (getString GO_BACK)},
-    option2 {text = (getString LOGOUT)}
+    secondaryText {text = (getString ARE_YOU_SURE_YOU_WANT_TO_LOGOUT)}
+    , primaryButtonLayout {
+      visibility = VISIBLE
+      , button1 {
+        textConfig {
+          text = getString GO_BACK
+        }
+      }
+      , button2 {
+        textConfig {
+          text = getString LOGOUT
+        }
+      }
+    }
   }
   in popUpConfig'
 
@@ -250,17 +261,25 @@ removeAlternateNumberConfig state = let
       secondaryText {
         text = getString ARE_YOU_SURE_YOU_WANT_TO_REMOVE_YOUR_ALTERNATE_MOBILE_NUMBER
       , color = Color.black700
-        },
-      option1 {
-        text = getString CANCEL
-      , color = Color.black900
-      , strokeColor = Color.black700
-      },
-      option2 {
-        text = getString YES_REMOVE_IT
-      , background = Color.red
-      , color = Color.white900
-      , strokeColor = Color.red}
+        }
+      , primaryButtonLayout {
+        visibility = VISIBLE
+        , button1 {
+          textConfig {
+            text = getString CANCEL
+          , color = Color.black900
+          }
+          , stroke = "1," <> Color.black700
+        }
+        , button2 {
+          textConfig {
+            text = getString YES_REMOVE_IT
+          , color = Color.white900
+          }
+          , stroke = "1," <> Color.red
+          , background = Color.red
+        }
+      }
     }
   in popUpConfig'
 
@@ -335,22 +354,27 @@ activateAndDeactivateRcPopUpConfig push state =
         , dismissPopup = true
         , optionButtonOrientation = "VERTICAL"
         , secondaryText { text = if state.data.isRCActive then (getString CONFIRMATION_FOR_DEACTIVATING_RC) <> state.data.rcNumber <> "?" else (getString CONFIRMATION_FOR_ACTIVATING_RC) <>state.data.rcNumber<> "? "<>(getString THIS_WILL_DEACTIVATE_CURRENTLY_ACTIVE_RC), color = Color.black700}
-        , option1 {
-          text = if state.data.isRCActive then (getString YES_DEACTIVATE) else (getString YES_ACTIVATE)
-        , width = MATCH_PARENT
-        , color = Color.yellow900
-        , strokeColor = Color.black900
-        , background = Color.black900
-        , padding = (PaddingVertical 10 10)
-        }
-        , option2 {
-            text = (getString CANCEL)
-          , width = MATCH_PARENT
-          , background = Color.white900
-          , strokeColor = Color.white900
-          , color = Color.black650
-          , margin = (MarginBottom 16)
+        , primaryButtonLayout {
+            visibility = VISIBLE
+          , button1 {
+            textConfig {
+              text = if state.data.isRCActive then (getString YES_DEACTIVATE) else (getString YES_ACTIVATE)
+              , color = Color.yellow900
+            }
+            , stroke = "1," <> Color.black900
+            , background = Color.black900
+            , padding = (PaddingVertical 10 10)
+            }
+          , button2 {
+            textConfig {
+              text = (getString CANCEL)
+            , color = Color.black650
+            }
+            , background = Color.white900
+            , stroke = "1," <> Color.white900
+            , margin = (MarginBottom 16)
           }
+        }
         }
   in
     popUpConfig'
@@ -370,15 +394,20 @@ paymentInfoPopUpConfig push state =
           visibility = GONE },
          secondaryText {
             visibility = GONE },
-         option1 {
-           text = getString GOT_IT
-         , background = Color.black900
-         , color = Color.yellow900
-         },
-         option2 {
-           visibility = false
-         },
-        listViewArray = [getString USE_THIS_QR_TO_COLLECT_PAYMENT , getString AMOUNT_WILL_DEPOSITED_TO_BANK_ACCOUNT ]
+         primaryButtonLayout {
+          visibility = VISIBLE 
+          , button1 {
+            textConfig {
+              text = getString GOT_IT
+            , color = Color.yellow900
+            }
+            , background = Color.black900
+          }
+          , button2 {
+            visibility = GONE
+          }
+         }
+        , listViewArray = [getString USE_THIS_QR_TO_COLLECT_PAYMENT , getString AMOUNT_WILL_DEPOSITED_TO_BANK_ACCOUNT ]
         }
   in
     popUpConfig'
@@ -397,23 +426,28 @@ callDriverPopUpConfig push state =
         , cornerRadius = (Corners 24.0 true true true true)
         , optionButtonOrientation = "VERTICAL"
         , secondaryText { text = (getString CONNECT_CALL_ANONYMOUSLY), color = Color.black700}
-        , option1 {
-          text = (getString PLACE_CALL_REQUEST)
-        , width = MATCH_PARENT
-        , color = Color.yellow900
-        , strokeColor = Color.black900
-        , background = Color.black900
-        , padding = (PaddingVertical 10 10)
-        }
-        , option2 {
-            text = (getString GO_BACK)
-          , width = MATCH_PARENT
-          , background = Color.white900
-          , strokeColor = Color.white900
-          , margin = MarginTop 14
-          , color = Color.black650
-          , padding = (PaddingBottom 12)
+        , primaryButtonLayout{
+          visibility = VISIBLE 
+          , button1 {
+            textConfig {
+              text = (getString PLACE_CALL_REQUEST)
+            , color = Color.yellow900
+            }
+            , stroke = "1," <> Color.black900
+            , background = Color.black900
+            , padding = (PaddingVertical 10 10)
           }
+          , button2 {
+            textConfig {
+              text = (getString GO_BACK)
+            , color = Color.black650
+            }
+            , background = Color.white900
+            , stroke = "1," <> Color.white900
+            , margin = MarginTop 14
+            , padding = (PaddingBottom 12)
+          }
+        }
         }
   in
     popUpConfig'
@@ -445,21 +479,27 @@ deleteRcPopUpConfig state =
         , dismissPopup = true
         , optionButtonOrientation = "VERTICAL"
         , secondaryText { text = (getString CONFIRMATION_FOR_DELETING_RC) <>"- " <> state.data.rcNumber <> "?" , color = Color.black700}
-        , option1 {
-          text = (getString YES_DELETE)
-        , width = MATCH_PARENT
-        , color = Color.white900
-        , strokeColor = Color.red
-        , background = Color.red
-        }
-        , option2 {
-            text = (getString CANCEL)
-          , width = MATCH_PARENT
-          , background = Color.white900
-          , strokeColor = Color.white900
-          , color = Color.black650
-          , margin = (MarginBottom 16)
+        , primaryButtonLayout {
+          visibility = VISIBLE
+          , orientation = VERTICAL
+          , button1 {
+            textConfig {
+              text = (getString YES_DELETE)
+            , color = Color.white900
+            }
+            , stroke = "1," <> Color.red
+            , background = Color.red
           }
+          , button2 {
+            textConfig {
+              text = (getString CANCEL)
+              , color = Color.black650
+            }
+            , background = Color.white900
+            , stroke = "1," <> Color.white900
+            , margin = (MarginBottom 16)
+          }
+        }
         }
   in
     popUpConfig'

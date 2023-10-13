@@ -70,6 +70,8 @@ instance loggableAction :: Loggable Action where
       PopUpModal.ETextController act -> trackAppTextInput appId (getScreen APPLICATION_STATUS_SCREEN) "popup_modal_action" "primary_edit_text"
       PopUpModal.OptionWithHtmlClick -> trackAppScreenEvent appId (getScreen APPLICATION_STATUS_SCREEN) "popup_modal_action" "option_with_html_clicked"
       PopUpModal.CountDown arg1 arg2 arg3 arg4 -> trackAppScreenEvent appId (getScreen APPLICATION_STATUS_SCREEN) "popup_modal_action" "countdown_updated"
+      (PopUpModal.PrimaryButton1 _) -> pure unit
+      (PopUpModal.PrimaryButton2 _) -> pure unit 
     ExitGoToEnterOtp ->  trackAppActionClick appId (getScreen APPLICATION_STATUS_SCREEN) "in_screen" "enter_otp"
     CompleteOnBoardingAction PrimaryButtonController.OnClick -> trackAppActionClick appId (getScreen APPLICATION_STATUS_SCREEN) "in_screen" "onboardingview"
     CompleteOnBoardingAction PrimaryButtonController.NoAction -> trackAppActionClick appId (getScreen APPLICATION_STATUS_SCREEN) "in_screen" "na_action"

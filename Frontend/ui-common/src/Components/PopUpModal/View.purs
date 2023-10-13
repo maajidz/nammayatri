@@ -17,11 +17,11 @@ module Components.PopUpModal.View where
 import Prelude (Unit, const, unit, ($), (<>), (/), (-), (+), (==), (||), (&&), (>), (/=),  not, (<<<), bind, discard, show, pure, map)
 import Effect (Effect)
 import PrestoDOM (Gravity(..), Length(..), Margin(..), Padding(..), Orientation(..), PrestoDOM, Visibility(..), Accessiblity(..), afterRender, imageView, imageUrl, background, clickable, color, cornerRadius, fontStyle, gravity, height, linearLayout, margin, onClick, orientation, text, textSize, textView, width, stroke, alignParentBottom, relativeLayout, padding, visibility, onBackPressed, alpha, imageWithFallback, weight, accessibilityHint, accessibility, textFromHtml, shimmerFrameLayout)
-import Components.PopUpModal.Controller (Action(..), Config)
+import Components.PopUpModal.Controller (Action(..), Config, PrimaryButtonLayout)
 import PrestoDOM.Properties (lineHeight, cornerRadii)
 import PrestoDOM.Types.DomAttributes (Corners(..))
 import Font.Style as FontStyle
-import Common.Styles.Colors as Color
+import Common.Styles.Colors as Color 
 import Font.Size as FontSize
 import Engineering.Helpers.Commons (screenHeight, screenWidth)
 import PrestoDOM.Properties (cornerRadii)
@@ -35,6 +35,8 @@ import Data.Maybe (Maybe(..),fromMaybe)
 import Control.Monad.Trans.Class (lift)
 import JBridge (startTimerWithTime)
 import Data.String (replaceAll, Replacement(..), Pattern(..))
+import Components.PrimaryButton as PrimaryButton
+import Debug(spy)
 
 view :: forall w. (Action -> Effect Unit) -> Config -> PrestoDOM (Effect Unit) w
 view push state =
@@ -188,6 +190,7 @@ view push state =
             ]
             [ PrimaryEditText.view (push <<< ETextController) (state.eTextConfig) ]
         , tipsView push state
+        , primaryButtonsView push state.primaryButtonLayout
         , linearLayout
             [ width MATCH_PARENT
             , height WRAP_CONTENT
@@ -536,4 +539,27 @@ contactView push state =
                 ] <> FontStyle.subHeading1 TypoGraphy
             ]
         ]
+    ]
+
+primaryButtonsView :: forall w. (Action -> Effect Unit) -> PrimaryButtonLayout -> PrestoDOM (Effect Unit) w 
+primaryButtonsView push config = 
+    linearLayout[
+      width config.width
+    , height config.height
+    , orientation config.orientation
+    , gravity config.gravity
+    , visibility config.visibility
+    , margin config.margin
+    ][
+        linearLayout[
+          weight 1.0
+        , gravity CENTER
+        , margin $ case config.orientation of 
+                    VERTICAL ->  MarginBottom config.gap
+                    _ ->  MarginRight config.gap
+        ][PrimaryButton.view (push <<< PrimaryButton1)  config.button1]
+      , linearLayout[
+          weight 1.0
+        , gravity CENTER
+        ][PrimaryButton.view (push <<< PrimaryButton2)  config.button2]
     ]

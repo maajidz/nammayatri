@@ -326,19 +326,27 @@ confirmCancelPopupConfig state = let
         text = getString DO_YOU_WANT_TO_CANCEL_DESC
       , color = Color.black700
       , margin = (Margin 16 12 16 40)
-        },
-      option1 {
-        text = getString NO
-      , color = Color.black900
-      , strokeColor = Color.black700
-      },
-      option2 {text = getString YES_CANCEL
-      , background = Color.red
-      , color = Color.white900
-      , strokeColor = Color.red
-      , margin = MarginLeft 12
-      },
-      coverImageConfig {
+        }
+      , primaryButtonLayout {
+        visibility = VISIBLE
+        , button1 {
+          textConfig{
+            text = getString NO
+          , color = Color.black900
+          }
+          , stroke = "1," <> Color.black700
+        }
+        , button2 {
+          textConfig {
+            text = getString YES_CANCEL
+          , color = Color.white900
+          }
+          , stroke = "1," <> Color.red
+          , margin = MarginLeft 12
+          , background = Color.red
+        }
+      }
+      , coverImageConfig {
         imageUrl = "ny_ic_pause_autopay,"
       , visibility = VISIBLE
       , width = V 265

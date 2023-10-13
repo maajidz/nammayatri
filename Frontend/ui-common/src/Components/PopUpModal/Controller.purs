@@ -16,7 +16,7 @@
 module Components.PopUpModal.Controller where
 
 import Common.Styles.Colors as Color
-import PrestoDOM (Padding(..), Margin(..), Gravity(..), Visibility(..), Length(..))
+import PrestoDOM (Padding(..), Margin(..), Gravity(..), Visibility(..), Length(..), Orientation(..))
 import Font.Size as FontSize
 import Font.Style (Style(..))
 import Common.Types.App as Common
@@ -25,6 +25,7 @@ import Components.PrimaryEditText.Controller as PrimaryEditTextController
 import Helpers.Utils (getAssetStoreLink, getCommonAssetStoreLink)
 import Prelude ((<>))
 import Data.Maybe as Mb
+import Components.PrimaryButton as PrimaryButton
 
 data Action = OnButton1Click
             | OnButton2Click
@@ -36,6 +37,8 @@ data Action = OnButton1Click
             | DismissPopup
             | OptionWithHtmlClick
             | OnSecondaryTextClick
+            | PrimaryButton1 PrimaryButton.Action
+            | PrimaryButton2 PrimaryButton.Action
 
 type Config = {
     primaryText :: TextConfig,
@@ -72,7 +75,24 @@ type Config = {
     backgroundColor  :: String,
     optionWithHtml :: OptionWithHtmlConfig,
     topTitle :: TopTitle,
-    listViewArray :: Array String
+    listViewArray :: Array String,
+    primaryButtonLayout :: PrimaryButtonLayout
+}
+
+type PrimaryButtonLayout = {
+  width :: Length
+, height :: Length
+, orientation :: Orientation
+, gravity :: Gravity
+, visibility :: Visibility
+, gap :: Int
+, margin :: Margin
+, button1TimerValue :: Int 
+, button2TimerValue :: Int 
+, enableButton1Timer :: Boolean
+, enableButton2Timer :: Boolean
+, button1 :: PrimaryButton.Config
+, button2 :: PrimaryButton.Config
 }
 
 type ContactViewConfig = {
@@ -386,6 +406,29 @@ config = {
     , fareEstimateText : ""
     , tipSelectedText : ""
     , listViewArray : []
+    , primaryButtonLayout : {
+        width : MATCH_PARENT
+      , height : WRAP_CONTENT 
+      , orientation : HORIZONTAL
+      , gravity : CENTER
+      , visibility : GONE
+      , gap : 0
+      , margin : Margin 0 0 0 0 
+      , button1TimerValue : 0 
+      , button2TimerValue : 0 
+      , enableButton1Timer : false
+      , enableButton2Timer : false
+      , button1 : PrimaryButton.config{
+          textConfig {
+            padding = PaddingBottom 4
+          }
+        }
+      , button2 : PrimaryButton.config{
+          textConfig {
+            padding = PaddingBottom 4
+          }
+        }
+    }
 }
 
 

@@ -368,6 +368,22 @@ addCommentModelConfig state =
           , padding = (Padding 16 0 16 0)
           , isClickable = state.commentBtnActive
           }
+        , primaryButtonLayout{
+          visibility = VISIBLE 
+          , button1 {
+            visibility = GONE 
+          }
+          , button2 {
+            textConfig {
+              text = (getString POST_COMMENT)
+            , color = Color.blue800
+            }
+            , isClickable = state.commentBtnActive
+            , padding = (Padding 16 0 16 0)
+            , stroke = "1," <> Color.white900
+            , background = Color.white900
+          }
+        }
         , cornerRadius = (Corners 15.0 true true true true)
         }
   in

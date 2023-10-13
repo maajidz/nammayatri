@@ -48,9 +48,22 @@ passwordPopUpConfig state = let
     eTextConfig { editText{text = "" ,placeholder= (getString ENTER_PASSWORD), pattern = Just "[^\n]*,5"}, topLabel{ text = (getString PASSWORD) ,  color = Color.black900}, margin = (Margin 16 16 16 0), type = ""},
     primaryText {text = (getString REFERRAL_CODE_LINKING) , gravity = LEFT ,margin = (Margin 16 21 0 0)},
     secondaryText {visibility = GONE},
-    option1 {visibility = false},
-    option2 {text = (getString CONFIRM_PASSWORD), background = Color.white900, color=Color.blue800, strokeColor = Color.white900, padding = (PaddingHorizontal 16 16)
-    ,  isClickable = state.props.confirmBtnActive},
+    primaryButtonLayout {
+      visibility = VISIBLE
+      , button1 {
+        visibility = GONE
+      }
+      , button2 {
+        textConfig {
+          text = (getString CONFIRM_PASSWORD)
+        , color=Color.blue800
+        }
+        , background = Color.white900
+        , stroke = "1," <> Color.white900
+        , isClickable = state.props.confirmBtnActive
+        , padding = (PaddingHorizontal 16 16)
+      }
+    },
     cornerRadius = (Corners 15.0 true true true true)
   }
   in popUpConfig'
@@ -64,12 +77,21 @@ contactSupportConfig state  =
       text = (getString CONTACT_SUPPORT)<>"?"
     , margin = (Margin 40 23 40 12)
     }
-    , option1 {
-      text = (getString CANCEL)
-    , margin = (MarginHorizontal 16 16) }
-    , option2 {
-      text = (getString CALL_SUPPORT)
-    , margin = (MarginHorizontal 12 0) }
+    , primaryButtonLayout {
+      visibility = VISIBLE
+      , button1 {
+        textConfig {
+          text = (getString CANCEL)
+        }
+        , margin = (MarginHorizontal 16 16)
+      }
+      , button2 {
+        textConfig {
+          text = (getString CALL_SUPPORT)
+        }
+        , margin = (MarginHorizontal 12 0)
+      }
+    }
     , backgroundClickable = true
     , secondaryText {
       text = (getString YOU_ARE_ABOUT_TO_CALL_NAMMA_YATRI_SUPPORT)

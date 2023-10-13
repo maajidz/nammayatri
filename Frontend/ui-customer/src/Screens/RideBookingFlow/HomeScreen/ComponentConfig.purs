@@ -76,6 +76,7 @@ import Screens.Types (DriverInfoCard, Stage(..), ZoneType(..), TipViewData, TipV
 import Screens.Types as ST
 import Storage (KeyStore(..), getValueToLocalStore, isLocalStageOn, setValueToLocalStore)
 import Styles.Colors as Color
+import Debug (spy)
 
 shareAppConfig :: ST.HomeScreenState -> PopUpModal.Config
 shareAppConfig state = let
@@ -91,22 +92,27 @@ shareAppConfig state = let
         text = getString(ENJOY_RIDING_WITH_US)
       , margin = MarginVertical 12 24
       , color = Color.black700},
-      option1 {
-        text = getString(MAYBE_LATER)
-      , width = V $ (((EHC.screenWidth unit)-92)/2)
-      , background = Color.white900
-      , strokeColor = Color.black500
-      , color = Color.black700
-      },
-      option2 {
-        text = getString(SHARE_APP)
-      , width = V $ (((EHC.screenWidth unit)-92)/2)
-      , color = state.data.config.primaryTextColor
-      , strokeColor = state.data.config.primaryBackground
-      , background = state.data.config.primaryBackground
-      , margin = MarginLeft 12
-      },
-      cornerRadius = Corners 15.0 true true true true,
+      primaryButtonLayout {
+        visibility = VISIBLE
+        , button1 {
+          textConfig {
+            text = getString(MAYBE_LATER)
+          , color = Color.black700
+          }
+          , background = Color.white900
+          , stroke = "1," <> Color.black500
+        }
+        , button2 {
+          textConfig {
+            text = getString(SHARE_APP)
+          , color = state.data.config.primaryTextColor
+          }
+          , stroke = "1," <> state.data.config.primaryBackground
+          , background = state.data.config.primaryBackground
+          , margin = MarginLeft 12
+        }
+      }
+      , cornerRadius = Corners 15.0 true true true true,
       coverImageConfig {
         imageUrl = "ic_share_app," <> (getAssetStoreLink FunctionCall) <> "ic_share_app.png"
       , visibility = VISIBLE
@@ -129,22 +135,28 @@ cancelAppConfig state = let
         text = distanceString <> getString PLEASE_CONTACT_THE_DRIVER_BEFORE_CANCELLING
       , margin = Margin 16 20 16 20},
       secondaryText { visibility = GONE },
-      option1 {
-        text = getString CALL_DRIVER
-      , color = Color.yellow900
-      , background = Color.black900
-      , strokeColor = Color.transparent
-      , textStyle = FontStyle.SubHeading1
-      , width = MATCH_PARENT
-      },
-      option2 {
-        text = getString CANCEL_RIDE
-      , textStyle = FontStyle.SubHeading1
-      , color = Color.black700
-      , background = Color.white900
-      , strokeColor = Color.transparent
-      , width = MATCH_PARENT
-      , margin = Margin 0 0 0 0
+      primaryButtonLayout {
+        orientation = VERTICAL 
+      , visibility = VISIBLE
+      , button1 {
+          textConfig {
+            text = getString CALL_DRIVER
+          , color = Color.yellow900
+          , textStyle = FontStyle.SubHeading1
+          }
+          , background = Color.black900
+          , stroke = "1," <> Color.transparent
+        }
+      , button2 {
+          textConfig{
+            text = getString CANCEL_RIDE
+          , textStyle = FontStyle.SubHeading1
+          , color = Color.black700
+          }
+          , background = Color.white900
+          , stroke = "1," <> Color.transparent
+          , margin = Margin 0 0 0 0
+        }
       },
       cornerRadius = Corners 15.0 true true false false,
       coverImageConfig {
@@ -381,17 +393,39 @@ logOutPopUpModelConfig state =
           config'
             { primaryText { text = (getString LOGOUT_) }
             , secondaryText { text = (getString ARE_YOU_SURE_YOU_WANT_TO_LOGOUT) }
-            , option1 {
-                background = state.data.config.popupBackground
-              , strokeColor = state.data.config.primaryBackground
-              , color = state.data.config.primaryBackground
-              , text = (getString GO_BACK_)
-              }
-            , option2 {
-                color = state.data.config.primaryTextColor
-              , strokeColor = state.data.config.primaryBackground
-              , background = state.data.config.primaryBackground
-              , text = (getString LOGOUT_)
+            , primaryButtonLayout {
+                visibility = VISIBLE
+              , orientation = HORIZONTAL
+              , width = MATCH_PARENT 
+              , margin = MarginHorizontal 16 16 
+              , gap = 16 
+              , button1 {
+                  width = MATCH_PARENT
+                , gravity = CENTER
+                , margin = Margin 0 0 0 0
+                , visibility = VISIBLE 
+                , textConfig {
+                      color = state.data.config.primaryBackground
+                    , text = (getString GO_BACK_)
+                    , gravity = CENTER
+                  }
+                , stroke = "1," <> state.data.config.primaryBackground
+                , background = state.data.config.popupBackground
+                , padding = Padding 50 14 50 14
+                }
+              , button2 {
+                  width = MATCH_PARENT
+                , gravity = CENTER
+                , margin = Margin 0 0 0 0 
+                , textConfig {
+                      color = state.data.config.primaryTextColor
+                    , text = (getString LOGOUT_)
+                    , gravity = CENTER
+                  }
+                , stroke = "1," <> state.data.config.primaryBackground
+                , background = state.data.config.primaryBackground
+                , padding = Padding 50 14 50 14
+                }
               }
             }
       in
@@ -425,25 +459,30 @@ logOutPopUpModelConfig state =
               , strokeColor = Color.grey900
               , padding = (Padding 16 12 16 12)
             },
-          option1 {
-            text = if state.props.customerTip.tipActiveIndex == 0 then getString SEARCH_AGAIN_WITHOUT_A_TIP else getString SEARCH_AGAIN_WITH  <> " + ₹"<> (fromMaybe "" (["0", "10", "20", "30"] DA.!! state.props.customerTip.tipActiveIndex)) <>" "<> getString TIP
-          , width = MATCH_PARENT
-          , color = state.data.config.primaryTextColor
-          , strokeColor = state.data.config.primaryBackground
-          , background = state.data.config.primaryBackground
-          , padding = (Padding 0 10 0 10)
-          },
-          option2 {
-            text = if (isLocalStageOn ST.QuoteList) then (getString HOME) else  (getString CANCEL_SEARCH)
-          , width = MATCH_PARENT
-          , background = Color.white900
-          , strokeColor = Color.white900
-          , margin = MarginTop 14
-          , padding = PaddingBottom $ getBottomMargin
-          , color = Color.black650
-          , height = WRAP_CONTENT
-          },
-          cornerRadius = (Corners 15.0 true true false false)
+          primaryButtonLayout {
+            width = MATCH_PARENT
+          , orientation = VERTICAL
+          , visibility = VISIBLE
+          , button1 {
+              textConfig {
+                text = if state.props.customerTip.tipActiveIndex == 0 then getString SEARCH_AGAIN_WITHOUT_A_TIP else getString SEARCH_AGAIN_WITH  <> " + ₹"<> (fromMaybe "" (["0", "10", "20", "30"] DA.!! state.props.customerTip.tipActiveIndex)) <>" "<> getString TIP
+              , color = state.data.config.primaryTextColor 
+              }
+              , background = state.data.config.primaryBackground
+              , stroke = "1," <> state.data.config.primaryBackground
+              , padding = (Padding 0 10 0 10)
+            }
+          , button2 {
+            textConfig {
+                text = if (isLocalStageOn ST.QuoteList) then (getString HOME) else  (getString CANCEL_SEARCH)
+              , color = Color.black650
+              }
+              , background = Color.white900
+              , stroke = "1," <> Color.white900
+              , padding = PaddingBottom $ getBottomMargin
+            }
+          }
+          , cornerRadius = (Corners 15.0 true true false false)
 
       }
     _ ->
@@ -456,24 +495,29 @@ logOutPopUpModelConfig state =
             , dismissPopup = true
             , optionButtonOrientation = if(isLocalStageOn ST.QuoteList || isLocalStageOn ST.FindingQuotes) then  "VERTICAL" else "HORIZONTAL"
             , secondaryText { text = if (isLocalStageOn ST.QuoteList) then (getString TRY_LOOKING_FOR_RIDES_AGAIN) else (getString CANCEL_ONGOING_SEARCH)}
-            , option1 {
-              text = if (isLocalStageOn ST.QuoteList) then (getString YES_TRY_AGAIN) else (getString YES_CANCEL_SEARCH)
-            , width = MATCH_PARENT
-            , color = state.data.config.primaryTextColor
-            , strokeColor = state.data.config.primaryBackground
-            , background = state.data.config.primaryBackground
-            , padding = (Padding 0 10 0 10)
+            , primaryButtonLayout {
+                visibility = VISIBLE
+              , button1 {
+                  textConfig{
+                    text =  if (isLocalStageOn ST.QuoteList) then (getString YES_TRY_AGAIN) else (getString YES_CANCEL_SEARCH)
+                  , color = state.data.config.primaryTextColor
+                  }
+                  , stroke = "1," <> state.data.config.primaryBackground
+                  , background = state.data.config.primaryBackground
+                  , padding = (Padding 0 10 0 10)
+                }
+              , button2{
+                  textConfig{
+                    text = if (isLocalStageOn ST.QuoteList) then (getString HOME) else (getString NO_DONT)
+                  , color = Color.black650
+                  }
+                , margin = MarginTop $ if (isLocalStageOn ST.QuoteList || isLocalStageOn ST.FindingQuotes) then 14 else 3
+                , background = Color.white900
+                , stroke = "1," <> Color.white900
+                , padding = if (isLocalStageOn ST.QuoteList || isLocalStageOn ST.FindingQuotes) then (PaddingBottom getBottomMargin) else (Padding 0 0 0 0)
+              }
             }
-            , option2 {
-               text = if (isLocalStageOn ST.QuoteList) then (getString HOME) else (getString NO_DONT)
-              , width = MATCH_PARENT
-              , background = Color.white900
-              , strokeColor = Color.white900
-              , margin = MarginTop $ if (isLocalStageOn ST.QuoteList || isLocalStageOn ST.FindingQuotes) then 14 else 3
-              , color = Color.black650
-              , padding = if (isLocalStageOn ST.QuoteList || isLocalStageOn ST.FindingQuotes) then (PaddingBottom getBottomMargin) else (Padding 0 0 0 0)
-             }
-            }
+          }
       in
         popUpConfig'
 
@@ -496,13 +540,20 @@ distanceOusideLimitsConfig state =
           { text = (getString DROP_LOCATION_FAR_AWAY)
           , margin = (Margin 0 16 0 20)
           }
-        , option1 { visibility = false }
-        , option2 {
-            background = state.data.config.primaryBackground
-          , strokeColor = state.data.config.primaryBackground
-          , color = state.data.config.primaryTextColor
-          , text = (getString CHANGE_DROP_LOCATION)
-          , margin = (Margin 16 0 16 EHC.safeMarginBottom)
+        , primaryButtonLayout {
+            visibility = VISIBLE
+          , button1 {
+              visibility = GONE
+            }
+          , button2 {
+              textConfig {
+                text = (getString CHANGE_DROP_LOCATION)
+              , color = state.data.config.primaryTextColor
+              }
+            , stroke = "1," <> state.data.config.primaryBackground
+            , margin = (Margin 16 0 16 EHC.safeMarginBottom)
+            , background = state.data.config.primaryBackground
+            }
           }
         }
   in
@@ -523,17 +574,24 @@ shortDistanceConfig state =
           { text = (getString YOU_CAN_TAKE_A_WALK_OR_CONTINUE_WITH_RIDE_BOOKING)
           , margin = (Margin 0 16 0 20)
           }
-        , option1 {
-            background = state.data.config.popupBackground
-          , strokeColor = state.data.config.primaryBackground
-          , color = state.data.config.primaryBackground
-          , text = (getString GO_BACK_)
-          }
-        , option2 {
-            color = state.data.config.primaryTextColor
-          , strokeColor = state.data.config.primaryBackground
-          , background = state.data.config.primaryBackground
-          , text = (getString BOOK_RIDE_)
+        , primaryButtonLayout {
+            visibility = VISIBLE
+          , button1 {
+              background = state.data.config.popupBackground
+            , stroke = "1," <> state.data.config.primaryBackground
+            , textConfig {
+                color = state.data.config.primaryBackground
+              , text = (getString GO_BACK_)
+              }
+            }
+          , button2 {
+              stroke = "1," <> state.data.config.primaryBackground
+            , background = state.data.config.primaryBackground
+            , textConfig {
+                color = state.data.config.primaryTextColor
+              , text = (getString BOOK_RIDE_)
+              }
+            }
           }
         }
   in
@@ -678,18 +736,25 @@ estimateChangedPopupConfig state =
       config'
         { primaryText { text = (getString ESTIMATES_CHANGED) }
         , secondaryText { text = (getString ESTIMATES_REVISED_TO) <> "₹" <> (show state.data.suggestedAmount) <> if state.data.rateCard.additionalFare > 0 then "-" <> "₹" <> (show $ (state.data.suggestedAmount + state.data.rateCard.additionalFare)) else "" }
-        , option1 {
-            background = state.data.config.primaryTextColor
-          , strokeColor = state.data.config.primaryBackground
-          , color = state.data.config.primaryBackground
-          , text = (getString GO_HOME_)
+        , primaryButtonLayout {
+          visibility = VISIBLE 
+          , button1 {
+            textConfig {
+              color = state.data.config.primaryBackground
+            , text = (getString GO_HOME_)
+            }
+            , background = state.data.config.primaryTextColor
+            , stroke = "1," <> state.data.config.primaryBackground
           }
-        , option2 {
-            color = state.data.config.primaryTextColor
-          , strokeColor = state.data.config.primaryBackground
-          , background = state.data.config.primaryBackground
-          , text = (getString CONTINUE)
+          , button2 {
+            textConfig {
+              color = state.data.config.primaryTextColor
+            , text = (getString CONTINUE)
+            }
+            , background = state.data.config.primaryBackground
+            , stroke = "1," <> state.data.config.primaryBackground
           }
+        }
         }
   in
     popUpConfig'
@@ -927,18 +992,25 @@ callSupportConfig state = let
     , margin = (Margin 24 12 24 12)
     , color = Color.black700
     }
-  , option1 {
-      text =  getString CANCEL_
-    , background = state.data.config.popupBackground
-    , strokeColor = state.data.config.primaryBackground
-    , color = state.data.config.primaryBackground
-    }
-  , option2 {
-      text =  getString CALL_SUPPORT
-    , color = state.data.config.primaryTextColor
-    , strokeColor = state.data.config.primaryBackground
-    , background = state.data.config.primaryBackground
-    , margin = (MarginLeft 12)
+  , primaryButtonLayout {
+      visibility = VISIBLE
+    , button1 {
+        textConfig{
+          text =  getString CANCEL_
+        , color = state.data.config.primaryBackground
+        }
+      , background = state.data.config.popupBackground
+      , stroke = "1," <> state.data.config.primaryBackground
+      }
+    , button2 {
+        textConfig {
+          text =  getString CALL_SUPPORT
+        , color = state.data.config.primaryTextColor
+        }
+      , stroke = "1," <> state.data.config.primaryBackground
+      , background = state.data.config.primaryBackground
+      , margin = (MarginLeft 12)
+      }
     }
   }
   in popUpConfig'
@@ -959,13 +1031,18 @@ zoneTimerExpiredConfig state = let
     , margin = Margin 16 4 16 24
     , color = Color.black700
     }
-  , option1 {
-      visibility = false
+  , primaryButtonLayout {
+    visibility = VISIBLE 
+    , button1 {
+      visibility = GONE 
     }
-  , option2 {
-      text =  getString OK_GOT_IT
-    , margin = (MarginHorizontal 16 16)
+    , button2 {
+      textConfig {
+        text =  getString OK_GOT_IT
+      }
+      , margin = (MarginHorizontal 16 16)
     }
+  }
   }
   in popUpConfig'
 

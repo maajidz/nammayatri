@@ -115,11 +115,8 @@ getLocationBlockerPopUpConfig state = let
     , height = V 200
     , margin = Margin 0 0 0 0 
     }
-  , option1 {
-      visibility = false
-    }
-  , option2 {
-      visibility = false
-    }
+  , primaryButtonLayout {
+    visibility = GONE
+  }
   }
   in config'

@@ -65,6 +65,7 @@ type TextConfig =
   , width :: Length
   , accessibilityHint :: String
   , weight :: Maybe Number
+  , padding :: Padding
   }
 
 
@@ -96,6 +97,7 @@ config =   {
     , width : WRAP_CONTENT
     , accessibilityHint : ""
     , weight : Nothing
+    , padding : Padding 0 0 0 0
     }
   , width: MATCH_PARENT
   , height: V 50

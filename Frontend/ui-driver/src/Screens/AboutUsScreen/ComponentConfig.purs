@@ -26,6 +26,7 @@ import PrestoDOM
 import PrestoDOM.Types.DomAttributes as PTD
 import Screens.Types as ST
 import Styles.Colors as Color
+import Prelude ((<>))
 
 demoModePopUpConfig :: ST.AboutUsScreenState -> PopUpModal.Config
 demoModePopUpConfig state = let
@@ -58,18 +59,23 @@ demoModePopUpConfig state = let
       },
     secondaryText { 
       visibility = GONE
+      }
+    , primaryButtonLayout {
+        visibility = VISIBLE 
+        , button1 {
+          visibility = GONE 
+        }
+        , button2 {
+          textConfig {
+            text = (getString CONFIRM_PASSWORD),
+            color=Color.blue800
+          },
+          background = Color.white900, 
+          stroke = "1," <> Color.white900, 
+          padding = (Padding 16 0 16 0), 
+          isClickable = state.props.enableConfirmPassword
+        }
       },
-    option1 {
-      visibility = false
-      },
-    option2 { 
-      text = (getString CONFIRM_PASSWORD),
-      background = Color.white900, 
-      color=Color.blue800, 
-      strokeColor = Color.white900, 
-      padding = (Padding 16 0 16 0), 
-      isClickable = state.props.enableConfirmPassword
-    },
     cornerRadius = (PTD.Corners 15.0 true true true true)
   }
   in popUpConfig'

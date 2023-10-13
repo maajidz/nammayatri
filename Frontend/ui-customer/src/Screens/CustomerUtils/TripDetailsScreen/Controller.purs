@@ -66,6 +66,7 @@ instance loggableAction :: Loggable Action where
             PopUpModalController.OnSecondaryTextClick -> trackAppScreenEvent appId (getScreen TRIP_DETAILS_SCREEN) "popup_modal_action" "secondary_text_clicked"
             PopUpModalController.OptionWithHtmlClick -> trackAppScreenEvent appId (getScreen TRIP_DETAILS_SCREEN) "popup_modal_action" "option_with_html_clicked"
             PopUpModalController.DismissPopup -> trackAppScreenEvent appId (getScreen TRIP_DETAILS_SCREEN) "popup_modal_action" "popup_dismissed"
+            _ -> pure unit
         SourceToDestinationActionController (SourceToDestinationController.Dummy) -> trackAppScreenEvent appId (getScreen TRIP_DETAILS_SCREEN) "in_screen" "source_to_destination"
         NoAction -> trackAppScreenEvent appId (getScreen TRIP_DETAILS_SCREEN) "in_screen" "no_action"
 
