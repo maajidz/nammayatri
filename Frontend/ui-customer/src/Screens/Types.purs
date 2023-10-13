@@ -702,6 +702,7 @@ type HomeScreenStateProps =
   , sheetState :: BottomSheetState
   , showDisabilityPopUp :: Boolean
   , searchLocationModelProps :: SearchLocationModelProps
+  , locateOnMapLocation :: LocateOnMapLocation
   }
 
 type SearchLocationModelProps = {
@@ -713,6 +714,18 @@ type SearchLocationModelProps = {
 
 type SearchLocationModelData = {
     prevLocation :: String
+}
+
+type LocateOnMapLocation = {
+    source :: String
+  , sourceAddress :: Address
+  , sourceLat :: Number
+  , sourceLng :: Number
+  , isSource :: Boolean
+  , destination :: String
+  , destinationAddress :: Address
+  , destinationLat :: Number
+  , destinationLng :: Number
 }
 
 type RouteEndPoints = {

@@ -123,6 +123,17 @@ config =
   , callOptions : ["ANONYMOUS"]
   , autoVariantEnabled : true
   , showDisabilityBanner : true
+  , mapConfig : 
+            { locateOnMapConfig : 
+                { dottedLineConfig : 
+                    { visible : false
+                    , range : 100
+                    , color : "#323643"
+                    },
+                  apiTriggerRadius : 20.0
+                }
+            , animationDuration : 400
+            }
   , enableWhatsappOTP : ["BD"]
   , notifyRideConfirmationConfig : 
       { notify : false 

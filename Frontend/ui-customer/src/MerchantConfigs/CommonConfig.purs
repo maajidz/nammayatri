@@ -73,7 +73,8 @@ commonConfig =
                     { visible : false
                     , range : 100
                     , color : "#323643"
-                    }
+                    },
+                  apiTriggerRadius: 20.0
                 }
             , animationDuration : 400
             }

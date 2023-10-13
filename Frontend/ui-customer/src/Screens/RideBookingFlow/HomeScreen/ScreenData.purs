@@ -224,6 +224,17 @@ initData = {
     , sheetState : COLLAPSED
     , showDisabilityPopUp : false
     , searchLocationModelProps : dummySearchLocationModelProps
+    , locateOnMapLocation : {
+        source : ""
+      , sourceLat : 0.0
+      , sourceLng : 0.0
+      , sourceAddress : dummyAddress
+      , isSource : true
+      , destination : ""
+      , destinationLat : 0.0
+      , destinationLng : 0.0
+      , destinationAddress : dummyAddress
+      }
     }
 }
 
