@@ -15,8 +15,8 @@
 
 module Domain.Action.UI.RideSummary where
 
-import Data.List (groupBy)
-import Data.Time (Day, addUTCTime, utctDay)
+-- import Data.List (groupBy)
+import Data.Time (Day, UTCTime (UTCTime), addDays, addUTCTime, utctDay)
 import qualified Domain.Types.Merchant as Merchant
 import qualified Domain.Types.Person as DP
 import qualified Domain.Types.Ride as Ride
@@ -28,7 +28,8 @@ import qualified Storage.Queries.Ride as QRide
 data DriverRideSummaryResp = DriverRideSummaryResp
   { earnings :: Maybe Money,
     rideDistance :: HighPrecMeters,
-    rideDate :: UTCTime
+    rideDate :: UTCTime,
+    noOfRides :: Int
   }
   deriving (Generic, Show, FromJSON, ToJSON, ToSchema)
 
@@ -40,40 +41,42 @@ newtype DriverRideSummaryListResp = DriverRideSummaryListResp
 listDriverRidesSummary :: MonadFlow m => Id DP.Person -> Id Merchant.Merchant -> Ride.RideStatus -> Day -> Day -> m DriverRideSummaryListResp
 listDriverRidesSummary personId _ rideStatus fromDay toDay = do
   rideSummaryList <- QRide.findRidesWithinDates personId rideStatus fromDay toDay
-  list <- mkRideSummaryList rideSummaryList
+  list <- mkRideSummaryList rideSummaryList fromDay toDay
   return $ DriverRideSummaryListResp {..}
 
-mkRideSummaryList :: MonadFlow m => [Ride.Ride] -> m [DriverRideSummaryResp]
-mkRideSummaryList rideSummaryList = forM rideSummaryList somefunc
+mkRideSummaryList :: MonadFlow m => [Ride.Ride] -> Day -> Day -> m [DriverRideSummaryResp]
+mkRideSummaryList rideSummaryList fromDay toDay = do
+  list <- forM rideSummaryList getRidesList
+  let transformedList = summarizeRides list fromDay toDay
+  return transformedList
 
-somefunc :: MonadFlow m => Ride.Ride -> m DriverRideSummaryResp
-somefunc item =
+getRidesList :: MonadFlow m => Ride.Ride -> m DriverRideSummaryResp
+getRidesList item =
   pure $
     DriverRideSummaryResp
       { earnings = item.fare,
         rideDistance = item.traveledDistance,
-        rideDate = addUTCTime 19800 item.updatedAt
+        rideDate = addUTCTime 19800 item.updatedAt,
+        noOfRides = 1
       }
 
-summarizeRides :: [DriverRideSummaryResp] -> [DriverRideSummaryResp]
-summarizeRides rides = map toCummilative grouped
+datesBetween :: Day -> Day -> [Day]
+datesBetween start end = takeWhile (<= end) $ iterate (addDays 1) start
+
+summarizeRides :: [DriverRideSummaryResp] -> Day -> Day -> [DriverRideSummaryResp]
+summarizeRides rides startDate endDate = map toCummilative allDates
   where
-    -- Sort by rideDate
-    -- sorted = sortBy (compare `on` rideDate) rides
+    allDates = datesBetween startDate endDate
+    toCummilative date =
+      let matchingRides = filter (\r -> utctDay (rideDate r) == date) rides
+       in DriverRideSummaryResp
+            { earnings = sumMaybes $ map earnings matchingRides,
+              rideDistance = sum $ map rideDistance matchingRides,
+              rideDate = UTCTime date 0,
+              noOfRides = sum $ map noOfRides matchingRides
+            }
 
-    -- Group by rideDate
-    grouped = groupBy ((==) `on` (utctDay . rideDate)) rides
-
-    -- Convert each group to the cumulative response
-    toCummilative grp =
-      DriverRideSummaryResp
-        { earnings = sumMaybes $ map earnings grp,
-          rideDistance = sum $ map rideDistance grp,
-          rideDate = rideDate (head grp)
-        }
-
-    -- Helper function to sum Maybe values
-    sumMaybes :: [Maybe Money] -> Maybe Money
-    sumMaybes ms = if null summed then Nothing else Just (sum summed)
-      where
-        summed = catMaybes ms
+sumMaybes :: [Maybe Money] -> Maybe Money
+sumMaybes ms = if null summed then 0 else Just (sum summed)
+  where
+    summed = catMaybes ms
