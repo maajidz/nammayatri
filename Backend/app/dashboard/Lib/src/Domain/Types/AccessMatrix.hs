@@ -173,6 +173,7 @@ data UserActionType
   | OVERLAY_INFO
   | SCHEDULE_OVERLAY
   | DRIVER_SUBSCRIPTION_DRIVER_FEE_AND_INVOICE_UPDATE
+  | SEND_SMS
   deriving (Show, Read, Generic, ToJSON, FromJSON, ToSchema)
 
 genSingletons [''UserActionType]

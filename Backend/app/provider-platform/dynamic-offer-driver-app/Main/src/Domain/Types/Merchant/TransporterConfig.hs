@@ -97,7 +97,9 @@ data TransporterConfigD u = TransporterConfig
     openMarketUnBlocked :: Bool,
     cacheOfferListByDriverId :: Bool,
     useOfferListCache :: Bool,
-    ratingAsDecimal :: Bool
+    ratingAsDecimal :: Bool,
+    volunteerSmsSendingLimit :: Int,
+    driverSmsReceivingLimit :: Int
   }
   deriving (Generic, Show)
 

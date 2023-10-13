@@ -34,6 +34,7 @@ import qualified Dashboard.ProviderPlatform.Revenue as Revenue
 import qualified Dashboard.ProviderPlatform.Ride as Ride
 import qualified Dashboard.ProviderPlatform.Volunteer as Volunteer
 import qualified Data.ByteString.Lazy as LBS
+import qualified "dynamic-offer-driver-app" Domain.Action.Dashboard.Driver as DDriver
 import qualified "dynamic-offer-driver-app" Domain.Action.Dashboard.Fleet.Registration as Fleet
 import qualified "dynamic-offer-driver-app" Domain.Action.Dashboard.Overlay as Overlay
 import qualified "dynamic-offer-driver-app" Domain.Action.UI.Driver as ADriver
@@ -106,7 +107,8 @@ data DriversAPIs = DriversAPIs
     deleteRC :: Id Driver.Driver -> Driver.DeleteRCReq -> Euler.EulerClient APISuccess,
     getPaymentHistory :: Id Driver.Driver -> Maybe INV.InvoicePaymentMode -> Maybe Int -> Maybe Int -> Euler.EulerClient ADriver.HistoryEntityV2,
     getPaymentHistoryEntityDetails :: Id Driver.Driver -> Id INV.Invoice -> Euler.EulerClient ADriver.HistoryEntryDetailsEntityV2,
-    updateSubscriptionDriverFeeAndInvoice :: Id Driver.Driver -> Driver.SubscriptionDriverFeesAndInvoicesToUpdate -> Euler.EulerClient Driver.SubscriptionDriverFeesAndInvoicesToUpdate
+    updateSubscriptionDriverFeeAndInvoice :: Id Driver.Driver -> Driver.SubscriptionDriverFeesAndInvoicesToUpdate -> Euler.EulerClient Driver.SubscriptionDriverFeesAndInvoicesToUpdate,
+    sendSmsToDriverViaDashboard :: Id Driver.Driver -> Text -> DDriver.SendSmsReq -> Euler.EulerClient APISuccess
   }
 
 data RidesAPIs = RidesAPIs
@@ -289,7 +291,8 @@ mkDriverOfferAPIs merchantId token = do
       :<|> incrementDriverGoToCount
       :<|> getPaymentHistory
       :<|> getPaymentHistoryEntityDetails
-      :<|> updateSubscriptionDriverFeeAndInvoice = driversClient
+      :<|> updateSubscriptionDriverFeeAndInvoice
+      :<|> sendSmsToDriverViaDashboard = driversClient
 
     rideList
       :<|> rideStart

@@ -55,6 +55,7 @@ data DriverEndpoint
   | UpdateDriverHomeLocationEndpoint
   | IncrementDriverGoToCountEndPoint
   | UpdateSubscriptionDriverFeeAndInvoiceEndpoint
+  | SendSmsToDriverViaDashboardEndPoint
   deriving (Show, Read)
 
 derivePersistField "DriverEndpoint"

@@ -67,6 +67,7 @@ type API =
            :<|> DriverPaymentHistoryAPI
            :<|> DriverPaymentHistoryEntityDetailsAPI
            :<|> Common.UpdateSubscriptionDriverFeeAndInvoiceAPI
+           :<|> SendSmsToDriverAPI
        )
 
 -- driver cash collection api ----------------------------------------
@@ -160,6 +161,22 @@ type FleetStatsAPI =
     :> "fleet"
     :> Get '[JSON] Common.FleetStatsRes
 
+-------------------------------------------------------------------
+------- Send Sms to Driver ----------------------------------------
+
+type SendSmsToDriverViaDashboardAPI =
+  Capture "driverId" (Id Common.Driver)
+    :> "sendSms"
+    :> ReqBody '[JSON] DDriver.SendSmsReq
+    :> Post '[JSON] APISuccess
+
+type SendSmsToDriverAPI =
+  Capture "driverId" (Id Common.Driver)
+    :> Capture "volunteerId" Text
+    :> "sendSms"
+    :> ReqBody '[JSON] DDriver.SendSmsReq
+    :> Post '[JSON] APISuccess
+
 handler :: ShortId DM.Merchant -> FlowServer API
 handler merchantId =
   driverDocumentsInfo merchantId
@@ -201,6 +218,7 @@ handler merchantId =
     :<|> getPaymentHistory merchantId
     :<|> getPaymentHistoryEntityDetails merchantId
     :<|> updateDriverSubscriptionDriverFeeAndInvoiceUpdate merchantId
+    :<|> sendSmsToDriver merchantId
 
 driverDocumentsInfo :: ShortId DM.Merchant -> FlowHandler Common.DriverDocumentsInfoRes
 driverDocumentsInfo = withFlowHandlerAPI . DDriver.driverDocumentsInfo
@@ -321,3 +339,6 @@ getPaymentHistoryEntityDetails merchantShortId driverId invoiceId = do
 
 updateDriverSubscriptionDriverFeeAndInvoiceUpdate :: ShortId DM.Merchant -> Id Common.Driver -> Common.SubscriptionDriverFeesAndInvoicesToUpdate -> FlowHandler Common.SubscriptionDriverFeesAndInvoicesToUpdate
 updateDriverSubscriptionDriverFeeAndInvoiceUpdate merchantShortId driverId req = withFlowHandlerAPI $ DDriver.updateSubscriptionDriverFeeAndInvoice merchantShortId driverId req
+
+sendSmsToDriver :: ShortId DM.Merchant -> Id Common.Driver -> Text -> DDriver.SendSmsReq -> FlowHandler APISuccess
+sendSmsToDriver merchantShortId driverId volunteerId = withFlowHandlerAPI . DDriver.sendSmsToDriver merchantShortId driverId volunteerId
