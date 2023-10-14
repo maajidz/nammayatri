@@ -48,7 +48,8 @@ instance FromTType' BeamFPPD.FarePolicyProgressiveDetails Domain.FullFarePolicyP
                     { waitingCharge = waitingCharge',
                       freeWaitingTime = freeWaitingTime'
                     },
-              nightShiftCharge = nightShiftCharge
+              nightShiftCharge = nightShiftCharge,
+              averageSpeedOfVehicle = averageSpeedOfVehicle
             }
         )
 
@@ -61,5 +62,6 @@ instance ToTType' BeamFPPD.FarePolicyProgressiveDetails Domain.FullFarePolicyPro
         freeWatingTime = freeWaitingTime <$> waitingChargeInfo,
         deadKmFare = deadKmFare,
         waitingCharge = Common.waitingCharge <$> waitingChargeInfo,
-        nightShiftCharge = nightShiftCharge
+        nightShiftCharge = nightShiftCharge,
+        averageSpeedOfVehicle = averageSpeedOfVehicle
       }

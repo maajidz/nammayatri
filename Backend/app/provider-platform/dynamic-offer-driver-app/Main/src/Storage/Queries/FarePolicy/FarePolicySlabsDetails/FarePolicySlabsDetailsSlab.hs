@@ -60,7 +60,8 @@ instance FromTType' BeamFPSS.FarePolicySlabsDetailsSlab BeamFPSS.FullFarePolicyS
                     { platformFeeCharge = platformFeeCharge',
                       cgst = platformFeeCgst',
                       sgst = platformFeeSgst'
-                    }
+                    },
+              averageSpeedOfVehicle = averageSpeedOfVehicle
             }
         )
 
@@ -76,5 +77,6 @@ instance ToTType' BeamFPSS.FarePolicySlabsDetailsSlab BeamFPSS.FullFarePolicySla
         platformFeeSgst = DFP.sgst <$> platformFeeInfo,
         waitingCharge = DFP.waitingCharge <$> waitingChargeInfo,
         nightShiftCharge = nightShiftCharge,
-        freeWatingTime = DFP.freeWaitingTime <$> waitingChargeInfo
+        freeWatingTime = DFP.freeWaitingTime <$> waitingChargeInfo,
+        averageSpeedOfVehicle = averageSpeedOfVehicle
       }

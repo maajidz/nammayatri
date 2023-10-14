@@ -33,6 +33,7 @@ data FareParametersT f = FareParametersT
     driverSelectedFare :: B.C f (Maybe Money),
     customerExtraFee :: B.C f (Maybe Money),
     waitingCharge :: B.C f (Maybe Money),
+    timeBasedCharge :: B.C f (Maybe Money),
     nightShiftCharge :: B.C f (Maybe Money),
     nightShiftRateIfApplies :: B.C f (Maybe Double),
     serviceCharge :: B.C f (Maybe Money),

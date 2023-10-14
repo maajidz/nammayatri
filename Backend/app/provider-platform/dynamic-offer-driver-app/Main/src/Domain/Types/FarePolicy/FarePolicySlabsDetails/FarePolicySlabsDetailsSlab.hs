@@ -29,7 +29,8 @@ data FPSlabsDetailsSlabD (s :: UsageSafety) = FPSlabsDetailsSlab
     baseFare :: Money,
     waitingChargeInfo :: Maybe WaitingChargeInfo,
     platformFeeInfo :: Maybe PlatformFeeInfo,
-    nightShiftCharge :: Maybe NightShiftCharge
+    nightShiftCharge :: Maybe NightShiftCharge,
+    averageSpeedOfVehicle :: Maybe Kilometers
   }
   deriving (Generic, Show, Eq, ToSchema)
 

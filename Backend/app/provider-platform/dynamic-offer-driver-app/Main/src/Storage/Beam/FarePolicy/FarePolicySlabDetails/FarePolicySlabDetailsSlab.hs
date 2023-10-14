@@ -39,7 +39,8 @@ data FarePolicySlabsDetailsSlabT f = FarePolicySlabsDetailsSlabT
     platformFeeSgst :: B.C f (Maybe Double),
     waitingCharge :: B.C f (Maybe Domain.WaitingCharge),
     freeWatingTime :: B.C f (Maybe Minutes), -- FIXME typo
-    nightShiftCharge :: B.C f (Maybe Domain.NightShiftCharge)
+    nightShiftCharge :: B.C f (Maybe Domain.NightShiftCharge),
+    averageSpeedOfVehicle :: B.C f (Maybe Kilometers)
   }
   deriving (Generic, B.Beamable)
 

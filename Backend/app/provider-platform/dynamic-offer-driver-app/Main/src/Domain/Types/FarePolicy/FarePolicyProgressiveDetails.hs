@@ -30,7 +30,8 @@ data FPProgressiveDetailsD (s :: UsageSafety) = FPProgressiveDetails
     perExtraKmRateSections :: NonEmpty (FPProgressiveDetailsPerExtraKmRateSectionD s),
     deadKmFare :: Money,
     waitingChargeInfo :: Maybe WaitingChargeInfo,
-    nightShiftCharge :: Maybe NightShiftCharge
+    nightShiftCharge :: Maybe NightShiftCharge,
+    averageSpeedOfVehicle :: Maybe Kilometers
   }
   deriving (Generic, Show)
 

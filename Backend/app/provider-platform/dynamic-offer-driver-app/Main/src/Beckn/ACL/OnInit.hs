@@ -152,6 +152,7 @@ mkOnInitMessage res = do
             || breakup.title == "CUSTOMER_SELECTED_FARE"
             || breakup.title == "TOTAL_FARE"
             || breakup.title == "WAITING_OR_PICKUP_CHARGES"
+            || breakup.title == "TIME_BASED_CHARGE"
         DFParams.Slab ->
           breakup.title == "BASE_FARE"
             || breakup.title == "SERVICE_CHARGE"
@@ -163,3 +164,4 @@ mkOnInitMessage res = do
             || breakup.title == "CUSTOMER_SELECTED_FARE"
             || breakup.title == "TOTAL_FARE"
             || breakup.title == "NIGHT_SHIFT_CHARGE"
+            || breakup.title == "TIME_BASED_CHARGE"
