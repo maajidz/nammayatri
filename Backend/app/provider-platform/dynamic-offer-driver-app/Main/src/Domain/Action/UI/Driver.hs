@@ -1032,7 +1032,9 @@ buildDriver req merchantId = do
         SP.bundleVersion = Nothing,
         SP.alternateMobileNumber = Nothing,
         SP.unencryptedAlternateMobileNumber = Nothing,
-        SP.faceImageId = Nothing
+        SP.faceImageId = Nothing,
+        SP.totalEarnedCoins = 0,
+        SP.usedCoins = 0
       }
 
 buildVehicle :: MonadFlow m => CreateVehicle -> Id SP.Person -> Id DM.Merchant -> m SV.Vehicle
@@ -1675,7 +1677,8 @@ data AutoPayInvoiceHistory = AutoPayInvoiceHistory
     amount :: HighPrecMoney,
     executionAt :: UTCTime,
     autoPayStage :: Maybe DDF.AutopayPaymentStage,
-    rideTakenOn :: UTCTime
+    rideTakenOn :: UTCTime,
+    paidByCoins :: Bool
   }
   deriving (Generic, Show, FromJSON, ToJSON, ToSchema)
 
@@ -1747,7 +1750,8 @@ mkAutoPayPaymentEntity mapDriverFeeByDriverFeeId' transporterConfig autoInvoice 
               amount = sum $ mapToAmount [dfee],
               executionAt = maybe now (calcExecutionTime transporterConfig dfee.autopayPaymentStage) dfee.stageUpdatedAt,
               autoPayStage = dfee.autopayPaymentStage,
-              rideTakenOn = addUTCTime (-1 * secondsToNominalDiffTime transporterConfig.timeDiffFromUtc) dfee.createdAt
+              rideTakenOn = addUTCTime (-1 * secondsToNominalDiffTime transporterConfig.timeDiffFromUtc) dfee.createdAt,
+              paidByCoins = dfee.status == DDF.CLEARED_BY_YATRI_COINS
             }
     Nothing -> return Nothing
   where
