@@ -85,6 +85,7 @@ foreign import formatCurrencyWithCommas :: String -> String
 foreign import camelCaseToSentenceCase :: String -> String
 foreign import getPastDays :: Int -> Array CalendarDate
 foreign import getPastWeeks :: Int -> Array CalendarWeek
+foreign import clearFocus :: String -> Unit
 
 os :: String
 os = getOs unit
