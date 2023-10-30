@@ -712,9 +712,18 @@ export const startPP = function (payload) {
 					}
 				}
 			}
+
 			if (JOS) {      
 				try {
-					payload = JSON.parse(payload);                    
+					payload = JSON.parse(payload);
+          console.log("%cHyperpay Request ", "background:darkblue;color:white;font-size:13px;padding:2px", payload);
+          let p = payload["payload"]
+          Object.keys(p).forEach(key => {
+           if (p[key] === null) {
+             delete p[key];
+           }
+         });
+         payload["payload"] = p;                
 					console.log("%cHyperpay Request ", "background:darkblue;color:white;font-size:13px;padding:2px", payload);
 
 					if (JOS.isMAppPresent("in.juspay.hyperpay")()){
@@ -745,7 +754,7 @@ export const initiatePP = function () {
   }
   if (JOS) {
     try {
-      console.log("%cHyperpay initiate Request ", "background:darkblue;color:white;font-size:13px;padding:2px", window.__payload);
+      console.log("%cHyperpay initiate RequestPP ", "background:darkblue;color:white;font-size:13px;padding:2px", window.__payload);
       JOS.startApp("in.juspay.hyperpay")(window.__payload)(cb)();
     } catch (err) {
       console.error("Hyperpay initiate Request not sent : ", err);

@@ -226,7 +226,7 @@ contactListPrimaryButtonConfig count =
           { text = if (count > 0) then (getString CONFIRM_EMERGENCY_CONTACTS) else (getString SELECT_CONTACTS)
           , color = if (count > 0) then Color.yellow900 else Color.yellow800
           }
-        , background = if (count > 0) then Color.black900 else Color.black600
+        , background = if (count > 0) then Color.black900 else Color.black800
         , isClickable = if (count > 0) then true else false
         }
   in

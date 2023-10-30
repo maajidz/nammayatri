@@ -32,6 +32,7 @@ window.getMerchantConfig = function () {
     "isChatEnabled": "true",
     "primaryTextColor": "#FFFFFF",
     "primaryBackground": "#6048E4",
+    "primarySearchBackground": "#333333",
     "showCorporateAddress" : false,
     "gradient": [],
     "loaderColor": "",

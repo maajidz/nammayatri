@@ -143,7 +143,7 @@ android {
             dimension "app"
         }
         yatriUser {
-            applicationId "com.novocabs.user"
+            applicationId "net.openkochi.yatri"
             buildConfigField "String", "MERCHANT_TYPE", "\"USER\""
             buildConfigField "String", "MERCHANT", "\"KL\""
             dimension "app"
