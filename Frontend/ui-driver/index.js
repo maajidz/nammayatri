@@ -95,6 +95,8 @@ window.onMerchantEvent = function (event, payload) {
       window.merchantID = "YATRI"
     } else if(clientId == "jatrisaathiprovider" || clientId == "jatrisaathidriver" || clientId == "yatrisathiprovider"){
       window.merchantID = "YATRISATHI"
+    }else if (clientId == "novocabs"){
+      window.merchantID = "novocabs"
     }else if (clientId.includes("provider")){
       var merchant = clientId.replace("mobility","")
       merchant = merchant.replace("provider","");

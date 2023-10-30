@@ -725,7 +725,7 @@ export const startPP = function (payload) {
          });
          payload["payload"] = p;                
 					console.log("%cHyperpay Request ", "background:darkblue;color:white;font-size:13px;padding:2px", payload);
-
+          console.log("%cHyperpay Request ", "background:darkblue;color:white;font-size:13px;padding:2px", JOS.isMAppPresent("in.juspay.hyperpay")());
 					if (JOS.isMAppPresent("in.juspay.hyperpay")()){
             console.log("inside process call");
 						JOS.emitEvent("in.juspay.hyperpay")("onMerchantEvent")(["process",JSON.stringify(payload)])(cb)();
