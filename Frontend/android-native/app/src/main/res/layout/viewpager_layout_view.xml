@@ -311,7 +311,7 @@
                 android:fontFamily="@font/plus_jakartasans_medium"
                 android:gravity="center"
                 android:lineHeight="17dp"
-                android:text="namma yatri"
+                android:text="Novo"
                 android:textColor="#FFFFFF"
                 android:textFontWeight="800"
                 android:textSize="20dp" />

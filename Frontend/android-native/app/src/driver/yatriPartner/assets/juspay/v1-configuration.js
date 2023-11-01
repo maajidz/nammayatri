@@ -19,7 +19,7 @@ window.getMerchantConfig = function () {
     "showCorporateAddress" : false,
     "imageUploadOptional" : true,
     "BONUS_EARNED" : "false",
-    "clientName" : "Yatri",
+    "clientName" : "Novo",
     "languageList": [{
         "name": "English",
         "value": "EN_US",

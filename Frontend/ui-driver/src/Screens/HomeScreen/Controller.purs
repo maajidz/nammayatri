@@ -383,7 +383,7 @@ eval (RideActionModalAction (RideActionModal.OnNavigate)) state = do
 eval (RideActionModalAction (RideActionModal.CancelRide)) state = do
   continue state{ data {cancelRideConfirmationPopUp{delayInSeconds = 5,  continueEnabled=false}}, props{cancelConfirmationPopup = true}}
 eval (RideActionModalAction (RideActionModal.CallCustomer)) state = continueWithCmd state [ do
-  _ <- pure $ showDialer (if (take 1 state.data.activeRide.exoPhone) == "0" then state.data.activeRide.exoPhone else "0" <> state.data.activeRide.exoPhone) false -- TODO: FIX_DIALER
+  _ <- pure $ showDialer (if (take 1 state.data.activeRide.exoPhone) == "0" || (take 3 state.data.activeRide.exoPhone) == "+91" then state.data.activeRide.exoPhone else "0" <> state.data.activeRide.exoPhone) false -- TODO: FIX_DIALER
   _ <- logEventWithTwoParams state.data.logField "call_customer" "trip_id" (state.data.activeRide.id) "user_id" (getValueToLocalStore DRIVER_ID)
   pure NoAction
   ]

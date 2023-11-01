@@ -891,7 +891,7 @@ public class MobilityCustomerBridge extends MobilityCommonBridge {
                 } else if (serviceName.equals("nammayatri")) {
                     fileNameformat = "NY_RIDE_";
                 } else {
-                    fileNameformat = "YATRI_RIDE_";
+                    fileNameformat = "Novo_Ride";
                 }
                 fileNameformat = fileNameformat + selectedItem.getString("date") + selectedItem.getString("rideStartTime");
                 String removedSpecial = fileNameformat.replaceAll("[^a-zA-Z\\d]", "_");

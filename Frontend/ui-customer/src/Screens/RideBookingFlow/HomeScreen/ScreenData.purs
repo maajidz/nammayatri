@@ -205,8 +205,8 @@ initData = {
       , isprimaryButtonVisible : false
       , primaryText : ""
       , secondaryText : ""
-      , customerTipArray : ["₹10 🙂", "₹20 😄", "₹30 🤩"]
-      , customerTipArrayWithValues : [10, 20, 30]
+      , customerTipArray : ["₹10 🙂", "₹25 😄", "₹50 🤩"]
+      , customerTipArrayWithValues : [10, 25, 50]
       , activeIndex : -1
       , primaryButtonText : ""
       }

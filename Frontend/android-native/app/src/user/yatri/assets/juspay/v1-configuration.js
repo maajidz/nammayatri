@@ -22,11 +22,11 @@ window.getMerchantConfig = function () {
     "showDashboard": "false",
     "enableShareRide": "false",
     "shareAppTitle": "Share Novo!",
-    "shareAppContent": "Hey there!\n\nCheck out Yatri, India's first open mobility cab hailing app built for commuters in Kochi.\n100% Open Source\n\nDownload Yatri now! \n" + (getAppLink(window.__OS)) + "\n\n#beOpen #chooseOpen",
-    "DOCUMENT_LINK": "https://docs.google.com/document/d/1zmQWO_L4EjyCXC3xSlp1f3DS2wI4HfbHxg42tXelWe0",
-    "PRIVACY_POLICY_LINK": "https://docs.google.com/document/d/1gI_P4oZnVwE0O71rI4Mi8rpZbL9rsIRkyewbql85Np8",
+    "shareAppContent": "Hey there!\n\nCheck out Novo, \nDownload Novo now! \n" + (getAppLink(window.__OS)) + "\n\n#beOpen #chooseOpen",
+    "DOCUMENT_LINK": "https://novocabs.com/privacy",
+    "PRIVACY_POLICY_LINK": "https://novocabs.com/privacy",
     "APP_LINK": getAppLink(window.__OS),
-    "CUSTOMER_TIP": "false",
+    "CUSTOMER_TIP": "true",
     "isShareAppEnabled": "true",
     "apiLoaderLottie": "primary_button_loader.json",
     "isChatEnabled": "true",
@@ -209,8 +209,8 @@ window.getMerchantConfig = function () {
 
 function getAppLink(os) {
   if (os == "ANDROID") {
-    return "https://play.google.com/store/apps/details?id=net.openkochi.yatri"
+    return "https://play.google.com/store/apps/details?id=com.novocabs.user&hl=en_IN&gl=US"
   } else {
-    return "https://apps.apple.com/in/app/yatri/id1615871038"
+    return "https://apps.apple.com/in/app/novo-cabs-cabs-autos-bikes/id1547034945"
   }
 }

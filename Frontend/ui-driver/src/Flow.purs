@@ -2010,6 +2010,7 @@ paymentHistoryFlow = do
 
 ysPaymentFlow :: FlowBT String Unit
 ysPaymentFlow = do
+  liftFlowBT $ runEffectFn1 initiatePP unit
   (GlobalState state) <- getState
   let homeScreenState = state.homeScreen
   response <- lift $ lift $ Remote.createPaymentOrder homeScreenState.data.paymentState.driverFeeId
@@ -2017,7 +2018,9 @@ ysPaymentFlow = do
     Right (CreateOrderRes listResp) -> do
       let (PaymentPagePayload sdk_payload) = listResp.sdk_payload
       setValueToLocalStore DISABLE_WIDGET "true"
+      lift $ lift $ doAff $ makeAff \cb -> runEffectFn1 checkPPInitiateStatus (cb <<< Right) $> nonCanceler
       paymentPageOutput <- paymentPageUI listResp.sdk_payload
+      pure $ toggleBtnLoader "" false
       setValueToLocalStore DISABLE_WIDGET "false"
       liftFlowBT $ runEffectFn1 consumeBP unit
       if (paymentPageOutput == "backpressed") then homeScreenFlow else pure unit-- backpressed FAIL

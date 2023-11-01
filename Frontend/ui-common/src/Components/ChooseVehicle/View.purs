@@ -73,10 +73,10 @@ vehicleDetailsView push config =
           , text
               $ case config.vehicleVariant of
                   "AUTO_RICKSHAW" -> "Auto Rickshaw"
-                  "TAXI" -> "Non-AC Taxi"
+                  "TAXI" -> "Novo Cab"
                   "TAXI_PLUS" -> "AC Taxi"
-                  "SEDAN" -> "Sedan"
-                  "SUV" -> "SUV"
+                  "SEDAN" -> "Novo Sedan"
+                  "SUV" -> "Novo SUV"
                   "HATCHBACK" -> "Hatchback"
                   _ -> "Non-AC Taxi"
           , color Color.black800

@@ -427,10 +427,10 @@ logOutPopUpModelConfig state =
           , fareEstimateText = getString FARE_ESTIMATE
           , tipSelectedText = getString TIP_SELECTED
           , fareEstimate = getValueToLocalStore FARE_ESTIMATE_DATA
-          , tipSelected = if state.props.customerTip.tipActiveIndex == 0 then "-" else " ₹"<> (fromMaybe "" (["0", "10", "20", "30"] DA.!! state.props.customerTip.tipActiveIndex))
+          , tipSelected = if state.props.customerTip.tipActiveIndex == 0 then "-" else " ₹"<> (fromMaybe "" (["0", "10", "25", "50"] DA.!! state.props.customerTip.tipActiveIndex))
           , dismissPopup = true
-          , customerTipArray = [(getString NO_TIP), "₹10 🙂", "₹20 😄", "₹30 🤩"]
-          , customerTipArrayWithValues = [0,10, 20, 30]
+          , customerTipArray = [(getString NO_TIP), "₹10 🙂", "₹25 😄", "₹50 🤩"]
+          , customerTipArrayWithValues = [0,10, 25, 50]
           , primaryText {
               text = if isLocalStageOn ST.QuoteList then (getString TRY_AGAIN <> "?") else getString SEARCH_AGAIN_WITH_A_TIP
             , textStyle = FontStyle.Heading1
@@ -448,7 +448,7 @@ logOutPopUpModelConfig state =
               , padding = (Padding 16 12 16 12)
             },
           option1 {
-            text = if state.props.customerTip.tipActiveIndex == 0 then getString SEARCH_AGAIN_WITHOUT_A_TIP else getString SEARCH_AGAIN_WITH  <> " + ₹"<> (fromMaybe "" (["0", "10", "20", "30"] DA.!! state.props.customerTip.tipActiveIndex)) <>" "<> getString TIP
+            text = if state.props.customerTip.tipActiveIndex == 0 then getString SEARCH_AGAIN_WITHOUT_A_TIP else getString SEARCH_AGAIN_WITH  <> " + ₹"<> (fromMaybe "" (["0", "10", "25", "50"] DA.!! state.props.customerTip.tipActiveIndex)) <>" "<> getString TIP
           , width = MATCH_PARENT
           , color = state.data.config.primaryTextColor
           , strokeColor = state.data.config.primaryBackground

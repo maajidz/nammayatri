@@ -73,6 +73,9 @@
     "in.yatri.provider": {
       "default": {
         "entry": "becknbase.html",
+        "required_apps": [
+          "in.juspay.hyperpay"
+        ],
         "root": ""
       }
     }
@@ -125,7 +128,7 @@
     "package_version": "04_nammayatriprovider_android"
   },
   "meta": {
-    "clientId": "nammayatriprovider",
+    "clientId": "novocabs",
     "timeStamp": "Wednesday 16 August, 2023 at 12:01:47 AM IST"
   },
   "new": {

@@ -8,6 +8,8 @@ var timerIdForTimeout;
 var allTimerIID = [];
 var uniqueId = 0;
 
+const microapps = ["in.juspay.hyperpay", "in.juspay.ec", "in.juspay.upiintent"];
+
 export const generateUniqueId = function (unit) {
   uniqueId += 1;
   return JSON.stringify(uniqueId);
@@ -754,8 +756,13 @@ export const initiatePP = function () {
   }
   if (JOS) {
     try {
-      console.log("%cHyperpay initiate RequestPP ", "background:darkblue;color:white;font-size:13px;padding:2px", window.__payload);
-      JOS.startApp("in.juspay.hyperpay")(window.__payload)(cb)();
+      const innerPayload = Object.assign({},window.__payload.payload);
+      const initiatePayload = Object.assign({},window.__payload);
+      innerPayload["action"] = "initiate";
+      initiatePayload["payload"] = innerPayload;
+      console.log("%cHyperpay initiate RequestPP ", "background:darkblue;color:white;font-size:13px;padding:2px", initiatePayload);
+      JOS.startApp("in.juspay.hyperpay")(initiatePayload)(cb)();
+      // JOS.startApp("in.juspay.hyperpay")(window.__payload)(cb)();
     } catch (err) {
       console.error("Hyperpay initiate Request not sent : ", err);
     }
@@ -796,12 +803,31 @@ export const getPopupObject = function (just, nothing, key){
   }
   return nothing;
 }
-
-export const checkPPInitiateStatus = function (cb) {
-  if (JOS.isMAppPresent("in.juspay.hyperpay")() && window.isPPInitiated) {
+function waitTillSeviceLoad (cb,serives,statusChecker) {
+  const checkPP = function () {
+    console.log("waitTillSeviceLoad");
+    statusChecker(cb,serives);
+  }
+  setTimeout(checkPP,10);
+}
+function checkPPLoadStatus(services) {
+  let result = false;
+  services.forEach(key => {
+    if (top.mapps[key]) {
+      if (top.mapps[key].contentWindow["onMerchantEvent"]) {
+        result = true;
+      } else {
+        result = false;
+      }
+    }
+  })
+  return result;
+}
+export const checkPPInitiateStatus = function (cb,services = microapps) {
+  if (window.isPPInitiated && checkPPLoadStatus(services)) {
     cb()();
   } else {
-    window.ppInitiateCallback = cb;
+    waitTillSeviceLoad(cb,services,checkPPInitiateStatus);
   }
 }
 
