@@ -93,14 +93,14 @@ getFingerPrint dummy = do
 
 getDriverNumber :: String -> String
 getDriverNumber _ = case getEnv of
-                        DEV  -> "9999999999"
-                        UAT  -> "9999999999"
-                        PROD -> "9999999999"
-                        _    -> "9999999999"
+                        DEV  -> "9906527732"
+                        UAT  -> "9906527732"
+                        PROD -> "9906527732"
+                        _    -> "9906527732"
 
 getSupportNumber :: String -> String
 getSupportNumber _ = case getEnv of
-                        DEV  -> "9999999999"
-                        UAT  -> "9999999999"
-                        PROD -> "9999999999"
-                        _    -> "9999999999"
+                        DEV  -> "9906527732"
+                        UAT  -> "9906527732"
+                        PROD -> "9906527732"
+                        _    -> "9906527732"

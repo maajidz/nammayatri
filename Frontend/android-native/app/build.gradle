@@ -1,3 +1,5 @@
+import java.security.SecureRandom
+import java.util.zip.GZIPOutputStream
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -322,6 +324,109 @@ tasks.create(name: 'minifyJsFiles') {
         }
     }
 }
+
+
+tasks.create(name: 'createJsaFiles', dependsOn: 'minifyJsFiles') {
+    doLast {
+        def inputFiles = []
+        def jsaFiles = []
+
+        def addFilesToQueue
+        addFilesToQueue = { folderPath, suffix ->
+            File folder = new File(folderPath)
+            if (folder.exists() && folder.isDirectory()) {
+                for (String file : folder.list()) {
+                    File curr = new File(folderPath + "/" + file)
+                    if (!curr.isDirectory()) {
+                        if (!file.endsWith(".js")) {
+                            continue
+                        }
+
+                        inputFiles.add(folder.getAbsolutePath() + "/" + file)
+                        if(suffix.contains("juspay")){
+                            jsaFiles.add(assetSource + suffix + "v1-" + file.substring(0, file.lastIndexOf(".min.js")) + ".jsa")
+                        } else {
+                            jsaFiles.add(assetSource + suffix + "juspay/v1-" + file.substring(0, file.lastIndexOf(".min.js")) + ".jsa")
+                        }
+                    } else {
+                        addFilesToQueue(curr.getAbsolutePath(), suffix + curr.getName() + "/")
+                    }
+                }
+            }
+        }
+        addFilesToQueue(tmpSource, "/")
+
+        println "Creating jsa under " + assetSource
+
+        File assetsDir = new File(assetSource)
+        if (!assetsDir.exists()) {
+            assetsDir.mkdirs()
+        }
+
+        inputFiles.eachWithIndex { filePath, index ->
+            File assetDir = new File(assetsDir.getAbsolutePath() + filePath.substring(tmpSource.length(), filePath.lastIndexOf("/")))
+            if (!assetDir.exists()) {
+                assetDir.mkdirs()
+            }
+            println("Processing File - " + filePath)
+
+            int FRAME_SIZE = 8
+            int KEY_SIZE = 8
+
+            //Generate 8 byte Random Key
+            SecureRandom random = new SecureRandom()
+            byte[] randomKey = new byte[8]
+            random.nextBytes(randomKey)
+
+            //Generate Compressed JSA File
+            byte[] input = file(filePath).getBytes()
+            byte[] compressed = gzipByteArray(input)
+
+            //Generate Obfuscated JSA File
+            int totalBytes = compressed.length;
+            byte[] encodedBytes = new byte[totalBytes + KEY_SIZE];
+            int hiddenCounter = 0;
+            int encodedCounter = 0;
+            for (int compressedCounter = 0; compressedCounter < totalBytes && encodedCounter < totalBytes + KEY_SIZE; encodedCounter++) {
+                if (encodedCounter > 0 && encodedCounter % 10 == 9 && hiddenCounter < KEY_SIZE) {
+                    //Append Key
+                    encodedBytes[encodedCounter] = randomKey[hiddenCounter]
+                    hiddenCounter++
+                } else {
+                    //XOR Byte with KEY Byte
+                    encodedBytes[encodedCounter] = (byte) ((int) compressed[compressedCounter] ^ (int) randomKey[compressedCounter % FRAME_SIZE])
+                    compressedCounter++
+                }
+            }
+            writeByteArray(jsaFiles[index], encodedBytes)
+        }
+    }
+}
+
+/**
+ * Byte processing
+ */
+
+
+private void writeByteArray(String filePath, byte[] encrypted) {
+    println("Packaging File - " + filePath)
+    FileOutputStream encryptedOS = new FileOutputStream(file(filePath));
+    encryptedOS.write(encrypted);
+    encryptedOS.close();
+}
+
+private byte[] gzipByteArray(byte[] uncompressed) {
+    ByteArrayOutputStream gzippedBOS = new ByteArrayOutputStream();
+    GZIPOutputStream gzipOutputStream = new GZIPOutputStream(gzippedBOS);
+    gzipOutputStream.write(uncompressed);
+    gzippedBOS.close();
+    gzipOutputStream.close();
+    byte[] compressed = gzippedBOS.toByteArray();
+    compressed
+}
+// -------------------------------------------------------------------------
+
+
 
 //Byte processing
 

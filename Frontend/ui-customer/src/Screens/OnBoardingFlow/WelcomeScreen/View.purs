@@ -41,13 +41,13 @@ view push state =
         , gravity CENTER
         , onBackPressed push $ const BackPressed
         , afterRender push $ const AfterRender
-        , background "#FFFAED"
+        , background "#FFFFFF"
         , padding $ PaddingBottom 24
         ][  imageView
             [ height $ V 50
             , width $ V 147
             , margin $ MarginTop if os == "IOS" then 80 else 50
-            , imageWithFallback "ic_namma_yatri_logo,https://assets.juspay.in/nammayatri/images/user/ic_namma_yatri_logo.png"   -- "ic_namma_yatri_logo"
+            , imageWithFallback "ic_namma_yatri_logo, https://novocabs.com/asset/img/novologo.png"   -- "ic_namma_yatri_logo"
             ]
             , carouselView state push
             , PrimaryButton.view (push <<< PrimaryButtonAC ) (primaryButtonConfig state)

@@ -22,9 +22,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.clevertap.android.sdk.CleverTapAPI;
-import com.clevertap.android.sdk.pushnotification.NotificationInfo;
-import com.clevertap.android.sdk.pushnotification.fcm.CTFcmMessageHandler;
+//import com.clevertap.android.sdk.CleverTapAPI;
+//import com.clevertap.android.sdk.pushnotification.NotificationInfo;
+//import com.clevertap.android.sdk.pushnotification.fcm.CTFcmMessageHandler;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -86,10 +86,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("FCM_TOKEN", newToken);
         editor.apply();
-        CleverTapAPI cleverTapAPI = CleverTapAPI.getDefaultInstance(this);
-        if (cleverTapAPI != null) {
-            cleverTapAPI.pushFcmRegistrationId(newToken,true);
-        }
+//        CleverTapAPI cleverTapAPI = CleverTapAPI.getDefaultInstance(this);
+//        if (cleverTapAPI != null) {
+//            cleverTapAPI.pushFcmRegistrationId(newToken,true);
+//        }
         String regToken = sharedPref.getString("", "null");
         if (!regToken.equals("null") && !regToken.equals("__failed")) {
             updateFCMToken(newToken);
@@ -131,15 +131,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 for (Map.Entry<String, String> entry : remoteMessage.getData().entrySet()) {
                     extras.putString(entry.getKey(), entry.getValue());
                 }
-                CleverTapAPI cleverTapAPI = CleverTapAPI.getDefaultInstance(this);
-                if (cleverTapAPI != null) {
-                    cleverTapAPI.pushNotificationViewedEvent(extras);
-                }
+//                CleverTapAPI cleverTapAPI = CleverTapAPI.getDefaultInstance(this);
+//                if (cleverTapAPI != null) {
+//                    cleverTapAPI.pushNotificationViewedEvent(extras);
+//                }
 
-                NotificationInfo info = CleverTapAPI.getNotificationInfo(extras);
-                if (info.fromCleverTap) {
-                    new CTFcmMessageHandler().createNotification(getApplicationContext(), remoteMessage);
-                } else {
+//                NotificationInfo info = CleverTapAPI.getNotificationInfo(extras);
+//                if (info.fromCleverTap) {
+//                    new CTFcmMessageHandler().createNotification(getApplicationContext(), remoteMessage);
+//                } else {
                     payload.put("notification_type", remoteMessage.getData().get("notification_type"));
                     payload.put("entity_ids", remoteMessage.getData().get("entity_ids"));
                     payload.put("entity_type", remoteMessage.getData().get("entity_type"));
@@ -359,7 +359,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             }  // Silent notification
                             break;
                     }
-                }
+//                }
             }
         } catch (Exception e) {
             firebaseLogEventWithParams("exception_in_notification", "remoteMessage", remoteMessage.getData().toString());

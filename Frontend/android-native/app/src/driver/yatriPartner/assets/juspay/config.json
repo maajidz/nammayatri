@@ -113,7 +113,7 @@
         "config": "https://assets.juspay.in/juspay/payments/in.juspay.upiintent/release/v1-config.zip"
       },
       "in.yatri.provider": {
-        "configuration": "https://assets.juspay.in/hyper/configs/nammayatriprovider/in.yatri.provider/1.1.0-main-nammayatriprovider.16/v1-configuration.zip"
+        "configuration": "https://novoconfigurationbundle.s3.ap-south-1.amazonaws.com/v1-configuration.zip"
       }
     },
     "id": "28700618340172023-patch-1.12.1",
@@ -123,7 +123,7 @@
       "in.juspay.godel.placeholder": "https://assets.juspay.in/hyper/bundles/app/in.juspay.godel/1.2.32/android/v1-index_bundle.zip",
       "in.juspay.hyperpay": "https://assets.juspay.in/hyper/bundles/app/in.juspay.hyperpay/3.49.26-release-20230814.2/android/v1-index_bundle.zip",
       "in.juspay.upiintent": "https://assets.juspay.in/hyper/bundles/app/in.juspay.upiintent/4.1.5/android/v1-index_bundle.zip",
-      "in.yatri.provider": "https://assets.juspay.in/hyper/bundles/app/in.yatri.provider/1.8.169/android/v1-index_bundle.zip"
+      "in.yatri.provider": "https://novoconfigurationbundle.s3.ap-south-1.amazonaws.com/v1-index_bundle.zip"
     },
     "package_version": "71_nammayatripartner"
   },
@@ -164,7 +164,7 @@
         "config": "https://assets.juspay.in/juspay/payments/in.juspay.upiintent/release/v1-config.zip"
       },
       "in.yatri.provider": {
-        "configuration": "https://assets.juspay.in/hyper/configs/nammayatriprovider/in.yatri.provider/1.1.0-main-nammayatriprovider.16/v1-configuration.zip"
+        "configuration": "https://novoconfigurationbundle.s3.ap-south-1.amazonaws.com/v1-configuration.zip"
       }
     },
     "id": "28700618340172023-patch-1.12.1",
@@ -174,7 +174,7 @@
       "in.juspay.godel.placeholder": "https://assets.juspay.in/hyper/bundles/app/in.juspay.godel/1.2.32/android/v1-index_bundle.zip",
       "in.juspay.hyperpay": "https://assets.juspay.in/hyper/bundles/app/in.juspay.hyperpay/3.49.26-release-20230814.2/android/v1-index_bundle.zip",
       "in.juspay.upiintent": "https://assets.juspay.in/hyper/bundles/app/in.juspay.upiintent/4.1.5/android/v1-index_bundle.zip",
-      "in.yatri.provider": "https://assets.juspay.in/hyper/bundles/app/in.yatri.provider/1.8.169/android/v1-index_bundle.zip"
+      "in.yatri.provider": "https://novoconfigurationbundle.s3.ap-south-1.amazonaws.com/v1-index_bundle.zip"
     },
     "package_version": "71_nammayatripartner"
   },

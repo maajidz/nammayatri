@@ -263,7 +263,9 @@ vehicleRegistrationNumber state push =
           [ width MATCH_PARENT
           , height WRAP_CONTENT
           , orientation HORIZONTAL
-          , stroke ("1," <> if ((DS.length state.data.vehicle_registration_number >= 2) && (DS.take 2 state.data.vehicle_registration_number /= (getValueFromConfig "RC_VALIDATION_TEXT"))) then Color.warningRed else Color.borderColorLight) 
+          , stroke ("1," <> if ((DS.length state.data.vehicle_registration_number >= 2)         
+--          && (DS.take 2 state.data.vehicle_registration_number /= (getValueFromConfig "RC_VALIDATION_TEXT"))          
+          ) then Color.warningRed else Color.borderColorLight) 
           , cornerRadius 4.0
           ][  textView
               [ width $ V 20
@@ -292,7 +294,9 @@ vehicleRegistrationNumber state push =
             , color Color.warningRed
             , fontStyle $ FontStyle.regular LanguageStyle
             , margin (MarginTop 10)
-            , visibility if ((DS.length state.data.vehicle_registration_number >= 2) && (DS.take 2 state.data.vehicle_registration_number /= (getValueFromConfig "RC_VALIDATION_TEXT"))) then VISIBLE else GONE
+            , visibility if ((DS.length state.data.vehicle_registration_number >= 2) 
+--            && (DS.take 2 state.data.vehicle_registration_number /= (getValueFromConfig "RC_VALIDATION_TEXT"))
+            ) then VISIBLE else GONE
             ] <> FontStyle.paragraphText TypoGraphy
           , linearLayout
           [ width MATCH_PARENT

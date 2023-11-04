@@ -4,10 +4,10 @@ import MerchantConfig.Types
 
 config :: AppConfig
 config =
-  { primaryTextColor: "#FCC32C"
+  { primaryTextColor: "#FFFFFF"
   , primaryBackground: "#6048E4"
   , estimateConfirmText: "Request a Novo Ride"
-  , autoConfirmingLoaderColor: "#80B2FF"
+  , autoConfirmingLoaderColor: "#6048E4"
   , quoteListModelBackground: "#6048E4"
   , currency: "₹"
   , isGradient: "false"
@@ -91,7 +91,7 @@ config =
   , nyBrandingVisibility: false
   , fontType: "Assets"
   , languageList : []
-  , confirmPickUpLocationBorder: "#6048E4"
+  , confirmPickUpLocationBorder: "#F1F1F1"
   , bannerConfig : {
         backgroundColor : "#F0FAF0"
       , title : "Complete your profile for a personalised ride experience"
@@ -106,7 +106,7 @@ config =
   , infoIconUrl : "ny_ic_info,https://assets.juspay.in/nammayatri/images/user/ny_ic_information_grey.png"
   , profileEditGravity : "center"
   , merchantLogo : "ic_launcher,https://assets.juspay.in/nammayatri/images/user/ny_ic_launcher.png"
-  , logs : ["JUSPAY", "FIREBASE"]
+  , logs : ["FIREBASE"]
   , showCorporateAddress : false
   , terminateBtnConfig : {
           visibility: false, 
@@ -119,5 +119,5 @@ config =
   , enableMockLocation : false
   , specialLocationView : false
   , internationalNumberEnabled : false
-  , dashboardUrl : "https://nammayatri.in/open/"
+  , dashboardUrl : "https://novocabs.com/"
   }

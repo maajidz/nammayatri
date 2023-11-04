@@ -33,7 +33,7 @@ commonConfig =
         , alertDialogPrimaryColor: "#00B8F5"
         , primaryButtonCornerRadius: 8.0
         , cancelSearchTextColor: "#FD5154"
-        , estimateConfirmText: "Request a NammaYatri Ride"
+        , estimateConfirmText: "Request a Novo Ride"
         , autoConfirmingLoaderColor: "#00B8F5"
         , quoteListModelBackground: "#F5F9FE"
         , ratingConfig:

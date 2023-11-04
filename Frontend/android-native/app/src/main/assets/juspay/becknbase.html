@@ -14,7 +14,7 @@
     var count = 5;
 
     var checkAndLoadFile = function() {
-        console.log('callback triggered count : ', count);
+        console.log('clllback triggered count : ', count);
         var jsFile = JBridge.loadFileInDUI('index_bundle.js');
         if(jsFile == "" || jsFile == "undefined") {
             if (count >= 0) {
