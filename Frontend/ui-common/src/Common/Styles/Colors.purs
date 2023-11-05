@@ -30,9 +30,6 @@ novoPurpleDarkest = "#170E4C"
 novoPurpleDarker :: Color
 novoPurpleDarker = "#312573"
 
-novopurple :: Color
-novopurple = "#6048E4"
-
 novoPurpleLight :: Color
 novoPurpleLight = "#CFC8F7"
 

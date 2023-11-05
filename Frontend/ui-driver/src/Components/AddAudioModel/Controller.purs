@@ -17,7 +17,7 @@ module Components.AddAudioModel.Controller where
 
 import Prelude
 import Components.PrimaryButton.Controller as PrimaryButton
-import Styles.Colors (black700, black900, primaryButtonColor, white900) as Color
+import Styles.Colors (black700, black900, primaryButtonColor, white900, novoPurplePrimary) as Color
 import Font.Size (a_18) as FontSize
 import PrestoDOM.Types.DomAttributes (Length(..))
 import Data.Maybe (Maybe)

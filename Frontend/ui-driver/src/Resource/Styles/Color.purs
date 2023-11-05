@@ -102,21 +102,6 @@ blackOpacity00 = "#00000000"
 greyLight :: Color
 greyLight = "#ECECEC"
 
-novoPurpleDarkest :: Color
-novoPurpleDarkest = "#170E4C"
-
-novoPurpleDarker :: Color
-novoPurpleDarker = "#312573"
-
-novoPurpleLight :: Color
-novoPurpleLight = "#CFC8F7"
-
-novoPurpleLighter :: Color
-novoPurpleLighter = "#E7E3FB"
-
-novoPurplePrimary :: Color
-novoPurplePrimary = "#6048E4"
-
 orange :: Color
 orange = "#FF9F07"
 
