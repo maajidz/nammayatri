@@ -1091,7 +1091,7 @@ completedRideDetails state push =
   , height $ V ((screenHeight unit)/ 2)
   , orientation VERTICAL
   , padding $ Padding 16 16 16 16
-  , gradient $ Linear (if os == "IOS" then 90.0 else 0.0) [Color.black900, Color.black900, Color.pickledBlue, Color.black900]
+  , gradient $ Linear (if os == "IOS" then 90.0 else 0.0) [Color.black900, Color.black900, Color.black900, Color.black900]
   , gravity CENTER
   ][  linearLayout
       [ width MATCH_PARENT

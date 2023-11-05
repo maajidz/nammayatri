@@ -76,21 +76,21 @@ estimatedTimeAndDistanceView push config =
         , color Color.black650
         ]
         <> FontStyle.paragraphText TypoGraphy
-    , linearLayout
-        [ height $ V 4
-        , width $ V 4
-        , cornerRadius 2.5
-        , background Color.black600
-        , margin (Margin 6 2 6 0)
-        ]
-        []
-    , textView $
-        [ height WRAP_CONTENT
-        , width WRAP_CONTENT
-        , text config.rideDuration
-        , color Color.black650
-        ]
-        <> FontStyle.paragraphText TypoGraphy
+    -- , linearLayout
+    --     [ height $ V 4
+    --     , width $ V 4
+    --     , cornerRadius 2.5
+    --     , background Color.black600
+    --     , margin (Margin 6 2 6 0)
+    --     ]
+        -- []
+    -- , textView $
+    --     [ height WRAP_CONTENT
+    --     , width WRAP_CONTENT
+    --     , text config.rideDuration
+    --     , color Color.black650
+    --     ]
+    --     <> FontStyle.paragraphText TypoGraphy
     ]
 
 quoteListView :: forall w. (Action -> Effect Unit) -> Config -> PrestoDOM (Effect Unit) w
@@ -130,7 +130,7 @@ primaryButtonRequestRideConfig config = PrimaryButton.config
     , color = Color.yellow900
 
     }
-  , background = Color.black900
+  , background = Color.novoPurplePrimary
   , margin = Margin 16 16 16 15
   }
 

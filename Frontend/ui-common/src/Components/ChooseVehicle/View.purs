@@ -17,11 +17,11 @@ view push config =
   relativeLayout
   [ width MATCH_PARENT
   , height WRAP_CONTENT
-  , background if config.index == config.activeIndex && (not config.isCheckBox) then Color.blue600 else Color.white900
+  , background if config.index == config.activeIndex && (not config.isCheckBox) then Color.novoPurpleLighter else Color.white900
   , cornerRadius 6.0
   , id $ EHC.getNewIDWithTag config.id
   , stroke $ case config.isCheckBox of
-          false -> if config.index == config.activeIndex then "1," <> Color.blue800 else "1," <> Color.white900
+          false -> if config.index == config.activeIndex then "1," <> Color.novoPurplePrimary else "1," <> Color.white900
           true -> "1," <> Color.grey900
   , margin $ MarginHorizontal 16 16
   , padding $ Padding 8 16 12 16

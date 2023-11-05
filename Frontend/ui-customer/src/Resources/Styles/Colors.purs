@@ -431,6 +431,21 @@ transparentGrey = "#66888888"
 blue800 :: Color
 blue800 = "#2194FF"
 
+novoPurpleDarkest :: Color
+novoPurpleDarkest = "#170E4C"
+
+novoPurpleDarker :: Color
+novoPurpleDarker = "#312573"
+
+novoPurpleLight :: Color
+novoPurpleLight = "#CFC8F7"
+
+novoPurpleLighter :: Color
+novoPurpleLighter = "#E7E3FB"
+
+novoPurplePrimary :: Color
+novoPurplePrimary = "#6048E4"
+
 golden :: Color
 golden = "#E9BE4D"
 

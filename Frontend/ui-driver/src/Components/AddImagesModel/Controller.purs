@@ -48,7 +48,7 @@ doneButtonConfig state = let
       , color = Color.primaryButtonColor
       }
       , cornerRadius = 8.0
-      , background = Color.black900
+      , background = Color.doneButtonConfig
       , height = (V 60)
       , alpha = if (state.stateChanged) then 1.0 else 0.5
       , isClickable = state.stateChanged

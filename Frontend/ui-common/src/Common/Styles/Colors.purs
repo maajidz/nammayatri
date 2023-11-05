@@ -24,8 +24,23 @@ black800 = "#454545"
 black900 :: Color
 black900 = "#333333"
 
+novoPurpleDarkest :: Color
+novoPurpleDarkest = "#170E4C"
+
+novoPurpleDarker :: Color
+novoPurpleDarker = "#312573"
+
 novopurple :: Color
 novopurple = "#6048E4"
+
+novoPurpleLight :: Color
+novoPurpleLight = "#CFC8F7"
+
+novoPurpleLighter :: Color
+novoPurpleLighter = "#E7E3FB"
+
+novoPurplePrimary :: Color
+novoPurplePrimary = "#6048E4"
 
 black9000 :: Color
 black9000 = "#CC2C2F3A"
