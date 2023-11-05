@@ -29,8 +29,8 @@ commonConfig =
         , addFavouriteScreenBackArrow: "ny_ic_chevron_left_white,https://assets.juspay.in/nammayatri/images/user/ny_ic_chevron_left_white.png"
         , popupBackground: "#FFFFFF"
         , apiLoaderLottie: "primary_button_loader.json"
-        , primaryTextColor: "#FCC32C"
-        , primaryBackground: "#2C2F3A"
+        , primaryTextColor: "#FFFFFF"
+        , primaryBackground: "#6048e4"
         , showCorporateAddress: false
         , imageUploadOptional: true
         }

@@ -68,7 +68,7 @@ const englishStrings = {
   "CANCEL_SEARCH": "Cancel Search",
   "YOUR_RIDE_IS_NOW_COMPLETE": "Your Ride is now complete!",
   "PLEASE_PAY_THE_FINAL_AMOUNT_TO_THE_DRIVER_VIA_CASH": "Please pay the final amount to the driver directly",
-  "WHERE_TO": "Where to?",
+  "WHERE_TO": "Where are you going?",
   "HOME": "Home",
   "PICK_UP_LOCATION": "Pick Up Location",
   "REQUEST_RIDE": "Request Ride",

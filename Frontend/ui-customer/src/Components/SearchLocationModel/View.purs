@@ -247,7 +247,7 @@ sourceDestinationEditTextView state push =
             , weight 1.0
             , text state.source
             , color Color.black800
-            , stroke if state.isSource == Just true && state.isSearchLocation == LocateOnMap then "1,#FDD836" else "0,#FDD836"
+            , stroke if state.isSource == Just true && state.isSearchLocation == LocateOnMap then "1,#CFC8F7" else "0,#CFC8F7"
             , background Color.white900
             , singleLine true
             , ellipsize true
@@ -315,7 +315,7 @@ sourceDestinationEditTextView state push =
               , text state.destination
               , color Color.black800
               , cornerRadius 10.0
-              , stroke if state.isSource == Just false && state.isSearchLocation == LocateOnMap then "1,#FDD836" else "0,#FDD836"
+              , stroke if state.isSource == Just false && state.isSearchLocation == LocateOnMap then "1,#CFC8F7" else "0,#CFC8F7"
               , padding (Padding 5 0 5 0)
               , background Color.white900
               , hint (getString WHERE_TO)

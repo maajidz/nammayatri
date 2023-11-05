@@ -230,19 +230,20 @@ whereToButtonConfig state =
         { text = (getString WHERE_TO)
         , width = MATCH_PARENT
         , gravity = LEFT
-        , color = state.data.config.primaryTextColor 
+        , color = state.data.config.quoteListModel.otpTitleColor 
         }
+      , stroke = ("1," <> Color.borderGreyColor)
       , height = V 60
       , gravity = CENTER
       , cornerRadius = 8.0
       , margin = (MarginHorizontal 16 16)  
       , isClickable = true 
       , isPrefixImage = true
-      , background = state.data.config.primaryBackground
+      , background = state.data.config.primaryTextColor
       , prefixImageConfig
         { imageUrl = "ny_ic_bent_right_arrow," <> (getAssetStoreLink FunctionCall) <> "ny_ic_bent_right_arrow.png"
-        , height = V 16
-        , width = V 21
+        , height = V 28
+        , width = V 28
         , margin = (Margin 17 0 17 0)
         }
       , id = "WheretoButton"
@@ -259,6 +260,7 @@ primaryButtonRequestRideConfig state =
           { text = (getString REQUEST_RIDE)
           ,  color = state.data.config.primaryTextColor
           }
+        , stroke = ("1," <> Color.borderGreyColor)
         , cornerRadius = state.data.config.primaryButtonCornerRadius
         , margin = (Margin 0 32 0 0)
         , id = "RequestRideButton"
