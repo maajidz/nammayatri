@@ -95,7 +95,7 @@ feeItem push state item =
   , height WRAP_CONTENT
   , padding $ Padding 10 10 10 10
   , cornerRadius 8.0
-  , background if item.feeType == GST_PAYABLE then Color.yellow800 else Color.blue600
+  , background if item.feeType == GST_PAYABLE then Color.novoPurpleLighter else Color.blue600
   , gravity CENTER_VERTICAL
   ][  textView $
       [ width WRAP_CONTENT

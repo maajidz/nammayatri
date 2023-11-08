@@ -64,7 +64,9 @@
 		60C308BB29DC24ED00A65E76 /* ny_ic_profile_image.png in Resources */ = {isa = PBXBuildFile; fileRef = 60C308B529DC24ED00A65E76 /* ny_ic_profile_image.png */; };
 		60C605EF29CD7EEB0018F4FA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 60C605EE29CD7EEB0018F4FA /* GoogleService-Info.plist */; };
 		7FE03F7E61F94085D3132FF1 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		AB3ACECD111D39438F04513F /* Pods_NammaYatri_Release.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77B8915276FEDDEDFABCB59F /* Pods_NammaYatri_Release.framework */; };
+		AE6742942AF8490E00494E68 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDD72E42888476800DB1CC3 /* ViewController.swift */; };
+		AE6742952AF8490F00494E68 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDD72E42888476800DB1CC3 /* ViewController.swift */; };
+		AE67429A2AF8496500494E68 /* Pods_NammaYatri_Release.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77B8915276FEDDEDFABCB59F /* Pods_NammaYatri_Release.framework */; };
 		BF151C24297E828E0022EB3B /* ny_ic_no_commision.png in Resources */ = {isa = PBXBuildFile; fileRef = BF151C23297E828E0022EB3B /* ny_ic_no_commision.png */; };
 		BF151C25297E828E0022EB3B /* ny_ic_no_commision.png in Resources */ = {isa = PBXBuildFile; fileRef = BF151C23297E828E0022EB3B /* ny_ic_no_commision.png */; };
 		BF1CB7C329B11AA800852866 /* success_lottie.json in Resources */ = {isa = PBXBuildFile; fileRef = BF1CB7C229B11AA800852866 /* success_lottie.json */; };
@@ -259,13 +261,11 @@
 		DC5B84E6295EE47E00947C98 /* ny_ic_splash_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = DC5B84E4295EE47E00947C98 /* ny_ic_splash_bg.png */; };
 		DC7A200428E4175D00D6CD06 /* auto_rickshaw_processing.json in Resources */ = {isa = PBXBuildFile; fileRef = DC7A200328E4175D00D6CD06 /* auto_rickshaw_processing.json */; };
 		DC7A200528E4175D00D6CD06 /* auto_rickshaw_processing.json in Resources */ = {isa = PBXBuildFile; fileRef = DC7A200328E4175D00D6CD06 /* auto_rickshaw_processing.json */; };
-		DCC6B6EE289148E800AD23C1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDD72E42888476800DB1CC3 /* ViewController.swift */; };
 		DCC6B6EF289148E800AD23C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDD72E02888476800DB1CC3 /* AppDelegate.swift */; };
 		DCC6B717289148E800AD23C1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DCDD72EB2888476900DB1CC3 /* LaunchScreen.storyboard */; };
 		DCC6B729289148E800AD23C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCDD72E92888476900DB1CC3 /* Assets.xcassets */; };
 		DCC6B731289148E800AD23C1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DCDD72E62888476800DB1CC3 /* Main.storyboard */; };
 		DCDD72E12888476800DB1CC3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDD72E02888476800DB1CC3 /* AppDelegate.swift */; };
-		DCDD72E52888476800DB1CC3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDD72E42888476800DB1CC3 /* ViewController.swift */; };
 		DCDD72E82888476800DB1CC3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DCDD72E62888476800DB1CC3 /* Main.storyboard */; };
 		DCDD72EA2888476900DB1CC3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCDD72E92888476900DB1CC3 /* Assets.xcassets */; };
 		DCDD72ED2888476900DB1CC3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DCDD72EB2888476900DB1CC3 /* LaunchScreen.storyboard */; };
@@ -538,7 +538,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AB3ACECD111D39438F04513F /* Pods_NammaYatri_Release.framework in Frameworks */,
+				AE67429A2AF8496500494E68 /* Pods_NammaYatri_Release.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1362,8 +1362,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE6742942AF8490E00494E68 /* ViewController.swift in Sources */,
 				DC054B3B298D183F00D5AE7C /* Notifications.swift in Sources */,
-				DCC6B6EE289148E800AD23C1 /* ViewController.swift in Sources */,
 				DCC6B6EF289148E800AD23C1 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1372,8 +1372,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE6742952AF8490F00494E68 /* ViewController.swift in Sources */,
 				DC054B3A298D183F00D5AE7C /* Notifications.swift in Sources */,
-				DCDD72E52888476800DB1CC3 /* ViewController.swift in Sources */,
 				DCDD72E12888476800DB1CC3 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1615,7 +1615,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Namma Yatri/Plist/Debug/NammaYatriDebug-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Namma Yatri";
+				INFOPLIST_KEY_CFBundleDisplayName = Novo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSContactsUsageDescription = "This will be used to add emergency contacts";
@@ -1659,7 +1659,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Namma Yatri/Plist/Debug/NammaYatriDebug-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Namma Yatri";
+				INFOPLIST_KEY_CFBundleDisplayName = Novo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSContactsUsageDescription = "This will be used to add emergency contacts";

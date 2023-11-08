@@ -42,8 +42,9 @@ const makeRequest = function (headersRaw, method, url, payload, success) {
     headers[headersRaw[i].field] = headersRaw[i].value;
   }
   isSSLPinnedURL = headers["x-pinned"] == "true"
+  console.log(url, payload);
   var callback = callbackMapper.map(function () {
-    console.log("RESPONSE =---=-=-=-=-=-=---???", arguments)
+    console.log("RESPONSE =---=-=-=-=-=-=---???", arguments, url)
     if (arguments && arguments.length >= 5) {
       try{
       // console.log("decodeURIComponent =---=-=-=-=-=-=---???", (decodeURIComponent(escape(window.atob(arguments[1]))) ))

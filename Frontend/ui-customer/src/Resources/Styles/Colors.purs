@@ -437,6 +437,9 @@ golden = "#E9BE4D"
 cancelledBg :: Color
 cancelledBg = "#17E55454"
 
+novoPurplePrimary :: Color
+novoPurplePrimary = "#6048E4"
+
 lightBlack900 :: Color
 lightBlack900 = "#992C2F3A"
 

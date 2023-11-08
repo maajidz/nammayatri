@@ -483,12 +483,12 @@ makePaymentState state =
     title : getString GREAT_JOB,
     description : getDescription state,
     description2 : ( case getValueToLocalStore LANGUAGE_KEY of
-                          "EN_US" -> "To continue using Yatri Sathi, please complete your payment for " <> state.data.paymentState.date
+                          "EN_US" -> "To continue using Novo, please complete your payment for " <> state.data.paymentState.date
                           "HI_IN" -> "यात्री साथी का उपयोग जारी रखने के लिए, कृपया "<> state.data.paymentState.date <>" के लिए अपना भुगतान पूरा करें"
                           "KN_IN" -> "ಯಾತ್ರಿ ಸತಿ ಬಳಸುವುದನ್ನು ಮುಂದುವರಿಸಲು, ದಯವಿಟ್ಟು "<> state.data.paymentState.date <> " ಕ್ಕೆ ನಿಮ್ಮ ಪಾವತಿಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ"
                           "TA_IN" -> "யாத்ரி சாத்தியைத் தொடர்ந்து பயன்படுத்த, "<> state.data.paymentState.date <> " க்கு உங்கள் கட்டணத்தைச் செலுத்தவும்"
-                          "BN_IN" -> "Yatri Sathi ব্যবহার চালিয়ে যেতে, অনুগ্রহ করে " <> state.data.paymentState.date <> " -এর জন্য আপনার অর্থপ্রদান সম্পূর্ণ করুন"
-                          _       -> "To continue using Yatri Sathi, please complete your payment for " <> state.data.paymentState.date
+                          "BN_IN" -> "Novo ব্যবহার চালিয়ে যেতে, অনুগ্রহ করে " <> state.data.paymentState.date <> " -এর জন্য আপনার অর্থপ্রদান সম্পূর্ণ করুন"
+                          _       -> "To continue using Novo, please complete your payment for " <> state.data.paymentState.date
                       ),
     okButtontext : ( case getValueToLocalStore LANGUAGE_KEY of
                           "EN_US" -> "Pay ₹" <> payableAndGST <> " now"

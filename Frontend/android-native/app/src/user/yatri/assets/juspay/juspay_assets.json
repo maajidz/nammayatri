@@ -189,6 +189,7 @@
       "ny_ic_driver_addition_table" : true,
       "ny_ic_driver_additions_yatri" : true,
       "ny_ic_driver_avatar" : true,
+      "ny_ic_driver_avatarold" : true,
       "ny_ic_driver_near" : true,
       "ny_ic_driver_near_auto" : true,
       "ny_ic_driver_profile" : true,

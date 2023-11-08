@@ -1,7 +1,7 @@
 window.getMerchantConfig = function () {
   return JSON.stringify({
     "RC_VALIDATION_TEXT": "JK",
-    "DOCUMENT_LINK": "https://docs.google.com/document/d/1zmQWO_L4EjyCXC3xSlp1f3DS2wI4HfbHxg42tXelWe0",
+    "DOCUMENT_LINK": "https://docs.google.com/document/d/1GmJcUTtFe_SuPq6HJv2iCJ3TLRaTWx3opznSIMG504c",
     "APP_LINK": "https://play.google.com/store/apps/details?id=net.openkochi.yatripartner",
     "PRIVACY_POLICY_LINK": "https://docs.google.com/document/d/1gI_P4oZnVwE0O71rI4Mi8rpZbL9rsIRkyewbql85Np8",
     "SPECIAL_ZONE_OTP_VIEW": "false",
