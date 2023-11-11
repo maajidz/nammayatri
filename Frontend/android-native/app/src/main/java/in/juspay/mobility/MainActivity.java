@@ -413,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
             payload.put("clientId", getResources().getString(R.string.client_id));
             payload.put("action", "initiate");
             payload.put("merchantId", getResources().getString(R.string.merchant_id));
-            payload.put(PaymentConstants.ENV, "prod");
+            payload.put(PaymentConstants.ENV, "production");
             json.put(PaymentConstants.PAYLOAD, payload);
         } catch (JSONException e) {
             e.printStackTrace();
